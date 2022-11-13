@@ -17,14 +17,15 @@ const {
 
 // Global Config
 const GLOBAL_CONFIG = {
-  BET_AMOUNT: 4, // in USD
-  DAILY_GOAL: 30, // in USD,
+  BET_AMOUNT: 5, // in USD
+  DAILY_GOAL: 1000, // in USD,
   WAITING_TIME: 265000, // in Miliseconds (4.3 Minutes)
-  THRESHOLD: 55, // Minimum % of certainty of signals (50 - 100)
+  THRESHOLD: 51, // Minimum % of certainty of signals (50 - 100)
 };
 
 //Bet UP
 const betUp = async (amount, epoch) => {
+ 
   try {
     const tx = await predictionContract.betBull(epoch, {
       value: parseEther(amount.toFixed(18).toString()),
@@ -37,6 +38,19 @@ const betUp = async (amount, epoch) => {
       GLOBAL_CONFIG.WAITING_TIME
     );
   }
+  checkForClaimable(epoch)
+};
+
+const checkForClaimable = async(epoch) => {
+ try {
+  const value = [epoch-2]
+   const tx = await predictionContract.claim(value);
+   await tx.wait();
+   console.log(`🤞 Successful Claim 🍁`);
+ } catch (error) {
+  console.log("Transaction Error, Couldnt Claim", error);
+ }
+  
 };
 
 //Bet DOWN
@@ -53,6 +67,7 @@ const betDown = async (amount, epoch) => {
       GLOBAL_CONFIG.WAITING_TIME
     );
   }
+  checkForClaimable(epoch)
 };
 
 //Check Signals
@@ -124,27 +139,9 @@ const strategy = async (minAcurracy, epoch) => {
       percentage(signals.buy, signals.sell) > minAcurracy
     ) {
       console.log(
-        `${epoch.toString()} 🔮 Prediction: UP 🟢 ${percentage(
+        `${epoch.toString()} 🔮 Prediction: DOWN 🔴 ${percentage(
           signals.buy,
           signals.sell
-        )}%`
-      );
-      await betUp(GLOBAL_CONFIG.BET_AMOUNT / BNBPrice, epoch);
-      await saveRound(epoch.toString(), [
-        {
-          round: epoch.toString(),
-          betAmount: (GLOBAL_CONFIG.BET_AMOUNT / BNBPrice).toString(),
-          bet: "bull",
-        },
-      ]);
-    } else if (
-      signals.sell > signals.buy &&
-      percentage(signals.sell, signals.buy) > minAcurracy
-    ) {
-      console.log(
-        `${epoch.toString()} 🔮 Prediction: DOWN 🔴 ${percentage(
-          signals.sell,
-          signals.buy
         )}%`
       );
       await betDown(GLOBAL_CONFIG.BET_AMOUNT / BNBPrice, epoch);
@@ -153,6 +150,24 @@ const strategy = async (minAcurracy, epoch) => {
           round: epoch.toString(),
           betAmount: (GLOBAL_CONFIG.BET_AMOUNT / BNBPrice).toString(),
           bet: "bear",
+        },
+      ]);
+    } else if (
+      signals.sell > signals.buy &&
+      percentage(signals.sell, signals.buy) > minAcurracy
+    ) {
+      console.log(
+        `${epoch.toString()} 🔮 Prediction: UP 🟢 ${percentage(
+          signals.sell,
+          signals.buy
+        )}%`
+      );
+      await betUp(GLOBAL_CONFIG.BET_AMOUNT / BNBPrice, epoch);
+      await saveRound(epoch.toString(), [
+        {
+          round: epoch.toString(),
+          betAmount: (GLOBAL_CONFIG.BET_AMOUNT / BNBPrice).toString(),
+          bet: "bull",
         },
       ]);
     } else {
