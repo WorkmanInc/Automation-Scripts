@@ -34,6 +34,7 @@ const checkForMint = () => {
  const nextGold = nextNugget(currentId);
  console.log(currentId.toString());
  console.log(nextGold.toString());
+ console.log(`🤗 ${(nextGold-currentId).toString()} Left to Go 🤗`);
  if(currentId < nextGold && currentId >= nextGold - GLOBAL_CONFIG.TO_BUY) return true;
  else return false;
 }
