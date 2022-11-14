@@ -14,13 +14,14 @@ const {
   EXCHANGES_ENUM,
   INTERVALS_ENUM,
 } = require("trading-view-recommends-parser-nodejs");
+const { Console } = require("console");
 
 // Global Config
 const GLOBAL_CONFIG = {
-  BET_AMOUNT: 5, // in USD
+  BET_AMOUNT: 6, // in USD
   DAILY_GOAL: 1000, // in USD,
   WAITING_TIME: 265000, // in Miliseconds (4.3 Minutes)
-  THRESHOLD: 51, // Minimum % of certainty of signals (50 - 100)
+  THRESHOLD: 40, // Minimum % of certainty of signals (50 - 100)
 };
 
 //Bet UP
@@ -48,7 +49,7 @@ const checkForClaimable = async(epoch) => {
    await tx.wait();
    console.log(`🤞 Successful Claim 🍁`);
  } catch (error) {
-  console.log("Transaction Error, Couldnt Claim", error);
+  console.log(`👎 Nothing To Claim`);
  }
   
 };
@@ -70,7 +71,7 @@ const betDown = async (amount, epoch) => {
   checkForClaimable(epoch)
 };
 
-//Check Signals
+//Check Signals average 1 and 5
 const getSignals = async () => {
   //1 Minute signals
   let resultMin = await new TradingViewScan(
@@ -103,7 +104,11 @@ const getSignals = async () => {
       (parseInt(minRecomendation.NEUTRAL) +
         parseInt(medRecomendation.NEUTRAL)) /
       2;
-
+    if(averageBuy > averageSell) {
+      console.log(percentage(averageBuy, averageSell))
+    } else console.log(percentage(averageSell, averageBuy))
+    console.log(minRecomendation)
+    console.log(medRecomendation)
     return {
       buy: averageBuy,
       sell: averageSell,
@@ -114,9 +119,14 @@ const getSignals = async () => {
   }
 };
 
+
 //Percentage difference
 const percentage = (a, b) => {
   return parseInt((100 * a) / (a + b));
+};
+
+const percentage3 = (a, b, c) => {
+  return parseInt((100 * a) / (a + b + c));
 };
 
 //Strategy of betting
@@ -136,10 +146,10 @@ const strategy = async (minAcurracy, epoch) => {
   if (signals) {
     if (
       signals.buy > signals.sell &&
-      percentage(signals.buy, signals.sell) > minAcurracy
+      percentage3(signals.buy, signals.sell, signals.neutral) > minAcurracy
     ) {
       console.log(
-        `${epoch.toString()} 🔮 Prediction: DOWN 🔴 ${percentage(
+        `${epoch.toString()} 🔮 Prediction:DOWN 🔴 ${percentage(
           signals.buy,
           signals.sell
         )}%`
@@ -154,7 +164,7 @@ const strategy = async (minAcurracy, epoch) => {
       ]);
     } else if (
       signals.sell > signals.buy &&
-      percentage(signals.sell, signals.buy) > minAcurracy
+      percentage3(signals.sell, signals.buy, signals.neutral) > minAcurracy
     ) {
       console.log(
         `${epoch.toString()} 🔮 Prediction: UP 🟢 ${percentage(
@@ -173,9 +183,9 @@ const strategy = async (minAcurracy, epoch) => {
     } else {
       let lowPercentage;
       if (signals.buy > signals.sell) {
-        lowPercentage = percentage(signals.buy, signals.sell);
+        lowPercentage = percentage3(signals.buy, signals.sell, signals.neutral);
       } else {
-        lowPercentage = percentage(signals.sell, signals.buy);
+        lowPercentage = percentage3(signals.sell, signals.buy, signals.neutral);
       }
       console.log("Waiting for next round 🕑", lowPercentage + "%");
     }
