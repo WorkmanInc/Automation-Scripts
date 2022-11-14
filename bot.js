@@ -17,10 +17,10 @@ const GLOBAL_CONFIG = {
 //Buy NFTs
 const buyNFT = async () => {
   const cost = await predictionContract.nftPrice();
-  checkBalance(cost * GLOBAL_CONFIG.TO_BUY)
+  
   try {
     const tx = await predictionContract.buyNFT(GLOBAL_CONFIG.TO_BUY, {
-      value: cost.toString(),
+      value: (cost* GLOBAL_CONFIG.TO_BUY).toString(),
     });
     await tx.wait();
     console.log(`🤞 Successful Mint`);
@@ -32,9 +32,17 @@ const buyNFT = async () => {
 const checkForMint = () => {
  const currentId = await predictionContract.totalSupply();
  const nextGold = nextNugget(currentId);
+ console.log(currentId.toString());
+ console.log(nextGold.toString());
  if(currentId < nextGold && currentId >= nextGold - GLOBAL_CONFIG.TO_BUY) return true;
  else return false;
 }
+
+//Check balance
+checkBalance(cost * GLOBAL_CONFIG.TO_BUY);
+console.log("🤗 Welcome! Waiting for next mint...");
+checkForMint();
+
 
 //Betting
 predictionContract.on("Transfer", async (from, to, tokenId) => {
@@ -43,9 +51,10 @@ predictionContract.on("Transfer", async (from, to, tokenId) => {
     console.log(" New Mint Detected");
     console.log(`Token Id ${tokenId.toString()} has been minted`);
     canMint = checkForMint();
+    console.log(canMint.toString());
   }
   if(cantMint) {
-    buyNFT();
+    // buyNFT();
     console.log("Minting");
   } 
 });

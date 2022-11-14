@@ -67,22 +67,6 @@ const checkBalance = (amount) => {
 };
 
 
-
-
-const getBNBPrice = async () => {
-  const apiUrl = "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT";
-  try {
-    const res = await fetch(apiUrl);
-    if (res.status >= 400) {
-      throw new Error("Bad response from server");
-    }
-    const price = await res.json();
-    return parseFloat(price.price);
-  } catch (err) {
-    console.error("Unable to connect to Binance API", err);
-  }
-};
-
 module.exports = {
   predictionContract,
   checkBalance,
