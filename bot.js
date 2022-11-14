@@ -18,10 +18,10 @@ const { Console } = require("console");
 
 // Global Config
 const GLOBAL_CONFIG = {
-  BET_AMOUNT: 6, // in USD
+  BET_AMOUNT: 3, // in USD
   DAILY_GOAL: 1000, // in USD,
   WAITING_TIME: 265000, // in Miliseconds (4.3 Minutes)
-  THRESHOLD: 40, // Minimum % of certainty of signals (50 - 100)
+  THRESHOLD: 35, // Minimum % of certainty of signals (50 - 100)
 };
 
 //Bet UP
@@ -39,7 +39,6 @@ const betUp = async (amount, epoch) => {
       GLOBAL_CONFIG.WAITING_TIME
     );
   }
-  checkForClaimable(epoch)
 };
 
 const checkForClaimable = async(epoch) => {
@@ -68,7 +67,6 @@ const betDown = async (amount, epoch) => {
       GLOBAL_CONFIG.WAITING_TIME
     );
   }
-  checkForClaimable(epoch)
 };
 
 //Check Signals average 1 and 5
@@ -96,10 +94,10 @@ const getSignals = async () => {
   //Average signals
   if (minRecomendation && medRecomendation) {
     let averageBuy =
-      (parseInt(minRecomendation.BUY) + parseInt(medRecomendation.BUY)) / 2;
+      (parseInt(minRecomendation.SELL) + parseInt(medRecomendation.BUY)) / 2;
 
     let averageSell =
-      (parseInt(minRecomendation.SELL) + parseInt(medRecomendation.SELL)) / 2;
+      (parseInt(minRecomendation.BUY) + parseInt(medRecomendation.SELL)) / 2;
     let averageNeutral =
       (parseInt(minRecomendation.NEUTRAL) +
         parseInt(medRecomendation.NEUTRAL)) /
@@ -163,7 +161,7 @@ const strategy = async (minAcurracy, epoch) => {
         },
       ]);
     } else if (
-      signals.sell > signals.buy &&
+      signals.sell >= signals.buy &&
       percentage3(signals.sell, signals.buy, signals.neutral) > minAcurracy
     ) {
       console.log(
@@ -206,6 +204,7 @@ predictionContract.on("StartRound", async (epoch) => {
   );
   await sleep(GLOBAL_CONFIG.WAITING_TIME);
   await strategy(GLOBAL_CONFIG.THRESHOLD, epoch);
+  checkForClaimable(epoch)
 });
 
 //Show stats
