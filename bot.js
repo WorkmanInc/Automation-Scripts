@@ -1,5 +1,3 @@
-const { parseEther } = require("@ethersproject/units");
-const sleep = require("util").promisify(setTimeout);
 const {
   predictionContract,
   getBNBPrice,
