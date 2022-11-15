@@ -18,10 +18,10 @@ const { Console } = require("console");
 
 // Global Config
 const GLOBAL_CONFIG = {
-  BET_AMOUNT: 3, // in USD
+  BET_AMOUNT: 6, // in USD
   DAILY_GOAL: 1000, // in USD,
   WAITING_TIME: 265000, // in Miliseconds (4.3 Minutes)
-  THRESHOLD: 35, // Minimum % of certainty of signals (50 - 100)
+  THRESHOLD: 31, // Minimum % of certainty of signals (50 - 100)
 };
 
 //Bet UP
