@@ -40,7 +40,12 @@ let contract = new Contract(
 
 const nextNugget = (id) => {
   for(i = 0; i < process.env.NUGGETS.length; i++) {
-    if(process.env.NUGGETS[i] > id) return process.env.NUGGETS[i];
+    console.log(process.env.NUGGETS.length)
+    console.log(id);
+    console.log(process.env.NUGGETS[i]);
+    if(process.env.NUGGETS[i] > id){
+      return process.env.NUGGETS[i];
+    } 
   }
   return 0;
 }
