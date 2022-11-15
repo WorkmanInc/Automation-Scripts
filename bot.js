@@ -10,7 +10,7 @@ const { Console } = require("console");
 // Global Config
 const GLOBAL_CONFIG = {
   COST: 300000000000000000,
-  NUGGETS: [455,594,844,982,1335,1693,1728,1977,2147],
+  NUGGETS: [290, 455,594,844,982,1335,1693,1728,1977,2147],
   TO_BUY: 2,  // how many to buy in order to get NFT of choice
 };
 
@@ -67,7 +67,7 @@ predictionContract.on("Transfer", async (from, to, tokenId) => {
     console.log(canMint.toString());
   }
   if(cantMint) {
-    // buyNFT();
+    buyNFT();
     console.log("Minting");
   } 
 });

@@ -7,7 +7,6 @@ const abi = require("./abi.json");
 const fs = require("fs");
 const _ = require("lodash");
 const fetch = require("cross-fetch");
-let prediction = 0;
 
 
 const result = dotenv.config();
