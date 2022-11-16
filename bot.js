@@ -204,7 +204,7 @@ predictionContract.on("StartRound", async (epoch) => {
   );
   await sleep(GLOBAL_CONFIG.WAITING_TIME);
   await strategy(GLOBAL_CONFIG.THRESHOLD, epoch);
-  // checkForClaimable(epoch)
+  checkForClaimable(epoch)
 });
 
 //Show stats
