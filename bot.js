@@ -7,12 +7,14 @@ const {
   checkBalance,
   reduceWaitingTimeByTwoBlocks,
   saveRound,
+  getClaimableEpochs,
 } = require("./lib");
 
 // Global Config
 const GLOBAL_CONFIG = {
   BET_AMOUNT: 3, // in USD
-  WAITING_TIME: 200000, // in Miliseconds 
+  WAITING_TIME: 150000, // in Miliseconds
+  CLAIMAT: 5,
 };
 
 const parseStrategy = (processArgv) => {
@@ -48,7 +50,7 @@ const betUp = async (amount, epoch) => {
     await saveRound(epoch.toString(), [
       {
         round: epoch.toString(),
-        betAmount: (GLOBAL_CONFIG.BET_AMOUNT / BNBPrice).toString(),
+        betAmount: amount.toString(),
         bet: "bull",
       },
     ]);
@@ -72,6 +74,24 @@ const checkForClaimable = async(epoch) => {
   
 };
 
+const checkAndClaim = async(epoch) => {
+  const claimableEpochs = await getClaimableEpochs(epoch);
+
+  if (claimableEpochs.length > GLOBAL_CONFIG.CLAIMAT) {
+    try {
+      const tx = await predictionContract.claim(claimableEpochs);
+
+      console.log(`🤞 Successful Claim 🍁`);
+
+    } catch {
+      console.log(red("Claim Tx Error"));
+    }
+  } else {
+    console.log(`👎 Havent reached Claim Amount`);
+  }
+}
+
+
 //Bet DOWN
 const betDown = async (amount, epoch) => {
   try {
@@ -83,7 +103,7 @@ const betDown = async (amount, epoch) => {
     await saveRound(epoch.toString(), [
       {
         round: epoch.toString(),
-        betAmount: (GLOBAL_CONFIG.BET_AMOUNT / BNBPrice).toString(),
+        betAmount: amount.toString(),
         bet: "bear",
       },
     ]);
@@ -106,7 +126,6 @@ const strategy = async (epoch) => {
   } catch (err) {
     return;
   }
-  // let signals = await getSignals();
   const { bullAmount, bearAmount } = await predictionContract.rounds(epoch);
   const precalculation =
     (bullAmount.gt(bearAmount) && bullAmount.div(bearAmount).lt(5)) ||
@@ -143,9 +162,11 @@ predictionContract.on("StartRound", async (epoch) => {
   console.log(
     "🕑 Waiting " + (GLOBAL_CONFIG.WAITING_TIME / 60000).toFixed(1) + " minutes"
   );
+  checkAndClaim(epoch)
   await sleep(GLOBAL_CONFIG.WAITING_TIME);
   await strategy(epoch);
-  checkForClaimable(epoch)
+  // checkForClaimable(epoch)
+  
 });
 
 //Show stats

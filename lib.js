@@ -113,6 +113,28 @@ const getHistoryName = async () => {
   return fullDate;
 };
 
+const getClaimableEpochs = async (
+  epoch,
+  
+) => {
+  const claimableEpochs = [];
+  const userAddress = wallet.address;
+  for (let i = 1; i <= 30; i++) {
+    const epochToCheck = epoch.sub(i);
+
+    const [claimable, refundable, { claimed, amount }] = await Promise.all([
+      predictionContract.claimable(epochToCheck, userAddress),
+      predictionContract.refundable(epochToCheck, userAddress),
+      predictionContract.ledger(epochToCheck, userAddress),
+    ]);
+
+    if (amount.gt(0) && (claimable || refundable) && !claimed) {
+      claimableEpochs.push(epochToCheck);
+    }
+  }
+  return claimableEpochs;
+};
+
 const getRoundData = async (round) => {
   try {
     const data = await contract.functions.rounds(round);
@@ -273,4 +295,5 @@ module.exports = {
   checkBalance,
   saveRound,
   getBNBPrice,
+  getClaimableEpochs,
 };
