@@ -1,4 +1,4 @@
-const { parseEther } = require("@ethersproject/units");
+const { parseEther, formatEther } = require("@ethersproject/units");
 const sleep = require("util").promisify(setTimeout);
 const {
   getStats,
@@ -8,21 +8,33 @@ const {
   reduceWaitingTimeByTwoBlocks,
   saveRound,
 } = require("./lib");
-const {
-  TradingViewScan,
-  SCREENERS_ENUM,
-  EXCHANGES_ENUM,
-  INTERVALS_ENUM,
-} = require("trading-view-recommends-parser-nodejs");
-const { Console } = require("console");
 
 // Global Config
 const GLOBAL_CONFIG = {
-  BET_AMOUNT: 4, // in USD
-  DAILY_GOAL: 1000, // in USD,
-  WAITING_TIME: 265000, // in Miliseconds (4.3 Minutes)
-  THRESHOLD: 55, // Minimum % of certainty of signals (50 - 100)
+  BET_AMOUNT: 3, // in USD
+  WAITING_TIME: 200000, // in Miliseconds 
 };
+
+const parseStrategy = (processArgv) => {
+  const tmp = processArgv.includes("--exp")
+
+  console.log("Strategy:", tmp ? "AGAINST" : "WITH");
+
+  if (!tmp) {
+    console.log(
+      "\n You can also use this bot against the MASSES\n",
+      "Start the bot with --exp flag to try it\n",
+    );
+  } else {
+    console.log(
+      "\n You are betting against the masses"
+    )
+  }
+
+  return tmp;
+};
+
+const strat = parseStrategy(process.argv)
 
 //Bet UP
 const betUp = async (amount, epoch) => {
@@ -33,6 +45,13 @@ const betUp = async (amount, epoch) => {
     });
     await tx.wait();
     console.log(`🤞 Successful bet of ${amount} BNB to UP 🍀`);
+    await saveRound(epoch.toString(), [
+      {
+        round: epoch.toString(),
+        betAmount: (GLOBAL_CONFIG.BET_AMOUNT / BNBPrice).toString(),
+        bet: "bull",
+      },
+    ]);
   } catch (error) {
     console.log("Transaction Error", error);
     GLOBAL_CONFIG.WAITING_TIME = reduceWaitingTimeByTwoBlocks(
@@ -61,6 +80,14 @@ const betDown = async (amount, epoch) => {
     });
     await tx.wait();
     console.log(`🤞 Successful bet of ${amount} BNB to DOWN 🍁`);
+    await saveRound(epoch.toString(), [
+      {
+        round: epoch.toString(),
+        betAmount: (GLOBAL_CONFIG.BET_AMOUNT / BNBPrice).toString(),
+        bet: "bear",
+      },
+    ]);
+    
   } catch (error) {
     console.log("Transaction Error", error);
     GLOBAL_CONFIG.WAITING_TIME = reduceWaitingTimeByTwoBlocks(
@@ -69,127 +96,41 @@ const betDown = async (amount, epoch) => {
   }
 };
 
-//Check Signals average 1 and 5
-const getSignals = async () => {
-  //1 Minute signals
-  let resultMin = await new TradingViewScan(
-    SCREENERS_ENUM["crypto"],
-    EXCHANGES_ENUM["BINANCE"],
-    "BNBUSDT",
-    INTERVALS_ENUM["1m"]
-  ).analyze();
-  let minObj = JSON.stringify(resultMin.summary);
-  let minRecomendation = JSON.parse(minObj);
-
-  //5 Minute signals
-  let resultMed = await new TradingViewScan(
-    SCREENERS_ENUM["crypto"],
-    EXCHANGES_ENUM["BINANCE"],
-    "BNBUSDT",
-    INTERVALS_ENUM["5m"]
-  ).analyze();
-  let medObj = JSON.stringify(resultMed.summary);
-  let medRecomendation = JSON.parse(medObj);
-
-  //Average signals
-  if (minRecomendation && medRecomendation) {
-    let averageBuy =
-      (parseInt(minRecomendation.BUY) + parseInt(medRecomendation.BUY)) / 2;
-
-    let averageSell =
-      (parseInt(minRecomendation.SELL) + parseInt(medRecomendation.SELL)) / 2;
-    let averageNeutral =
-      (parseInt(minRecomendation.NEUTRAL) +
-        parseInt(medRecomendation.NEUTRAL)) /
-      2;
-    if(averageBuy > averageSell) {
-      console.log(percentage(averageBuy, averageSell))
-    } else console.log(percentage(averageSell, averageBuy))
-    console.log(minRecomendation)
-    console.log(medRecomendation)
-    return {
-      buy: averageBuy,
-      sell: averageSell,
-      neutral: averageNeutral,
-    };
-  } else {
-    return false;
-  }
-};
-
-
-//Percentage difference
-const percentage = (a, b) => {
-  return parseInt((100 * a) / (a + b));
-};
-
-const percentage3 = (a, b, c) => {
-  return parseInt((100 * a) / (a + b + c));
-};
 
 //Strategy of betting
-const strategy = async (minAcurracy, epoch) => {
+const strategy = async (epoch) => {
   let BNBPrice;
-  let earnings = await getStats();
-  if (earnings.profit_USD >= GLOBAL_CONFIG.DAILY_GOAL) {
-    console.log("🧞 Daily goal reached. Shuting down... ✨ ");
-    process.exit();
-  }
+ 
   try {
     BNBPrice = await getBNBPrice();
   } catch (err) {
     return;
   }
-  let signals = await getSignals();
-  if (signals) {
+  // let signals = await getSignals();
+  const { bullAmount, bearAmount } = await predictionContract.rounds(epoch);
+  const precalculation =
+    (bullAmount.gt(bearAmount) && bullAmount.div(bearAmount).lt(5)) ||
+    (bullAmount.lt(bearAmount) && bearAmount.div(bullAmount).gt(5));
+  
     if (
-      signals.buy > signals.sell &&
-      percentage(signals.buy, signals.sell) > minAcurracy
+      !strat ? precalculation : !precalculation
     ) {
       console.log(
-        `${epoch.toString()} 🔮 Prediction: UP 🟢 ${percentage(
-          signals.buy,
-          signals.sell
-        )}%`
-      );
-      await betUp(GLOBAL_CONFIG.BET_AMOUNT / BNBPrice, epoch);
-      await saveRound(epoch.toString(), [
-        {
-          round: epoch.toString(),
-          betAmount: (GLOBAL_CONFIG.BET_AMOUNT / BNBPrice).toString(),
-          bet: "bull",
-        },
-      ]);
-    } else if (
-      signals.sell >= signals.buy &&
-      percentage(signals.sell, signals.buy) > minAcurracy
-    ) {
-      console.log(
-        `${epoch.toString()} 🔮 Prediction:DOWN 🔴 ${percentage(
-          signals.sell,
-          signals.buy
-        )}%`
-      );
-      await betDown(GLOBAL_CONFIG.BET_AMOUNT / BNBPrice, epoch);
-      await saveRound(epoch.toString(), [
-        {
-          round: epoch.toString(),
-          betAmount: (GLOBAL_CONFIG.BET_AMOUNT / BNBPrice).toString(),
-          bet: "bear",
-        },
-      ]);
+        `${epoch.toString()} 🔮 Prediction: UP 🟢`);
+        console.log("Bull Amount", formatEther(bullAmount), "BNB");
+        console.log("Bear Amount", formatEther(bearAmount), "BNB");
+      
+        await betUp(GLOBAL_CONFIG.BET_AMOUNT / BNBPrice, epoch);
+        
     } else {
-      let lowPercentage;
-      if (signals.buy > signals.sell) {
-        lowPercentage = percentage(signals.buy, signals.sell);
-      } else {
-        lowPercentage = percentage(signals.sell, signals.buy);
+      console.log(
+        `${epoch.toString()} 🔮 Prediction:DOWN 🔴 `);
+        console.log("Bull Amount", formatEther(bullAmount), "BNB");
+        console.log("Bear Amount", formatEther(bearAmount), "BNB");
+      
+        await betDown(GLOBAL_CONFIG.BET_AMOUNT / BNBPrice, epoch);
       }
-      console.log("Waiting for next round 🕑", lowPercentage + "%");
-    }
-  } else {
-    console.log("Error obtaining signals");
-  }
+ 
 };
 
 //Check balance
@@ -203,7 +144,7 @@ predictionContract.on("StartRound", async (epoch) => {
     "🕑 Waiting " + (GLOBAL_CONFIG.WAITING_TIME / 60000).toFixed(1) + " minutes"
   );
   await sleep(GLOBAL_CONFIG.WAITING_TIME);
-  await strategy(GLOBAL_CONFIG.THRESHOLD, epoch);
+  await strategy(epoch);
   checkForClaimable(epoch)
 });
 
