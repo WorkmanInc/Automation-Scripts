@@ -12,8 +12,8 @@ const {
 
 // Global Config
 const GLOBAL_CONFIG = {
-  BET_AMOUNT: 3, // in USD
-  WAITING_TIME: 150000, // in Miliseconds
+  BET_AMOUNT: 5, // in USD
+  WAITING_TIME: 285000, // in Miliseconds
   CLAIMAT: 5,
 };
 
