@@ -15,7 +15,8 @@ const reduceWaitingTimeByTwoBlocks = (waitingTime) => {
   if (waitingTime <= 6000) {
     return waitingTime;
   }
-  return waitingTime - 6000;
+  console.log(waitingTime - 1000)
+  return waitingTime - 1000;
 };
 
 const result = dotenv.config();

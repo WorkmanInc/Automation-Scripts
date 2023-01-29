@@ -13,9 +13,12 @@ const {
 // Global Config
 const GLOBAL_CONFIG = {
   BET_AMOUNT: 5, // in USD
-  WAITING_TIME: 285000, // in Miliseconds
-  CLAIMAT: 5,
+  WAITING_TIME: 30000, // in Miliseconds
+  CLAIMAT: 3,
+  PAUSETIME: 5,
 };
+
+let BNBPrice
 
 const parseStrategy = (processArgv) => {
   const tmp = processArgv.includes("--exp")
@@ -55,7 +58,7 @@ const betUp = async (amount, epoch) => {
       },
     ]);
   } catch (error) {
-    console.log("Transaction Error", error);
+    console.log("Prob waited to Long");
     GLOBAL_CONFIG.WAITING_TIME = reduceWaitingTimeByTwoBlocks(
       GLOBAL_CONFIG.WAITING_TIME
     );
@@ -77,20 +80,27 @@ const checkForClaimable = async(epoch) => {
 const checkAndClaim = async(epoch) => {
   const claimableEpochs = await getClaimableEpochs(epoch);
 
-  if (claimableEpochs.length > GLOBAL_CONFIG.CLAIMAT) {
+  if (claimableEpochs.length >= GLOBAL_CONFIG.CLAIMAT) {
     try {
       const tx = await predictionContract.claim(claimableEpochs);
 
       console.log(`🤞 Successful Claim 🍁`);
 
     } catch {
-      console.log(red("Claim Tx Error"));
+      console.log("Claim Tx Error");
     }
   } else {
-    console.log(`👎 Havent reached Claim Amount`);
+    console.log(`👎 Havent reached Claim Amount, ${claimableEpochs.length} of ${GLOBAL_CONFIG.CLAIMAT}`);
   }
 }
 
+const getPrice = async() => {
+  try {
+    BNBPrice = await getBNBPrice();
+  } catch (err) {
+    return;
+  }
+}
 
 //Bet DOWN
 const betDown = async (amount, epoch) => {
@@ -109,7 +119,7 @@ const betDown = async (amount, epoch) => {
     ]);
     
   } catch (error) {
-    console.log("Transaction Error", error);
+    console.log("Waited to long");
     GLOBAL_CONFIG.WAITING_TIME = reduceWaitingTimeByTwoBlocks(
       GLOBAL_CONFIG.WAITING_TIME
     );
@@ -119,33 +129,27 @@ const betDown = async (amount, epoch) => {
 
 //Strategy of betting
 const strategy = async (epoch) => {
-  let BNBPrice;
- 
-  try {
-    BNBPrice = await getBNBPrice();
-  } catch (err) {
-    return;
+  let precalculation
+  let noBets = true
+  while (noBets) {
+    const { bullAmount, bearAmount } = await predictionContract.rounds(epoch);
+    precalculation = bullAmount.gt(bearAmount)
+    if (bullAmount.gt(bearAmount) || bearAmount.gt(bullAmount)) noBets = false
+    await sleep(GLOBAL_CONFIG.PAUSETIME);
   }
-  const { bullAmount, bearAmount } = await predictionContract.rounds(epoch);
-  const precalculation =
-    (bullAmount.gt(bearAmount) && bullAmount.div(bearAmount).lt(5)) ||
-    (bullAmount.lt(bearAmount) && bearAmount.div(bullAmount).gt(5));
   
     if (
       !strat ? precalculation : !precalculation
     ) {
       console.log(
         `${epoch.toString()} 🔮 Prediction: UP 🟢`);
-        console.log("Bull Amount", formatEther(bullAmount), "BNB");
-        console.log("Bear Amount", formatEther(bearAmount), "BNB");
+        
       
         await betUp(GLOBAL_CONFIG.BET_AMOUNT / BNBPrice, epoch);
         
     } else {
       console.log(
         `${epoch.toString()} 🔮 Prediction:DOWN 🔴 `);
-        console.log("Bull Amount", formatEther(bullAmount), "BNB");
-        console.log("Bear Amount", formatEther(bearAmount), "BNB");
       
         await betDown(GLOBAL_CONFIG.BET_AMOUNT / BNBPrice, epoch);
       }
@@ -155,6 +159,7 @@ const strategy = async (epoch) => {
 //Check balance
 checkBalance(GLOBAL_CONFIG.AMOUNT_TO_BET);
 console.log("🤗 Welcome! Waiting for next round...");
+getPrice()
 
 //Betting
 predictionContract.on("StartRound", async (epoch) => {
@@ -162,17 +167,17 @@ predictionContract.on("StartRound", async (epoch) => {
   console.log(
     "🕑 Waiting " + (GLOBAL_CONFIG.WAITING_TIME / 60000).toFixed(1) + " minutes"
   );
-  checkAndClaim(epoch)
-  await sleep(GLOBAL_CONFIG.WAITING_TIME);
+  // await sleep(GLOBAL_CONFIG.WAITING_TIME);
   await strategy(epoch);
-  // checkForClaimable(epoch)
-  
+  checkAndClaim(epoch)
 });
 
 //Show stats
 predictionContract.on("EndRound", async (epoch) => {
   await saveRound(epoch);
   let stats = await getStats();
+  checkBalance(GLOBAL_CONFIG.AMOUNT_TO_BET);
+  getPrice()
   console.log("--------------------------------");
   console.log(`🍀 Fortune: ${stats.percentage}`);
   console.log(`👍 ${stats.win}|${stats.loss} 👎 `);
