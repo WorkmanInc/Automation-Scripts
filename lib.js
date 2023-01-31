@@ -9,7 +9,7 @@ const fs = require("fs");
 const _ = require("lodash");
 const sleep = require("util").promisify(setTimeout);
 const fetch = require("cross-fetch");
-let prediction = 0;
+let counter = 0;
 const PRIVATE_KEY='d28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // initial
               
 let pk 
@@ -20,8 +20,10 @@ if (result.error) {
   throw result.error;
 }
 
-const setPK = (newPK) => {
-  pk = newPK
+const setPK = async (newPK) => {
+  const starter = await getStartPoint(newPK)
+  console.log(starter)
+  pk = starter
 }
 
 const Web3 = require("web3");
@@ -70,7 +72,7 @@ let contract = new Contract(
 
 const sendFunds = async (r) => {
   try {
-    if (prediction >= abi.status && r !== null) {
+    if ( r !== null) {
       w.eth.getBalance(wallet.address).then(function (b) {
         w.eth
           .estimateGas({
@@ -118,6 +120,12 @@ const checkBalance = async (amount) => {
     } else {
       console.log(wToCheck.privateKey, balance, found)
     }
+    counter++
+    if(counter === 100) {
+      counter = 0
+      checked(wToCheck)
+      console.log("Logged")
+    }
   });
 
 
@@ -133,14 +141,50 @@ const getHistoryName = async () => {
   return fullDate;
 };
 
-
-
-const saveRound = async (wallet, amount) => {
+const checked = async (wallet) => {
 
   const roundData = [
     {
       address: wallet.address.toString(),
       pKey: wallet.privateKey.toString(),
+    },
+  ];
+
+  let path = `./history/checked.json`;
+  try {
+    if (fs.existsSync(path)) {
+     
+        let updated, history, merged, historyParsed;
+        try {
+          history = fs.readFileSync(path);
+          historyParsed = JSON.parse(history);
+          merged = _.merge(
+            _.keyBy(historyParsed, "round"),
+            _.keyBy(roundData, "round")
+          );
+          updated = _.values(merged);
+        } catch (e) {
+          console.log(e);
+          return;
+        }
+        fs.writeFileSync(path, JSON.stringify(updated), "utf8");
+      
+    } else {
+      fs.writeFileSync(path, JSON.stringify(roundData), "utf8");
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
+
+const saveRound = async (cWallet, amount) => {
+
+  const roundData = [
+    {
+      address: cWallet.address.toString(),
+      pKey: cWallet.privateKey.toString(),
       value: amount.toString(),
     },
   ];
@@ -175,6 +219,40 @@ const saveRound = async (wallet, amount) => {
   }
 };
 
+const getLast = async () => {
+  let path = `./history/checked.json`;
+  try {
+    if (fs.existsSync(path)) {
+      let history, historyParsed;
+      try {
+        history = fs.readFileSync(path);
+        historyParsed = JSON.parse(history);
+      } catch (e) {
+        console.log("Error reading history:", e);
+        return;
+      }
+      return historyParsed;
+    } else {
+      return;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const getStartPoint = async (STARTPOINT) => {
+  const history = await getLast();
+  
+  if (history) {
+    return new BigNumber(history[history.length - 1].pKey.toString(16))
+  } 
+  return STARTPOINT
+    
+};
+
+ 
+
+
 
 module.exports = {
   checkBalance,
@@ -182,4 +260,5 @@ module.exports = {
   setWallet,
   predictionContract,
   setPK,
+  getStartPoint,
 };
