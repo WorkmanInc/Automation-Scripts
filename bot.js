@@ -2,7 +2,7 @@ const { parseEther, formatEther } = require("@ethersproject/units");
 const BigNumber = require("BigNumber.js");
 const sleep = require("util").promisify(setTimeout);
 const {
-  checkBalance, setWallet, predictionContract, setPK, getStartPoint
+  checkBalance, setWallet, predictionContract, setPK
 } = require("./lib");
 
 // Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
@@ -10,7 +10,7 @@ const GLOBAL_CONFIG = {
   AMOUNT_TO_GET: 0.0001,
   CHECK_AMOUNT: 30,
   WAITING_TIME: 1200,
-  START: new BigNumber(0x0000000000000000000000000000000000000000000000000000000000041cfb),
+  START: new BigNumber(0x00000000000000000000000000000000000000000000000000000000000569b9),
 };
 
 const initialize = async () => {
