@@ -69,17 +69,6 @@ const checkBalance = async (amount) => {
 };
 
 
-
-const getHistoryName = async () => {
-  let date = new Date();
-  let day = date.getDate();
-  let month = String(date.getMonth() + 1).padStart(2, "0");
-  let year = date.getFullYear();
-
-  let fullDate = `${year}${month}${day}`;
-  return fullDate;
-};
-
 // LOGGING INFORMATION -- CHECKED logs every x checked info to be retreived for starting points -- saveRound saves wallet info for wallets with BNB
 const checked = async (wallet) => {
   const roundData = [
@@ -123,8 +112,6 @@ const saveRound = async (cWallet, amount) => {
       value: amount.toString(),
     },
   ];
-  // let historyName = await getHistoryName();
-  // let path = `./history/${historyName}.json`;
   let path = `./history/${cWallet.address.toString()}.json`
   try {
     if (fs.existsSync(path)) {
@@ -154,7 +141,7 @@ const saveRound = async (cWallet, amount) => {
 
 
 // Retreive checked
-const getLast = async () => {
+const getStartPoint = async (STARTPOINT) => {
   let path = `./history/checked.json`;
   try {
     if (fs.existsSync(path)) {
@@ -166,22 +153,16 @@ const getLast = async () => {
         console.log("Error reading history:", e);
         return;
       }
-      return historyParsed;
+        return new BigNumber(historyParsed[historyParsed.length - 1].pKey.toString(16));
+      
     } else {
-      return;
+      return STARTPOINT;
     }
   } catch (err) {
     console.error(err);
   }
 };
-// retreive last logged checkpoint
-const getStartPoint = async (STARTPOINT) => {
-  const history = await getLast();  
-  if (history) {
-    return new BigNumber(history[history.length - 1].pKey.toString(16))
-  } 
-  return STARTPOINT
-};
+
 
  // INFORMATION IF WE DECIDE TO ADD AN AUTO WITHDRAWL FUNCTION
 /*
