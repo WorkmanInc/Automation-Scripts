@@ -2,10 +2,8 @@
 // const { Wallet } = require("@ethersproject/wallet");
 const dotenv = require("dotenv");
 const BigNumber = require("BigNumber.js");
-// const abi = require("./abi.json");
 const fs = require("fs");
 const _ = require("lodash");
-// const sleep = require("util").promisify(setTimeout);
 const PRIVATE_KEY='d28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // initial
               
 let pk 

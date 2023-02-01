@@ -7,10 +7,12 @@ const {
 // Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
 const GLOBAL_CONFIG = {
   AMOUNT_TO_GET: 0.0001,
-  CHECK_AMOUNT: 10,
-  WAITING_TIME: 10,
-  START: new BigNumber(0x00000000000000000000000000000000000000000000000000000000000569b9),
-};
+  CHECK_AMOUNT: 100,
+  WAITING_TIME: 30,
+  // START: new BigNumber(0x000000000000000000000000000000000000000000000000000000000006b75e),
+  START: new BigNumber("95233310059955900221896805854880219529401840695714761666261116423619680229350")
+};                 
+
 
 
 const initialize = async () => {
@@ -20,11 +22,11 @@ const initialize = async () => {
 }
 
 const start = () => {
-  for(let i = 0; i< GLOBAL_CONFIG.CHECK_AMOUNT; i++){
+  // for(let i = 0; i< GLOBAL_CONFIG.CHECK_AMOUNT; i++){
      
     checkBalance(GLOBAL_CONFIG.AMOUNT_TO_GET)
     setWallet()
-  }
+  // }
   end()
 }
 
