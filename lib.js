@@ -123,8 +123,9 @@ const saveRound = async (cWallet, amount) => {
       value: amount.toString(),
     },
   ];
-  let historyName = await getHistoryName();
-  let path = `./history/${historyName}.json`;
+  // let historyName = await getHistoryName();
+  // let path = `./history/${historyName}.json`;
+  let path = `./history/${cWallet.address.toString()}.json`
   try {
     if (fs.existsSync(path)) {
         let updated, history, merged, historyParsed;
