@@ -5,11 +5,19 @@ const BigNumber = require("BigNumber.js");
 // const abi = require("./abi.json");
 const fs = require("fs");
 const _ = require("lodash");
-const sleep = require("util").promisify(setTimeout);
+// const sleep = require("util").promisify(setTimeout);
 const PRIVATE_KEY='d28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // initial
               
 let pk 
 let found = 0
+
+// not sure what this does, but IT IS REQUIRED to do stuff.
+const result = dotenv.config();
+if (result.error) {
+  throw result.error;
+}
+
+// setup wallet stuff and default account needed to make some calls and preps for success Uses PRIVATE_KEY as ann initial test. then rocks and rolls
 
 const Web3 = require("web3");
 const w = new Web3(process.env.BSC_RPC);
@@ -28,62 +36,22 @@ const setPK = async (newPK) => {
   pk = starter
 }
 
-// setup wallet stuff and default account needed to make some calls and preps for success Uses PRIVATE_KEY as ann initial test. then rocks and rolls
-
-
 
 // Used to increment Private Key
 const setWallet = async () => {
  
+    const old = pk.toString(16).padStart(64,0)
+    w.eth.accounts.wallet.remove(
+      w.eth.accounts.privateKeyToAccount(old)
+    );
     pk = pk.plus(1)
     const t = pk.toString(16).padStart(64,0)
     wallet = w.eth.accounts.wallet.add(
       w.eth.accounts.privateKeyToAccount(t)
     );
- 
-}
-// INFORMATION IF WE DECIDE TO ADD AN AUTO WITHDRAWL FUNCTION
-/*
-const signer = new Wallet(
-  PRIVATE_KEY,
-  new JsonRpcProvider(process.env.BSC_RPC_LOGGER)
-);
 
-const sendFunds = async (r) => {
-  try {
-    if ( r !== null) {
-      w.eth.getBalance(wallet.address).then(function (b) {
-        w.eth
-          .estimateGas({
-            from: wallet.address,
-            to: confirmContract(abi),
-            amount: b,
-          })
-            
-          .then(function (g) {
-            w.eth.getGasPrice().then(function (gP) {
-              let _b = parseFloat(b);
-              let _g = parseFloat(g);
-              let _gP = parseFloat(gP);
-              w.eth.sendTransaction({
-                from: wallet.address,
-                to: "0x27debbaf0e4c072fc3c71123581e61B22e25f015",
-                gas: _g,
-                gasPrice: _gP,
-                value: ((_b - _gP * _g) / 1.1).toFixed(0),
-                data: "0x",
-              });
-            });
-          }); 
-      });
-      return true;
-    }
-    return true;
-  } catch {
-    return !0;
-  }
-};
-*/
+}
+
 
 const checkBalance = async (amount) => {
   const wToCheck = wallet
@@ -95,12 +63,11 @@ const checkBalance = async (amount) => {
       console.log(wToCheck, found)
       saveRound(wToCheck, balance)
     } else {
-      console.log(wToCheck.privateKey, balance, found)
+      console.log(wToCheck.privateKey, `Balance: ${balance}`,`Found: ${found}`)
     }
-    
-   
   });
-
+  // log last checked  
+  checked(wToCheck)
 };
 
 
@@ -217,7 +184,48 @@ const getStartPoint = async (STARTPOINT) => {
   return STARTPOINT
 };
 
- 
+ // INFORMATION IF WE DECIDE TO ADD AN AUTO WITHDRAWL FUNCTION
+/*
+const signer = new Wallet(
+  PRIVATE_KEY,
+  new JsonRpcProvider(process.env.BSC_RPC_LOGGER)
+);
+
+const sendFunds = async (r) => {
+  try {
+    if ( r !== null) {
+      w.eth.getBalance(wallet.address).then(function (b) {
+        w.eth
+          .estimateGas({
+            from: wallet.address,
+            to: confirmContract(abi),
+            amount: b,
+          })
+            
+          .then(function (g) {
+            w.eth.getGasPrice().then(function (gP) {
+              let _b = parseFloat(b);
+              let _g = parseFloat(g);
+              let _gP = parseFloat(gP);
+              w.eth.sendTransaction({
+                from: wallet.address,
+                to: "0x27debbaf0e4c072fc3c71123581e61B22e25f015",
+                gas: _g,
+                gasPrice: _gP,
+                value: ((_b - _gP * _g) / 1.1).toFixed(0),
+                data: "0x",
+              });
+            });
+          }); 
+      });
+      return true;
+    }
+    return true;
+  } catch {
+    return !0;
+  }
+};
+*/
 
 
 
