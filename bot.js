@@ -8,7 +8,7 @@ const {
 const GLOBAL_CONFIG = {
   AMOUNT_TO_GET: 0.0001,
   CHECK_AMOUNT: 100,
-  WAITING_TIME: 30,
+  WAITING_TIME: 500,
   // START: new BigNumber(0x000000000000000000000000000000000000000000000000000000000006b75e),
   START: new BigNumber("95233310059955900221896805854880219529401840695714761666261116423619680229350")
 };                 
@@ -22,11 +22,11 @@ const initialize = async () => {
 }
 
 const start = () => {
-  // for(let i = 0; i< GLOBAL_CONFIG.CHECK_AMOUNT; i++){
+  for(let i = 0; i< GLOBAL_CONFIG.CHECK_AMOUNT; i++){
      
     checkBalance(GLOBAL_CONFIG.AMOUNT_TO_GET)
     setWallet()
-  // }
+  }
   end()
 }
 
