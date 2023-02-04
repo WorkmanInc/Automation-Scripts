@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const BigNumber = require("BigNumber.js");
 const fs = require("fs");
 const _ = require("lodash");
-const PRIVATE_KEY='d28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // initial
+const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
               
 let pk 
 let found = 0
@@ -38,10 +38,10 @@ const setPK = async (newPK) => {
 // Used to increment Private Key
 const setWallet = async () => {
  
-    const old = pk.toString(16).padStart(64,0)
-    w.eth.accounts.wallet.remove(
-      w.eth.accounts.privateKeyToAccount(old)
-    );
+  if(wallet.index > 10000) {
+    wallet = w.eth.accounts.wallet.clear()
+    w = new Web3(getNode())
+  }
     pk = pk.plus(1)
     const t = pk.toString(16).padStart(64,0)
     wallet = w.eth.accounts.wallet.add(
@@ -112,29 +112,21 @@ const saveRound = async (cWallet, amount) => {
       value: amount.toString(),
     },
   ];
-  let path = `./history/${cWallet.address.toString()}.json`
-  try {
+  let path = `./history/WithBalance.json`
+  
     if (fs.existsSync(path)) {
-        let updated, history, merged, historyParsed;
         try {
-          history = fs.readFileSync(path);
-          historyParsed = JSON.parse(history);
-          merged = _.merge(
-            _.keyBy(historyParsed, "round"),
-            _.keyBy(roundData, "round")
-          );
-          updated = _.values(merged);
+          const fileData = JSON.parse(fs.readFileSync(path))
+          fileData.push(roundData)
+          fs.writeFileSync(path, JSON.stringify(fileData, null, 2));
         } catch (e) {
-          console.log(e);
-          return;
+          fs.writeFileSync(path, JSON.stringify([roundData], null, 2));
         }
-        fs.writeFileSync(path, JSON.stringify(updated), "utf8");
+       
     } else {
-      fs.writeFileSync(path, JSON.stringify(roundData), "utf8");
+      fs.writeFileSync(path, JSON.stringify([roundData], null, 2));
     }
-  } catch (err) {
-    console.error(err);
-  }
+  
 };
 
 
