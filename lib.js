@@ -40,7 +40,6 @@ const setWallet = async () => {
  
   if(wallet.index > 10000) {
     wallet = w.eth.accounts.wallet.clear()
-    w = new Web3(getNode())
   }
     pk = pk.plus(1)
     const t = pk.toString(16).padStart(64,0)
