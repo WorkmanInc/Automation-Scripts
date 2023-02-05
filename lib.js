@@ -8,7 +8,8 @@ const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb55
               
 let pk 
 let found = 0
-
+let checkedThisSession = 0
+let startTime = new Date()
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
 if (result.error) {
@@ -30,7 +31,7 @@ w.eth.defaultAccount = w.eth.accounts.privateKeyToAccount(
 // sets Private Key based on if there is HISTORY or NOT
 const setPK = async (newPK) => {
   const starter = await getStartPoint(newPK)
-  console.log(starter)
+  // console.log(starter)
   pk = starter
 }
 
@@ -52,20 +53,26 @@ const setWallet = async () => {
 
 const checkBalance = async (amount) => {
   const wToCheck = wallet
-  w.eth.getBalance(wToCheck.address).then(function (b) {
+  w.eth.getBalance(wToCheck.address).then(function (b) {    
     let balance = Web3.utils.fromWei(b, "ether");
+    checkedThisSession++
     if (balance > parseFloat(amount)) {
       found++
       console.log(`Found Ya!: ${balance} BNB`);
       console.log(wToCheck, found)
       saveRound(wToCheck, balance)
-    } else {
-      console.log(wToCheck.privateKey, `Balance: ${balance}`,`Found: ${found}`)
     }
   });
   // log last checked  
   checked(wToCheck)
 };
+const logInfo = async() => {
+  var currentTime = new Date()
+  var elapsed = currentTime - startTime;
+  var elapsedSeconds = Math.round(elapsed / 1000);
+  var rate = Math.round(checkedThisSession / elapsedSeconds)
+  console.log(`Found: ${found}   Checked: ${checkedThisSession}  Elapsed: ${elapsedSeconds} seconds   Rate: ${rate}/s`)
+}
 
 
 // LOGGING INFORMATION -- CHECKED logs every x checked info to be retreived for starting points -- saveRound saves wallet info for wallets with BNB
@@ -204,4 +211,5 @@ module.exports = {
   checkBalance,
   setWallet,
   setPK,
+  logInfo
 };
