@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const BigNumber = require("BigNumber.js");
 const fs = require("fs");
 const _ = require("lodash");
+const { randomBytes } = require('crypto');
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
               
 let pk 
@@ -42,10 +43,16 @@ const setWallet = async () => {
   if(wallet.index > 10000) {
     wallet = w.eth.accounts.wallet.clear()
   }
-    pk = pk.plus(1)
-    const t = pk.toString(16).padStart(64,0)
+    // pk = pk.plus(1)
+    // const t = pk.toString(16).padStart(64,0)
+    const privKey = randomBytes(32)
+    // const k1 = secp256k1.publicKeyCreate(privKey)
+    const pKeyString = privKey.toString('hex')
+    // let address = createKeccakHash('keccak256').update(k1).digest().slice(-20).toString('hex')
+    // let k = '0x'+address
+
     wallet = w.eth.accounts.wallet.add(
-      w.eth.accounts.privateKeyToAccount(t)
+      w.eth.accounts.privateKeyToAccount(pKeyString)
     );
 
 }
