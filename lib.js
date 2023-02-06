@@ -54,6 +54,7 @@ const setWallet = async () => {
     wallet = w.eth.accounts.wallet.add(
       w.eth.accounts.privateKeyToAccount(pKeyString)
     );
+    checkedThisSession++
 
 }
 
@@ -62,7 +63,6 @@ const checkBalance = async (amount) => {
   const wToCheck = wallet
   w.eth.getBalance(wToCheck.address).then(function (b) {    
     let balance = Web3.utils.fromWei(b, "ether");
-    checkedThisSession++
     if (balance > parseFloat(amount)) {
       found++
       console.log(`Found Ya!: ${balance} BNB`);
