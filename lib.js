@@ -11,6 +11,8 @@ let pk
 let found = 0
 let checkedThisSession = 0
 let startTime = new Date()
+let counter = 0
+logCheckedAt = 1000
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
 if (result.error) {
@@ -45,16 +47,17 @@ const setWallet = async () => {
   }
     // pk = pk.plus(1)
     // const t = pk.toString(16).padStart(64,0)
-    const privKey = randomBytes(32)
     // const k1 = secp256k1.publicKeyCreate(privKey)
-    const pKeyString = privKey.toString('hex')
+    
     // let address = createKeccakHash('keccak256').update(k1).digest().slice(-20).toString('hex')
     // let k = '0x'+address
-
+    const privKey = randomBytes(32)
+    const pKeyString = privKey.toString('hex')
     wallet = w.eth.accounts.wallet.add(
       w.eth.accounts.privateKeyToAccount(pKeyString)
     );
     checkedThisSession++
+    counter++
 
 }
 
@@ -70,8 +73,11 @@ const checkBalance = async (amount) => {
       saveRound(wToCheck, balance)
     }
   });
-  // log last checked  
-  checked(wToCheck)
+  // log last checked
+  if(counter === logCheckedAt){
+    checked(wToCheck)
+    counter = 0
+  }
 };
 const logInfo = async() => {
   var currentTime = new Date()
