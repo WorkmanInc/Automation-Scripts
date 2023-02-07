@@ -6,8 +6,8 @@ const {
 // Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
 const GLOBAL_CONFIG = {
   AMOUNT_TO_GET: 0.00001,
-  CHECK_AMOUNT: 1,
-  WAITING_TIME: 30,
+  CHECK_AMOUNT: 50,
+  WAITING_TIME: 0,
   LOG_TIME: 10,
 };                 
 
