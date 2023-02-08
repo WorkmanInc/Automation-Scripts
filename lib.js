@@ -10,7 +10,7 @@ let startTime = new Date()
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
 if (result.error) {
-  throw result.error;
+  // throw result.error;
 }
 
 // setup wallet stuff and default account needed to make some calls and preps for success Uses PRIVATE_KEY as ann initial test. then rocks and rolls
