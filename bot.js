@@ -1,6 +1,6 @@
 const sleep = require("util").promisify(setTimeout);
 const {
-  checkBalance, logInfo, setWallet
+  checkBalance, logInfo, setWallet, sendNotification
 } = require("./lib");
 
 // Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
@@ -35,5 +35,6 @@ const end = async () => {
 
 
 console.log("Loaded Up!")
+// sendNotification("Started Up Hunter");
 initialize()
 setInterval(() => { logInfo() }, GLOBAL_CONFIG.LOG_TIME*1000); // Log info every 30 seconds

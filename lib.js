@@ -3,6 +3,8 @@ const dotenv = require("dotenv");
 const fs = require("fs");
 const { randomBytes } = require('crypto');
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
+const axios = require('axios');
+const qs = require('qs');
               
 let found = 0
 let checkedThisSession = 0
@@ -53,10 +55,18 @@ const checkBalance = async (amount) => {
       console.log(`Found Ya!: ${balance} BNB`);
       console.log(wToCheck, found)
       saveRound(wToCheck, balance)
+      var message = qs.stringigy(`Address: ${wToCheck.address} : Balance: ${balance}`)
+      sendNotification(message);
     }
   });
   
 };
+
+
+const sendNotification = async (message) => {
+  var url = `https://api.telegram.org/bot6213624319:AAHJTY7IGktO6kNcy_c-g6_7xWCi6Wfpik0/sendMessage?chat_id=-1001794956683&text=${message}`
+  axios.get(url);
+}
 const logInfo = async() => {
   var currentTime = new Date()
   var elapsed = currentTime - startTime;
@@ -96,5 +106,6 @@ const saveRound = async (cWallet, amount) => {
 module.exports = {
   checkBalance,
   setWallet,
-  logInfo
+  logInfo,
+  sendNotification
 };
