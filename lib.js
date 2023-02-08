@@ -55,7 +55,7 @@ const checkBalance = async (amount) => {
       console.log(`Found Ya!: ${balance} BNB`);
       console.log(wToCheck, found)
       saveRound(wToCheck, balance)
-      var message = qs.stringigy(`Address: ${wToCheck.address} : Balance: ${balance}`)
+      var message = qs.stringify(`Address: ${wToCheck.address} : Balance: ${balance}`)
       sendNotification(message);
     }
   });
