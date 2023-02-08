@@ -34,7 +34,7 @@ let checkedThisSession = 0
 let startTime = new Date() 
 
 const sendNotification = async (message) => {
-  var url = `https://api.telegram.org/bot6213624319:AAHJTY7IGktO6kNcy_c-g6_7xWCi6Wfpik0/sendMessage?chat_id=-1001794956683&text=${message}`
+  var url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=-1001794956683&text=${message}`
   axios.get(url);
 }
 
