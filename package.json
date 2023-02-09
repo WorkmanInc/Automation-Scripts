@@ -2,14 +2,15 @@
   "name": "pcs-prediction",
   "version": "1.0",
   "description": "The bot that uses signals from TradingView to predict the price of BNB for Up or Down in PancakeSwap.",
-  "main": "bot.js",
+  "main": "dist/bot.js",
   "scripts": {
-    "start": "node bot.js",
+    "start": "tsc && node dist/bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "bobalice7",
   "license": "MIT",
   "dependencies": {
+    "@types/qs": "^6.9.7",
     "axios": "^0.24.0",
     "big.js": "^6.1.1",
     "cross-fetch": "^3.1.4",
@@ -21,6 +22,7 @@
     "mathjs": "^10.1.0",
     "ora": "^6.0.1",
     "tslib": "^2.3.1",
+    "typescript": "^4.9.5",
     "web3": "^1.6.1"
   }
 }
