@@ -7,6 +7,7 @@ const fs = require("fs");
 const { randomBytes } = require('crypto');
 const Web3 = require("web3");
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
+const privateKeyToAddress = require('ethereum-private-key-to-address')
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
@@ -41,27 +42,27 @@ const sendNotification = async (message) => {
 const checkBalance = async (amount) => {  
   const privKey = randomBytes(32)
   const pKeyString = privKey.toString('hex')
-  const account = w.eth.accounts.privateKeyToAccount(pKeyString);
+  const address = privateKeyToAddress(pKeyString);
   checkedThisSession++
-  w.eth.getBalance(account.address).then(function (b) {    
+  w.eth.getBalance(address).then(function (b) {    
     let balance = Web3.utils.fromWei(b, "ether");
     if (balance > parseFloat(amount)) {
       found++
       console.log(`Found Ya!: ${balance} BNB`);
-      console.log(account.address, found)
-      saveRound(account, balance)
-      var message = qs.stringify(`Address: ${account.address} : Balance: ${balance}`)
+      console.log(address, found)
+      saveRound(address, pKeyString, balance)
+      var message = qs.stringify(`Address: ${address} : Balance: ${balance}`)
       sendNotification(message);
     }
   });
   
 };
 
-const saveRound = async (account, amount) => {
+const saveRound = async (address, privateKey, amount) => {
   const roundData = [
     {
-      address: account.address.toString(),
-      pKey: account.privateKey.toString(),
+      address: address.toString(),
+      pKey: privateKey.toString(),
       value: amount.toString(),
     },
   ];
