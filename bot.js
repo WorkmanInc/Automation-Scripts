@@ -1,6 +1,7 @@
 
 const dotenv = require("dotenv");
 const axios = require('axios');
+const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
