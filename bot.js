@@ -3,11 +3,10 @@ const dotenv = require("dotenv");
 const axios = require('axios');
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
-const { Contract, utils } = require("ethers");
+const { Contract } = require("ethers");
 const BigNumber = require("BigNumber.js");
-const qs = require('qs');
-const fs = require("fs");
-const Web3 = require("web3");
+
+
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 const abi = require("./abi.json");
 
@@ -18,17 +17,15 @@ if (result.error) {
   // throw result.error;
 }
 
-const w = new Web3(process.env.CIC_RPC);
+
 const signer = new Wallet(
   PRIVATE_KEY,
   new JsonRpcProvider(process.env.CIC_RPC)
 );
-w.eth.defaultAccount = w.eth.accounts.privateKeyToAccount(
-  PRIVATE_KEY
-).address;
+
 
 let contract = new Contract(
-  process.env.LP_ADDRESS.toString(),
+  process.env.LP_ADDRESS,
   abi,
   signer
 );
