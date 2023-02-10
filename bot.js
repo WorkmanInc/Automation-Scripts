@@ -45,8 +45,8 @@ const contracts = [
 
 const options = {
   pollInterval: 13000, // period between polls in milliseconds (default: 13000)
-  confirmations: 12,   // n° of confirmation blocks (default: 12)
-  chunkSize: 10000,    // n° of blocks to fetch at a time (default: 10000)
+  confirmations: 1,   // n° of confirmation blocks (default: 12)
+  chunkSize: 1000,    // n° of blocks to fetch at a time (default: 10000)
   concurrency: 10,     // maximum n° of concurrent web3 requests (default: 10)
   backoff: 1000        // retry backoff in milliseconds (default: 1000)
 };
@@ -124,9 +124,18 @@ contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out,
 });
 */
 
-ethereumEvents.on('block.confirmed', (blockNumber, events, done) => {
+ethereumEvents.on('block.unconfirmed', (blockNumber, events, done) => {
+  
+  console.log(events, done, blockNumber)
+});
+ethereumEvents.on('block.unconfirmed', (blockNumber, events, done) => {
   
   console.log(events, done, blockNumber)
 });
 
 ethereumEvents.start();
+ethereumEvents.on('error', err => {
+
+  console.log(err)
+
+});
