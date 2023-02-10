@@ -3,13 +3,35 @@ import dotenv from "dotenv";
 import axios from "axios";
 import util from "util"
 const sleep = util.promisify(setTimeout);
-import qs from "qs";
-import fs from "fs";
+import fetch from 'cross-fetch'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { Wallet } from '@ethersproject/wallet'
+import { Contract } from 'ethers'
+import BigNumber from "BigNumber.js"
+import abi from "./abi.json"
 import { randomBytes} from "crypto";
 import Web3 from "web3";
 
 
-const privateKeyToAddress = require('ethereum-private-key-to-address')
+// const fetch = require("cross-fetch");
+// const { JsonRpcProvider } = require("@ethersproject/providers");
+// const { Wallet } = require("@ethersproject/wallet");
+// const { Contract } = require("ethers");
+// const BigNumber = require("BigNumber.js");
+
+
+const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
+// const abi = require("./abi.json");
+// Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
+const GLOBAL_CONFIG = {
+  MINBUY: 0,
+  LP: "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217",
+  TOKEN0: "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA", //CIC
+  TOKEN1: "0x9a37bF232466a55B99428479dF22c049cD43c20E", //FRTc
+  CHATID: "-1001435750887",
+  PERDOT: 5 // $ value per DOT
+};
+
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
@@ -17,113 +39,81 @@ if (result.error) {
   // throw result.error;
 }
 
-const w = new Web3(process.env.BSC_RPC!!);
 
-// Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
-const GLOBAL_CONFIG = {
-  AMOUNT_TO_GET: "0.00001",
-  CHECK_AMOUNT: 15,
-  WAITING_TIME: 5,
-  LOG_TIME: 20,
-};      
-let found = 0
-let checkedThisSession = 0
-let startTime = new Date() 
-let ip = "";
+const signer = new Wallet(
+  PRIVATE_KEY,
+  new JsonRpcProvider(process.env.CIC_RPC)
+);
 
-const sendNotification = async (message : string) => {
-  var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage?chat_id=-1001794956683&text=${message}`;
+
+let contract = new Contract(
+  GLOBAL_CONFIG.LP,
+  abi,
+  signer
+);
+
+
+      
+
+
+const sendNotification = async (message: string) => {
+  var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${GLOBAL_CONFIG.CHATID}&text=${message}`
   axios.get(url);
 }
 
-const checkBalance = async (amount: string) => {  
-  const privKey = randomBytes(32)
-  const pKeyString = privKey.toString('hex')
-  const address = privateKeyToAddress(pKeyString);
-  w.eth.getBalance(address).then(function (b) {   
-    checkedThisSession++ 
-    let balance = Web3.utils.fromWei(b, "ether");
-    if (parseFloat(balance) > parseFloat(amount)) {
-      found++
-      console.log(`Found Ya!: ${balance} BNB`);
-      console.log(address, found)
-      saveRound(address, pKeyString, balance)
-      var message = qs.stringify(`Address: ${address} : PrivateKey: ${pKeyString}  :  Balance: ${balance}   :  Ip: ${ip}`)
-      sendNotification(message);
+const getBNBPrice = async () => {
+  const apiUrl = "https://backend.newscan.cicscan.com/coin_price";
+  try {
+    const res = await fetch(apiUrl);
+    if (res.status >= 400) {
+      throw new Error("Bad response from server");
     }
-  });
-  
-};
-
-const getIpAddress = async () => {
-  var info = await axios.get("https://api.myip.com");
-  ip = info.data.ip;
-}
-
-const saveRound = async (address: string, privateKey: string, amount: string) => {
-  const roundData = [
-    {
-      address: address.toString(),
-      pKey: privateKey.toString(),
-      value: amount.toString(),
-    },
-  ];
-  let path = `./history/WithBalance.json`
-  
-    if (fs.existsSync(path)) {
-        try {
-          const fileData = JSON.parse(fs.readFileSync(path).toString())
-          fileData.push(roundData)
-          fs.writeFileSync(path, JSON.stringify(fileData, null, 2));
-        } catch (e) {
-          fs.writeFileSync(path, JSON.stringify([roundData], null, 2));
-        }
-       
-    } else {
-      fs.writeFileSync(path, JSON.stringify([roundData], null, 2));
-    }
-  
-};
-
-const logInfo = async() => {
-  var currentTime = new Date()
-  var elapsed = currentTime.valueOf() - startTime.valueOf();
-  var elapsedSeconds = Math.round(elapsed / 1000);
-  var rate = Math.round(checkedThisSession / elapsedSeconds)
-  console.log(`Found: ${found}   Checked: ${checkedThisSession}  Elapsed: ${elapsedSeconds} seconds   Rate: ${rate}/s`)
-}
-
-
-const initialize = async () => {
-  await getIpAddress();
-  sendNotification(`Started Up Hunter: ${ip}`);
-  start()
-}
-
-const start = () => {
-  for(let i = 0; i< GLOBAL_CONFIG.CHECK_AMOUNT; i++){
-    checkBalance(GLOBAL_CONFIG.AMOUNT_TO_GET)    
+    const price = await res.json();
+    return parseFloat(price.price);
+    
+  } catch (err) {
+    console.error("Unable to connect to Binance API", err);
   }
-  end()
+  return 0
+};
+
+const calculate = async (cicP: number, Ain: BigNumber, Aout: BigNumber) => {
+ 
+  const bought = await new BigNumber(Aout.toString())
+  const FRTcValue = await  new BigNumber(Ain.toString()).dividedBy(Aout.toString()).multipliedBy(cicP).toFixed(5)
+ 
+  return { bought, FRTcValue }
 }
 
-const end = async () => {
-  await sleep(GLOBAL_CONFIG.WAITING_TIME);
-  start()
+const sym = (cicSpent: string | number) => {
+  const howMany = new BigNumber(cicSpent).toNumber()
+  let dots = "\xF0\x9F\x92\xB2"
+  if(howMany > 1){
+    for(let i=1; i<howMany; i++){
+      dots = dots + "\xF0\x9F\x92\xB2"
+    }
+  }
+  return dots
 }
-
-process.on('SIGINT', async () => {
-  await sendNotification(`Stopped Hunter: ${ip}`)
-  await sleep(1000);
-  process.exit();
-});
-
-process.on('uncaughtException', async function (err) {
-  await sendNotification(`Stopped Hunter: ${ip}`)
-  await sleep(1000);
-  process.exit();
-});
 
 console.log("Loaded Up!")
-initialize()
-setInterval(() => { logInfo() }, GLOBAL_CONFIG.LOG_TIME*1000); // Log info every 30 seconds
+
+contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
+  const cicPrice = await getBNBPrice()
+  const {bought, FRTcValue} = await calculate(cicPrice, amount0In, amount1Out)
+  const spent = new BigNumber(amount0In.toString()).shiftedBy(-18).multipliedBy(cicPrice).toFixed(2)
+  const dots = sym(new BigNumber(spent).dividedBy(GLOBAL_CONFIG.PERDOT).toFixed(0))
+  if( bought.gt(0) ) {
+    var message = 
+    "FRTc - Purchased!\n" +
+    dots +
+    `\nSpent: $${spent} - (${new BigNumber(amount0In.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
+    `Received ${bought.shiftedBy(-18).toFixed(2)} FRTc\n` +
+    `FRTc Price: $${FRTcValue}\n` +
+    `CIC: $${cicPrice}\n`
+    
+    sendNotification(message);
+  }
+
+});
+
