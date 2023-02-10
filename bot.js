@@ -4,14 +4,13 @@ const axios = require('axios');
 const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
-const EthereumEvents = require('ethereum-events');
 const { Contract } = require("ethers");
 const BigNumber = require("BigNumber.js");
-const Web3 = require('web3');
 
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
-const abi = require("./abi.json");
+
+const lpabi = require("./lp.json");
 
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
@@ -20,51 +19,73 @@ if (result.error) {
   // throw result.error;
 }
 
-const web3 = new Web3(process.env.CIC_RPC);
-
 const signer = new Wallet(
   PRIVATE_KEY,
   new JsonRpcProvider(process.env.CIC_RPC)
 );
 
 
-let contract = new Contract(
-  process.env.LP_ADDRESS,
-  abi,
+const cic = "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"
+// Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
+const FRTc = {
+  MINBUY: 0,
+  LPADDRESS: "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217",
+  TOKEN: "0x9a37bF232466a55B99428479dF22c049cD43c20E", //FRTc
+  CHATID: "-1001435750887",
+  PERDOT: 5,             // $ value per DOT
+  CIC0: true,
+};      
+
+const configs = [FRTc]
+
+const addToken = async (LPAddress, ChatId) => {
+// getUpdates off /ADDTOKEN command
+
+const minBuy = "0"
+// const chatID = "-1001435750887"
+const perDot = "5"
+// const LPADDRESS = "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217"
+
+let lpcontract = new Contract(
+  LPAddress,
+  lpabi,
   signer
 );
 
-const contracts = [
-  {
-    name: 'FRTc',
-    address: '0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217',
-    abi: abi,
-    events: ['Swap'] // optional event filter (default: all events)
-  } 
-];
-
-const options = {
-  pollInterval: 13000, // period between polls in milliseconds (default: 13000)
-  confirmations: 1,   // n° of confirmation blocks (default: 12)
-  chunkSize: 1000,    // n° of blocks to fetch at a time (default: 10000)
-  concurrency: 10,     // maximum n° of concurrent web3 requests (default: 10)
-  backoff: 1000        // retry backoff in milliseconds (default: 1000)
-};
-const ethereumEvents = new EthereumEvents(web3, contracts, options);
+let cicIs0
+let token
+const token0 = await lpcontract.token0();
+const token1 = await lpcontract.token1();
+if(token0 === cic) {
+  cicIs0 = true
+  token = token1.toString()
+} else if (token1 === cic) {
+  cicIs0 = false
+  token = token0 .toString()
+} else return 
 
 
-// Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
-const GLOBAL_CONFIG = {
-  MINBUY: 0,
-  TOKEN0: "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA", //CIC
-  TOKEN1: "0x9a37bF232466a55B99428479dF22c049cD43c20E", //FRTc
-  CHATID: "-1001435750887",
-  PERDOT: 5 // $ value per DOT
-};      
+  configs.push({
+    MINBUY: minBuy,
+    LPADDRESS: LPAddress,
+    TOKEN: token,
+    CHATID: ChatId,
+    PERDOT: perDot,
+    CIC0: cicIs0
+  })
+  console.log(configs[configs.length-1])
+  startListener(configs.length-1)
+}
 
+const init = async () => {
 
-const sendNotification = async (message) => {
-  var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${GLOBAL_CONFIG.CHATID}&text=${message}`
+  for(let i=0; i<configs.length;i++){
+    startListener(i)
+  }
+}
+
+const sendNotification = async (message, index) => {
+  var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${configs[index].CHATID}&text=${message}`
   axios.get(url);
 }
 
@@ -82,6 +103,26 @@ const getBNBPrice = async () => {
     console.error("Unable to connect to Binance API", err);
   }
 };
+
+const getUpdates = async () => {
+  const updatesURL = "https://api.telegram.org/bot6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY/getUpdates";
+  try {
+    const res = await fetch(updatesURL);
+    if ( res.status >= 400) {
+      throw new Error("Bad Response");
+    }
+    const info = await res.json();
+    cid = info.result[info.result.length-1].message.chat.id.toString()
+    const msg = info.result[info.result.length-1].message.text.toString()
+    if(msg.startsWith("/addToken")) {
+      const lpAddress = msg.substring(10)
+      const ChatId = info
+      addToken(lpAddress, ChatId)
+    }
+    return 
+    } catch (err) { console.error("Unable to connect")}
+  };
+
 
 const calculate = async (cicP, Ain, Aout) => {
  
@@ -102,40 +143,42 @@ const sym = (cicSpent) => {
   return dots
 }
 
-console.log("Loaded Up!")
-/*
-contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
+
+const startListener = async (index) => {
+  const isZero = configs[index].CIC0
+
+  let lpcontract = new Contract(
+    configs[index].LPADDRESS,
+    lpabi,
+    signer
+  );
+
+  lpcontract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
   const cicPrice = await getBNBPrice()
-  const {bought, FRTcValue} = await calculate(cicPrice, amount0In, amount1Out)
-  const spent = new BigNumber(amount0In.toString()).shiftedBy(-18).multipliedBy(cicPrice).toFixed(2)
-  const dots = sym(new BigNumber(spent).dividedBy(GLOBAL_CONFIG.PERDOT).toFixed(0))
-  if( bought.gt(0) ) {
+  const inAmount = isZero ? amount0In : amount1In
+  const outAmount = isZero ? amount1Out : amount0Out
+
+  const {bought, FRTcValue} = await calculate(cicPrice, inAmount, outAmount)
+  const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(cicPrice).toFixed(2)
+  const dots = sym(new BigNumber(spent).dividedBy(configs[index].PERDOT).toFixed(0))
+  if( bought.gt(configs[index].MINBUY) ) {
     var message = 
     "FRTc - Purchased!\n" +
     dots +
-    `\nSpent: $${spent} - (${new BigNumber(amount0In.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
+    `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
     `Received ${bought.shiftedBy(-18).toFixed(2)} FRTc\n` +
     `FRTc Price: $${FRTcValue}\n` +
     `CIC: $${cicPrice}\n`
     
     sendNotification(message);
   }
-
-});
-*/
-
-ethereumEvents.on('block.unconfirmed', (blockNumber, events, done) => {
   
-  console.log(events, done, blockNumber)
 });
-ethereumEvents.on('block.unconfirmed', (blockNumber, events, done) => {
-  
-  console.log(events, done, blockNumber)
-});
+console.log(`Loaded For ${configs[index].TOKEN}`)
+}
 
-ethereumEvents.start();
-ethereumEvents.on('error', err => {
 
-  console.log(err)
 
-});
+init()
+setInterval(() => { getUpdates() }, 2*1000);
+
