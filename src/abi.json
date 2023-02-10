@@ -1,0 +1,583 @@
+[
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "previousOwner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_NextLotteryEndTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "addHowManyDraws",
+				"type": "uint256"
+			}
+		],
+		"name": "UnpauseAndStartNextLottery",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_lotteryAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_intervalSeconds",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_priceTicketInToken",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_discountDivisor",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256[6]",
+				"name": "_rewardsBreakdown",
+				"type": "uint256[6]"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_treasuryFee",
+				"type": "uint256"
+			}
+		],
+		"name": "addLottery",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_lotteryAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_priceTicketInToken",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_numberOfDraws",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_upKeepTime",
+				"type": "uint256"
+			}
+		],
+		"name": "addStartedLotteryDefaults",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_numberOfDrawsToAdd",
+				"type": "uint256"
+			}
+		],
+		"name": "addToNumberOfDrawsAdmin",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "bnbToCL",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			}
+		],
+		"name": "cancelLottery",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_bnbToCL",
+				"type": "uint256"
+			}
+		],
+		"name": "changeBNBToClFee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "newFee",
+				"type": "uint256"
+			}
+		],
+		"name": "changeLotteryBNBFee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_priceTicketInToken",
+				"type": "uint256"
+			}
+		],
+		"name": "changeLotteryTicketPrice",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_operator",
+				"type": "address"
+			}
+		],
+		"name": "changeOperator",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_treasury",
+				"type": "address"
+			}
+		],
+		"name": "changeTreasury",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "",
+				"type": "bytes"
+			}
+		],
+		"name": "checkUpkeep",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "upkeepNeeded",
+				"type": "bool"
+			},
+			{
+				"internalType": "bytes",
+				"name": "",
+				"type": "bytes"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_lotteryAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_intervalSeconds",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_priceTicketInToken",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_discountDivisor",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256[6]",
+				"name": "_rewardsBreakdown",
+				"type": "uint256[6]"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_treasuryFee",
+				"type": "uint256"
+			}
+		],
+		"name": "editLotteryInfo",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_numberOfDrawsToAdd",
+				"type": "uint256"
+			}
+		],
+		"name": "extendLottery",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "isLottery",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "lotteries",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "fticketPrice",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "fdiscount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "ftreasuryFee",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "intervalSeconds",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "upKeepTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "drawTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "step",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "Pause",
+				"type": "bool"
+			},
+			{
+				"internalType": "bool",
+				"name": "isLive",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "fcurrentLotteryId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "numberOfDraws",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "bnbFee",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "lotteryList",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "manualUpkeep",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			}
+		],
+		"name": "pauseLotteryAfterNextDraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "",
+				"type": "bytes"
+			}
+		],
+		"name": "performUpkeep",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			}
+		],
+		"name": "removeLottery",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "renounceOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_step",
+				"type": "uint256"
+			}
+		],
+		"name": "setStep",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "treasury",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "upKeepDue",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "lottery",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "upkeepNeeded",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdawlBNB",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_tokenAddress",
+				"type": "address"
+			}
+		],
+		"name": "withdrawlToken",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
+	}
+]
