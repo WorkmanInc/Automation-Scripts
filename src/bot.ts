@@ -16,8 +16,7 @@ const PRIVATE_KEY='af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c
 
 
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 300000,
-  TIMEAFTER: 120000,
+  CHECKEVERY: 305000,
   KEEPER: "0x86D0c640E9B208acB39b04Bf5aAB1C41070632E3",
 };
 
@@ -50,35 +49,14 @@ const keeperContract = contract.connect(signer);
 
 const checkIfReady = async () => {
   const {upkeepNeeded} = await keeperContract.upKeepDue();
-  console.log(upkeepNeeded)
   return upkeepNeeded
 }   
 
-const getBNBPrice = async () => {
-  const apiUrl = "https://backend.newscan.cicscan.com/coin_price";
-  try {
-    const res = await fetch(apiUrl);
-    if (res.status >= 400) {
-      throw new Error("Bad response from server");
-    }
-    const price = await res.json();
-    return parseFloat(price.price);
-    
-  } catch (err) {
-    console.error("Unable to connect to Binance API", err);
-  }
-  return 0
-};
-
 const runKeeper = async () => {
   try {
-    const tx = await keeperContract.manualUpkeep();
-    await tx.wait();
-    console.log(`🤞 Ran 🍁`);
-     
+    await keeperContract.manualUpkeep(); 
   } catch (error) {
     console.log("Maybe Wait Longer??");
-   
   }
 }
 
