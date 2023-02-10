@@ -12,7 +12,6 @@ const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb55
 
 const lpabi = require("./lp.json");
 
-
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
 if (result.error) {
@@ -38,13 +37,18 @@ const FRTc = {
 
 const configs = [FRTc]
 
-const addToken = async (LPAddress, ChatId) => {
-// getUpdates off /ADDTOKEN command
+const added = {
+  channel: "-1001435750887",
+  lptoken: ["0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217"]
+};
 
+const channelConfig = [added]
+
+
+const addToken = async (LPAddress, ChatId) => {
+console.log('adding')
 const minBuy = "0"
-// const chatID = "-1001435750887"
 const perDot = "5"
-// const LPADDRESS = "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217"
 
 let lpcontract = new Contract(
   LPAddress,
@@ -73,7 +77,6 @@ if(token0 === cic) {
     PERDOT: perDot,
     CIC0: cicIs0
   })
-  console.log(configs[configs.length-1])
   startListener(configs.length-1)
 }
 
@@ -112,16 +115,49 @@ const getUpdates = async () => {
       throw new Error("Bad Response");
     }
     const info = await res.json();
-    cid = info.result[info.result.length-1].message.chat.id.toString()
-    const msg = info.result[info.result.length-1].message.text.toString()
-    if(msg.startsWith("/addToken")) {
-      const lpAddress = msg.substring(10)
-      const ChatId = info
-      addToken(lpAddress, ChatId)
+    const length = info.result.length - 1
+   
+    for(let i=length; i>0; i--){
+    const infoRaw = info.result[i].message
+      const cid = infoRaw.chat.id.toString()
+      const msg = infoRaw.text.toString()
+    
+      let canAdd = true
+      const lpAddress = msg.substring(12)
+      const command = msg.substring(0,11)
+      try{
+      if(command === "/addLPToken") {
+        
+        for(let j=0;j<channelConfig.length; j++){
+          if(cid === channelConfig[j].channel){
+            for(let k=0; k<channelConfig[j].lptoken.length; k++){
+              console.log(channelConfig[j].lptoken.length)
+              console.log(channelConfig[j].lptoken)
+              console.log(lpAddress, channelConfig[j].lptoken[k])
+              if(lpAddress === channelConfig[j].lptoken[k]) canAdd = false
+            } 
+          }
+        }
+        if(canAdd){  
+          addToken(lpAddress, cid)
+            let oldChannel = false
+            for(let l=0; l<channelConfig.length; l++){
+              if(channelConfig[l].channel === cid) {
+                channelConfig[i].lptoken.push(lpAddress)  
+                oldChannel = true
+              }
+            }
+            if(!oldChannel) channelConfig.push({
+              channel: cid,
+              lptoken: lpAddress
+            })
+        }
+      }
+      } catch{console.log('not Msg')}
+       
     }
-    return 
-    } catch (err) { console.error("Unable to connect")}
-  };
+  } catch { console.log('wtf') }
+};
 
 
 const calculate = async (cicP, Ain, Aout) => {
@@ -170,15 +206,16 @@ const startListener = async (index) => {
     `FRTc Price: $${FRTcValue}\n` +
     `CIC: $${cicPrice}\n`
     
-    sendNotification(message);
+    sendNotification(message,index);
   }
   
 });
-console.log(`Loaded For ${configs[index].TOKEN}`)
+// sendNotification(`BuyBot Running for ${configs[index].LPADDRESS}`, index)
+console.log(`Loaded For ${configs[index].LPADDRESS} | Channel ${configs[index].CHATID}`)
 }
 
 
 
 init()
-setInterval(() => { getUpdates() }, 2*1000);
+setInterval(() => { getUpdates() }, 5*1000);
 
