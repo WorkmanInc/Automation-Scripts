@@ -4,8 +4,10 @@ const axios = require('axios');
 const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
+const EthereumEvents = require('ethereum-events');
 const { Contract } = require("ethers");
 const BigNumber = require("BigNumber.js");
+const Web3 = require('web3');
 
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -18,6 +20,7 @@ if (result.error) {
   // throw result.error;
 }
 
+const web3 = new Web3(process.env.CIC_RPC);
 
 const signer = new Wallet(
   PRIVATE_KEY,
@@ -30,6 +33,24 @@ let contract = new Contract(
   abi,
   signer
 );
+
+const contracts = [
+  {
+    name: 'FRTc',
+    address: '0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217',
+    abi: abi,
+    events: ['Swap'] // optional event filter (default: all events)
+  } 
+];
+
+const options = {
+  pollInterval: 13000, // period between polls in milliseconds (default: 13000)
+  confirmations: 12,   // n° of confirmation blocks (default: 12)
+  chunkSize: 10000,    // n° of blocks to fetch at a time (default: 10000)
+  concurrency: 10,     // maximum n° of concurrent web3 requests (default: 10)
+  backoff: 1000        // retry backoff in milliseconds (default: 1000)
+};
+const ethereumEvents = new EthereumEvents(web3, contracts, options);
 
 
 // Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
@@ -82,7 +103,7 @@ const sym = (cicSpent) => {
 }
 
 console.log("Loaded Up!")
-
+/*
 contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
   const cicPrice = await getBNBPrice()
   const {bought, FRTcValue} = await calculate(cicPrice, amount0In, amount1Out)
@@ -101,3 +122,11 @@ contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out,
   }
 
 });
+*/
+
+ethereumEvents.on('block.confirmed', (blockNumber, events, done) => {
+  
+  console.log(events, done, blockNumber)
+});
+
+ethereumEvents.start();
