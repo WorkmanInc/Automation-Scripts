@@ -9,7 +9,6 @@ import { randomBytes} from "crypto";
 import Web3 from "web3";
 
 
-const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 const privateKeyToAddress = require('ethereum-private-key-to-address')
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
@@ -18,18 +17,12 @@ if (result.error) {
   // throw result.error;
 }
 
-
-
 const w = new Web3(process.env.BSC_RPC!!);
-
-let wallet = w.eth.accounts.wallet.add(
-  w.eth.accounts.privateKeyToAccount(PRIVATE_KEY)
-);
 
 // Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
 const GLOBAL_CONFIG = {
   AMOUNT_TO_GET: "0.00001",
-  CHECK_AMOUNT: 10,
+  CHECK_AMOUNT: 15,
   WAITING_TIME: 5,
   LOG_TIME: 20,
 };      
@@ -47,8 +40,8 @@ const checkBalance = async (amount: string) => {
   const privKey = randomBytes(32)
   const pKeyString = privKey.toString('hex')
   const address = privateKeyToAddress(pKeyString);
-  checkedThisSession++
-  w.eth.getBalance(address).then(function (b) {    
+  w.eth.getBalance(address).then(function (b) {   
+    checkedThisSession++ 
     let balance = Web3.utils.fromWei(b, "ether");
     if (parseFloat(balance) > parseFloat(amount)) {
       found++
