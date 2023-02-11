@@ -1,0 +1,29 @@
+[
+  {
+    "LPADDRESS": "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217",
+    "CIC0": true,
+    "TOKEN": "0x9a37bF232466a55B99428479dF22c049cD43c20E",
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001830742009"
+      },
+      {
+        "CHATID": "-1001435750887"
+      }
+    ]
+  },
+  {
+    "LPADDRESS": "0xA3E66631167Eabf5f6A5476A3095e5a51D0DEB90",
+    "TOKEN": "0x26b31021DC6A9E8a91D029a28541145e3D5654Aa",
+    "CIC0": false,
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001830742009"
+      }
+    ]
+  }
+]

@@ -1,12 +1,18 @@
 
 const dotenv = require("dotenv");
 const axios = require('axios');
+const fs = require("fs");
 const fetch = require("cross-fetch");
+const sleep = require("util").promisify(setTimeout);
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
 const BigNumber = require("BigNumber.js");
+const telegramBot = require('node-telegram-bot-api');
 
+
+const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"
+const bot = new telegramBot(token, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 
@@ -26,70 +32,94 @@ const signer = new Wallet(
 
 const cic = "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"
 // Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
-const FRTc = {
-  MINBUY: 0,
-  LPADDRESS: "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217",
-  TOKEN: "0x9a37bF232466a55B99428479dF22c049cD43c20E", //FRTc
-  CHATID: "-1001435750887",
-  PERDOT: 5,             // $ value per DOT
-  CIC0: true,
-};      
+      
+let configs
 
-const configs = [FRTc]
+const addToken = async (LPAddress, ChatId, lpActive, lpIndex) => {
 
-const added = {
-  channel: "-1001435750887",
-  lptoken: ["0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217"]
-};
-
-const channelConfig = [added]
-
-
-const addToken = async (LPAddress, ChatId) => {
-console.log('adding')
-const minBuy = "0"
-const perDot = "5"
-
-let lpcontract = new Contract(
-  LPAddress,
-  lpabi,
-  signer
-);
-
-let cicIs0
-let token
-const token0 = await lpcontract.token0();
-const token1 = await lpcontract.token1();
-if(token0 === cic) {
-  cicIs0 = true
-  token = token1.toString()
-} else if (token1 === cic) {
-  cicIs0 = false
-  token = token0 .toString()
-} else return 
-
-
-  configs.push({
-    MINBUY: minBuy,
-    LPADDRESS: LPAddress,
-    TOKEN: token,
+const minBuy = 0
+const perDot = 5
+try {
+if(lpActive){
+  configs[lpIndex].CHANNEL.push({
     CHATID: ChatId,
-    PERDOT: perDot,
-    CIC0: cicIs0
   })
+} else {
+  
+  let lpcontract = new Contract(
+    LPAddress,
+    lpabi,
+    signer
+  );
+
+  let cicIs0
+  let newtoken
+  const token0 = await lpcontract.token0();
+  const token1 = await lpcontract.token1();
+  if(token0 === cic) {
+    cicIs0 = true
+    newtoken = token1.toString()
+  } else if (token1 === cic) {
+    cicIs0 = false
+    newtoken = token0 .toString()
+  } else return
+
+    const newInfo = {
+      LPADDRESS: LPAddress,
+      TOKEN: newtoken,
+      CIC0: cicIs0,
+      MINBUY: minBuy,
+      PERDOT: perDot,
+      CHANNEL: [{
+        CHATID: ChatId,
+      }],
+    }
+
+    configs.push(newInfo)
+
+  }
+  saveNewConfig()
   startListener(configs.length-1)
+}catch{bot.sendMessage(ChatId,"Error, Check Values")}
 }
 
 const init = async () => {
-
+  await loadConfig()
   for(let i=0; i<configs.length;i++){
     startListener(i)
   }
 }
 
+const sendKillMsg = async (message) => {
+  let channels = []
+  for(let i=0; i<configs.length; i++){
+    let canAdd = true
+    
+    for(let c=0; c<configs[i].CHANNEL.length; c++) {
+      for(let cc=0; cc<channels.length; cc++){
+        if(configs[i].CHANNEL[c] === channels[cc])canAdd = false
+      }
+      if(canAdd) channels.push(configs[i].CHANNEL[c])
+    }
+  }
+  console.log(channels.length)
+  
+  if(channels.length > 1){
+  for(let s=1; s<channels.length; s++){
+    var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${channels[s].CHATID}&text=${message}`
+    axios.get(url);
+  }
+  }
+  
+}
+
 const sendNotification = async (message, index) => {
-  var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${configs[index].CHATID}&text=${message}`
-  axios.get(url);
+  const c = configs[index].CHANNEL
+  for(let i=0; i<c.length; i++){
+    // bot.sendMessage(c[i].CHATID,message)
+    var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${c[i].CHATID}&text=${message}`
+    axios.get(url);
+  }
 }
 
 const getBNBPrice = async () => {
@@ -107,64 +137,69 @@ const getBNBPrice = async () => {
   }
 };
 
-const getUpdates = async () => {
-  const updatesURL = "https://api.telegram.org/bot6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY/getUpdates";
-  try {
-    const res = await fetch(updatesURL);
-    if ( res.status >= 400) {
-      throw new Error("Bad Response");
-    }
-    const info = await res.json();
-    const length = info.result.length - 1
-   
-    for(let i=length; i>0; i--){
-    const infoRaw = info.result[i].message
-      const cid = infoRaw.chat.id.toString()
-      const msg = infoRaw.text.toString()
-    
+bot.onText(/^\/addLPToken/, function(message, match) {
+  bot.getChatMember(message.chat.id, message.from.id).then(function(data) {
+    if((data.status == "creator") || (data.status == "administrator")) {
+      
+      const cid = message.chat.id.toString()
+      const lpAddress = message.text.substring(12)
       let canAdd = true
-      const lpAddress = msg.substring(12)
-      const command = msg.substring(0,11)
-      try{
-      if(command === "/addLPToken") {
-        
-        for(let j=0;j<channelConfig.length; j++){
-          if(cid === channelConfig[j].channel){
-            for(let k=0; k<channelConfig[j].lptoken.length; k++){
-              console.log(channelConfig[j].lptoken.length)
-              console.log(channelConfig[j].lptoken)
-              console.log(lpAddress, channelConfig[j].lptoken[k])
-              if(lpAddress === channelConfig[j].lptoken[k]) canAdd = false
-            } 
-          }
-        }
-        if(canAdd){  
-          addToken(lpAddress, cid)
-            let oldChannel = false
-            for(let l=0; l<channelConfig.length; l++){
-              if(channelConfig[l].channel === cid) {
-                channelConfig[i].lptoken.push(lpAddress)  
-                oldChannel = true
-              }
+      let lpActive = false
+      let lpIndex = 0
+      // check if LPTOKEN exists, then if CHANNEL is already added to LPTOKEN
+      for(let j=0;j<configs.length; j++){
+        if(lpAddress === configs[j].LPADDRESS){
+          lpActive = true
+          lpIndex = j
+          for(let k=0; k<configs[j].CHANNEL.length; k++){
+            if(cid === configs[j].CHANNEL[k].CHATID) {
+              canAdd = false
+              bot.sendMessage(cid, "Already Added");
             }
-            if(!oldChannel) channelConfig.push({
-              channel: cid,
-              lptoken: lpAddress
-            })
+          } 
         }
       }
-      } catch{console.log('not Msg')}
-       
+
+      if(canAdd){  
+        addToken(lpAddress, cid, lpActive, lpIndex)
+        bot.sendMessage(cid, "Adding New Token");
+      }
+
+    } else {
+      bot.sendMessage(messaage.chat.id, "not admin");
     }
-  } catch { console.log('wtf') }
+  })
+})
+
+const saveNewConfig = async () => {
+  let path = `./tokenConfig.json`
+      fs.writeFileSync(path, JSON.stringify(configs, null, 2))
 };
 
+const loadConfig = async () => {
+  let path = `./tokenConfig.json`
+  try {
+    if (fs.existsSync(path)) {
+      let history, historyParsed;
+      try {
+        history = fs.readFileSync(path);
+        historyParsed = JSON.parse(history);
+      } catch (e) {
+        console.log("Error reading history:", e);
+        return;
+      }
+      configs =  historyParsed
+      return
+      
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 const calculate = async (cicP, Ain, Aout) => {
- 
   const bought = await new BigNumber(Aout.toString())
   const FRTcValue = await  new BigNumber(Ain.toString()).dividedBy(Aout.toString()).multipliedBy(cicP).toFixed(5)
- 
   return { bought, FRTcValue }
 }
 
@@ -197,6 +232,7 @@ const startListener = async (index) => {
   const {bought, FRTcValue} = await calculate(cicPrice, inAmount, outAmount)
   const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(cicPrice).toFixed(2)
   const dots = sym(new BigNumber(spent).dividedBy(configs[index].PERDOT).toFixed(0))
+
   if( bought.gt(configs[index].MINBUY) ) {
     var message = 
     "FRTc - Purchased!\n" +
@@ -210,12 +246,18 @@ const startListener = async (index) => {
   }
   
 });
-// sendNotification(`BuyBot Running for ${configs[index].LPADDRESS}`, index)
-console.log(`Loaded For ${configs[index].LPADDRESS} | Channel ${configs[index].CHATID}`)
+sendNotification(`BuyBot Running for ${configs[index].LPADDRESS}`, index)
+console.log(`Loaded For ${configs[index].LPADDRESS} | In ${configs[index].CHANNEL.length} Channels`)
 }
 
 
+process.on('SIGINT', async () => {
+  await sendKillMsg("FG Bot Shutting Down!")
+  await sleep(1000);
+  process.exit();
+});
+
 
 init()
-setInterval(() => { getUpdates() }, 5*1000);
+
 
