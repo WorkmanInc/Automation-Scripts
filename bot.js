@@ -105,12 +105,16 @@ const sendKillMsg = async (message) => {
   console.log(channels.length)
   
   if(channels.length > 1){
-  for(let s=1; s<channels.length; s++){
-    var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${channels[s].CHATID}&text=${message}`
-    axios.get(url);
-  }
+    for(let s=1; s<channels.length; s++){
+      sendNotificationToChannel(message, channels[s].CHATID)
+    }
   }
   
+}
+
+const sendNotificationToChannel = async (message, cid) => {
+    var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${cid}&text=${message}`
+    axios.get(url);
 }
 
 const sendNotification = async (message, index) => {
@@ -169,6 +173,61 @@ bot.onText(/^\/addLPToken/, function(message, match) {
       bot.sendMessage(messaage.chat.id, "not admin");
     }
   })
+})
+
+const getPrice = async (lp, cid) => {
+
+  let lpcontract = new Contract(
+    lp,
+    lpabi,
+    signer
+  );
+
+  
+
+  let cicIs0
+  const token0 = await lpcontract.token0();
+  const token1 = await lpcontract.token1();
+  if(token0 === cic) {
+    cicIs0 = true
+  } else if (token1 === cic) {
+    cicIs0 = false
+  } else return
+
+  const {_reserve0, _reserve1 } = await lpcontract.getReserves()
+  const cicR = new BigNumber(cicIs0 ? _reserve0.toString() : _reserve1.toString())
+  const tR = new BigNumber(cicIs0 ? _reserve1.toString() : _reserve0.toString())
+  const cicPrice = await getBNBPrice()
+
+  
+  let tContract = new Contract(
+    cicIs0 ? token1.toString() : token0.toString(),
+    lpabi,
+    signer
+  );
+  const tDecimals = new BigNumber(await tContract.decimals())
+  const dec = new BigNumber(18 - tDecimals)
+  const sym = await tContract.symbol()
+
+  // const price =  cicR.shiftedBy(-18).dividedBy(tR.shiftedBy(tDecimals)).multipliedBy(cicPrice).toFixed(18)
+ 
+  const price = cicR.multipliedBy(cicPrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(10)
+  return { sym, price }
+  
+   
+  
+  
+}
+
+bot.onText(/^\/price/, async function(message, match) {     
+      const cid = message.chat.id.toString()
+      const lpAddress = message.text.substring(7)
+      try {
+        const {sym, price } = await getPrice(lpAddress, cid)
+        sendNotificationToChannel(`${sym}: $${price}`,cid);
+      } catch {
+        bot.sendMessage(cid, "Not Valid LP TOKEN");
+      }
 })
 
 const saveNewConfig = async () => {
