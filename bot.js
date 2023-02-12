@@ -330,7 +330,7 @@ bot.onText(/^\/price/, async function(message, match) {
               `${sym} / CIC\n` +
               `${sym}: $${price}\n` + 
               `CIC Price: $${cicPrice}`
-              ,cid);
+              ,cid); break;
         }
       } catch {
         bot.sendMessage(cid, "Not Valid TOKEN");
