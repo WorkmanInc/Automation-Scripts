@@ -46,5 +46,44 @@
         "CHATID": "-1001830742009"
       }
     ]
+  },
+  {
+    "LPADDRESS": "0x34EDB4D999eF9403C1FAEa3F59aBB64294B4ffD0",
+    "TOKEN": "0xDcE40EC72A942e9D89C365386CFb4D57e6BeF6f4",
+    "SYM": "NPT",
+    "CIC0": true,
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001830742009"
+      }
+    ]
+  },
+  {
+    "LPADDRESS": "0x408B7A0eBF3b4dc8B78Be371CDa0C047cD66387D",
+    "TOKEN": "0x1911519f0D529D7513F2A038AB18aE82d8062ef8",
+    "SYM": "WDT",
+    "CIC0": false,
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001830742009"
+      }
+    ]
+  },
+  {
+    "LPADDRESS": "0x19d00818D7E9a079C38d677F313204f8d935c302",
+    "TOKEN": "0x6BF05Bc3bc3f2c77D1c04e3664C52a7005E2d706",
+    "SYM": "META",
+    "CIC0": true,
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001830742009"
+      }
+    ]
   }
 ]
