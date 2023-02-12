@@ -319,13 +319,30 @@ const getPrice = async (lp) => {
   
 }
 
+bot.onText(/^\/cic/, async function(message, match) {     
+  const cid = message.chat.id.toString()
+  const cicPrice = await getBNBPrice()
+
+ sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
+
+})
+bot.onText(/^\/CIC/, async function(message, match) {     
+  const cid = message.chat.id.toString()
+  const cicPrice = await getBNBPrice()
+
+ sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
+
+})
+
+
 bot.onText(/^\/price/, async function(message, match) {     
       const cid = message.chat.id.toString()
       const command = message.text.substring(7)
       let LP = command
       const cicPrice = await getBNBPrice()
 
-    if(command === 'CIC') sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
+
+    if(command.toLowerCase() === 'cic') sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
     else {
     try {
         for(let i=0; i<configs.length; i++) {
