@@ -30,5 +30,18 @@
         "CHATID": "-1001830742009"
       }
     ]
+  },
+  {
+    "LPADDRESS": "0x9725802F4Bc039267C15938fD6DfEF437B45A6aF",
+    "TOKEN": "0x1bace27Eac668840c9B347990D971260CC221Af8",
+    "SYM": "ELTHM",
+    "CIC0": false,
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001830742009"
+      }
+    ]
   }
 ]

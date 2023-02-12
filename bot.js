@@ -261,23 +261,26 @@ bot.onText(/^\/addToken/, function(message, match) {
   })
 })
 
+
 bot.onText(/^\/removeToken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     if((data.status == "creator") || (data.status == "administrator")) {
       
       const tokenAddress =  message.text.substring(13)
-      const lpAddress = await factoryContract.getPair(tokenAddress, cic)
+      let lpAddress = tokenAddress
+      for(let i=0; i<configs.length; i++) {
+        // const lpAddress = await factoryContract.getPair(tokenAddress, cic)
+        if(configs[i].TOKEN === tokenAddress) lpAddress = configs[i].LPADDRESS
+      }
       const cid = message.chat.id.toString()
-      removeToken(lpAddress.toString(), cid)
+      removeToken(lpAddress, cid)
     } else {
       bot.sendMessage(messaage.chat.id, "not admin");
     }
   })
 })
 
-const getPrice = async (tokenAddress) => {
-
-  const lp = await factoryContract.getPair(tokenAddress, cic)
+const getPrice = async (lp) => {
 
   let lpcontract = new Contract(
     lp,
@@ -318,16 +321,18 @@ const getPrice = async (tokenAddress) => {
 
 bot.onText(/^\/price/, async function(message, match) {     
       const cid = message.chat.id.toString()
-      let tokenAddress = message.text.substring(7)
+      const command = message.text.substring(7)
+      let LP = command
       const cicPrice = await getBNBPrice()
 
-    if(tokenAddress === 'CIC') sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
+    if(command === 'CIC') sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
     else {
     try {
         for(let i=0; i<configs.length; i++) {
-          if(configs[i].SYM === tokenAddress) tokenAddress = configs[i].TOKEN
+          if(configs[i].SYM === command) LP = configs[i].LPADDRESS
+          else if(configs[i].TOKEN === command ) LP = configs[i].LPADDRESS
         }  
-            const {sym, price } = await getPrice(tokenAddress)
+            const {sym, price } = await getPrice(LP)
             sendNotificationToChannel(
               `${sym} / CIC\n` +
               `${sym}: $${price}\n` + 
