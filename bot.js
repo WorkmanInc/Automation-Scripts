@@ -346,7 +346,7 @@ bot.onText(/^\/price/, async function(message, match) {
     else {
     try {
         for(let i=0; i<configs.length; i++) {
-          if(configs[i].SYM === command) LP = configs[i].LPADDRESS
+          if(configs[i].SYM.toLowerCase() === command.toLowerCase()) LP = configs[i].LPADDRESS
           else if(configs[i].TOKEN === command ) LP = configs[i].LPADDRESS
         }  
             const {sym, price } = await getPrice(LP)
