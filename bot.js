@@ -420,7 +420,7 @@ const startListener = async (index) => {
     `${configs[index].SYM} - Purchased!\n` +
     dots +
     `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
-    `Received ${bought.shiftedBy(-18).toFixed(2)} ${configs[i].SYM}\n` +
+    `Received ${bought.shiftedBy(-18).toFixed(2)} ${configs[index].SYM}\n` +
     `${configs[index].SYM} Price: $${FRTcValue}\n` +
     `CIC: $${cicPrice}\n`
     
