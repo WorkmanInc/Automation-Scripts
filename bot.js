@@ -278,6 +278,7 @@ bot.onText(/^\/removeToken/, function(message, match) {
 const getPrice = async (tokenAddress) => {
 
   const lp = await factoryContract.getPair(tokenAddress, cic)
+
   let lpcontract = new Contract(
     lp,
     lpabi,
@@ -325,13 +326,14 @@ bot.onText(/^\/price/, async function(message, match) {
     try {
         for(let i=0; i<configs.length; i++) {
           if(configs[i].SYM === tokenAddress) tokenAddress = configs[i].TOKEN
+        }  
             const {sym, price } = await getPrice(tokenAddress)
             sendNotificationToChannel(
               `${sym} / CIC\n` +
               `${sym}: $${price}\n` + 
               `CIC Price: $${cicPrice}`
-              ,cid); break;
-        }
+              ,cid);
+        
       } catch {
         bot.sendMessage(cid, "Not Valid TOKEN");
       }
