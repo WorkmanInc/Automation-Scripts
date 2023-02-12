@@ -373,7 +373,7 @@ const loadConfig = async () => {
 
 const calculate = async (cicP, Ain, Aout) => {
   const bought = await new BigNumber(Aout.toString())
-  const FRTcValue = await  new BigNumber(Ain.toString()).dividedBy(Aout.toString()).multipliedBy(cicP).toFixed(5)
+  const FRTcValue = await  new BigNumber(Ain.toString()).dividedBy(Aout.toString()).multipliedBy(cicP).toFixed(12)
   return { bought, FRTcValue }
 }
 
