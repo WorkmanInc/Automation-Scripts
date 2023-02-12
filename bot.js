@@ -17,6 +17,7 @@ const bot = new telegramBot(token, {polling: true})
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 
 const lpabi = require("./lp.json");
+const factoryABI = require("./factorcy.json");
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
@@ -31,6 +32,12 @@ const signer = new Wallet(
 
 
 const cic = "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"
+const factory = "0xfD35F3f178353572E4357983AD2831fAcd652cC5"
+const factoryContract = new Contract(
+  factory,
+  factoryABI,
+  signer
+);
 // Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
       
 let configs
@@ -81,6 +88,31 @@ if(lpActive){
   saveNewConfig()
   startListener(configs.length-1)
 }catch{bot.sendMessage(ChatId,"Error, Check Values")}
+}
+
+const removeToken = async (LPAddress, ChatId) => {
+
+  try {
+    for(let i=0; i<configs.length; i++){
+      if(configs[i].LPADDRESS === LPAddress){
+        for(let c=0; c<configs[i].CHANNEL.length; c++){
+          if(configs[i].CHANNEL[c] === ChatId) {
+            configs[i].CHANNEL[c] = configs[i].CHANNEL[configs[i].CHANNEL.length -1]
+            configs[i].CHANNEL.pop()
+            if(configs[i].CHANNEL.length === 0) {
+               configs[i] = configs[configs.length-1]
+               configs.pop()
+               bot.sendMessage(ChatId,"Removed Token")
+            }
+          }
+        }
+      } else {
+        bot.sendMessage(ChatId,"Token Didnt Exist")
+      }
+    }
+    
+    saveNewConfig()
+  }catch{bot.sendMessage(ChatId,"Error, Check Values")}
 }
 
 const init = async () => {
@@ -141,12 +173,16 @@ const getBNBPrice = async () => {
   }
 };
 
-bot.onText(/^\/addLPToken/, function(message, match) {
-  bot.getChatMember(message.chat.id, message.from.id).then(function(data) {
+bot.onText(/^\/addToken/, function(message, match) {
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     if((data.status == "creator") || (data.status == "administrator")) {
       
+      const tokenAddress =  message.text.substring(10)
+      const lpAddress = await factoryContract.getPair(tokenAddress, cic)
+
+
       const cid = message.chat.id.toString()
-      const lpAddress = message.text.substring(12)
+      // const lpAddress = message.text.substring(12)
       let canAdd = true
       let lpActive = false
       let lpIndex = 0
@@ -165,8 +201,8 @@ bot.onText(/^\/addLPToken/, function(message, match) {
       }
 
       if(canAdd){  
-        addToken(lpAddress, cid, lpActive, lpIndex)
-        bot.sendMessage(cid, "Adding New Token");
+        removeToken(lpAddress, cid, lpActive, lpIndex)
+        bot.sendMessage(cid, "Remove Token");
       }
 
     } else {
@@ -175,7 +211,21 @@ bot.onText(/^\/addLPToken/, function(message, match) {
   })
 })
 
-const getPrice = async (lp, cid) => {
+bot.onText(/^\/removeToken/, function(message, match) {
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    if((data.status == "creator") || (data.status == "administrator")) {
+      
+      const tokenAddress =  message.text.substring(13)
+      const lpAddress = await factoryContract.getPair(tokenAddress, cic)
+      const cid = message.chat.id.toString()
+      removeToken(lpAddress, cid)
+    } else {
+      bot.sendMessage(messaage.chat.id, "not admin");
+    }
+  })
+})
+
+const getPrice = async (lp) => {
 
   let lpcontract = new Contract(
     lp,
@@ -223,7 +273,7 @@ bot.onText(/^\/price/, async function(message, match) {
       const cid = message.chat.id.toString()
       const lpAddress = message.text.substring(7)
       try {
-        const {sym, price } = await getPrice(lpAddress, cid)
+        const {sym, price } = await getPrice(lpAddress)
         sendNotificationToChannel(`${sym}: $${price}`,cid);
       } catch {
         bot.sendMessage(cid, "Not Valid LP TOKEN");
