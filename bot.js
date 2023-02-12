@@ -417,11 +417,11 @@ const startListener = async (index) => {
 
   if( bought.gt(configs[index].MINBUY) ) {
     var message = 
-    "FRTc - Purchased!\n" +
+    `${configs[index].SYM} - Purchased!\n` +
     dots +
     `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
-    `Received ${bought.shiftedBy(-18).toFixed(2)} FRTc\n` +
-    `FRTc Price: $${FRTcValue}\n` +
+    `Received ${bought.shiftedBy(-18).toFixed(2)} ${configs[i].SYM}\n` +
+    `${configs[index].SYM} Price: $${FRTcValue}\n` +
     `CIC: $${cicPrice}\n`
     
     sendNotification(message,index);
