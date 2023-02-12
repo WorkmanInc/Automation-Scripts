@@ -338,7 +338,7 @@ bot.onText(/^\/CIC/, async function(message, match) {
 bot.onText(/^\/price/, async function(message, match) {     
       const cid = message.chat.id.toString()
       const command = message.text.substring(7)
-      let LP = command
+      let LP
       const cicPrice = await getBNBPrice()
 
 
@@ -348,6 +348,14 @@ bot.onText(/^\/price/, async function(message, match) {
         for(let i=0; i<configs.length; i++) {
           if(configs[i].SYM.toLowerCase() === command.toLowerCase()) LP = configs[i].LPADDRESS
           else if(configs[i].TOKEN === command ) LP = configs[i].LPADDRESS
+          else {
+            try {
+              const raw = await factoryContract.getPair(command, cic)
+              LP = raw.toString()
+            } catch {
+              LP = command
+            }
+          }
         }  
             const {sym, price } = await getPrice(LP)
             sendNotificationToChannel(
