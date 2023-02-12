@@ -336,7 +336,9 @@ bot.onText(/^\/price/, async function(message, match) {
             sendNotificationToChannel(
               `${sym} / CIC\n` +
               `${sym}: $${price}\n` + 
-              `CIC Price: $${cicPrice}`
+              `CIC Price: $${cicPrice}\n` + 
+              `\n` +
+              `https://cic.farmageddon.farm/\n` 
               ,cid);
         
       } catch {
@@ -422,7 +424,9 @@ const startListener = async (index) => {
     `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
     `Received ${bought.shiftedBy(-18).toFixed(2)} ${configs[index].SYM}\n` +
     `${configs[index].SYM} Price: $${FRTcValue}\n` +
-    `CIC: $${cicPrice}\n`
+    `CIC: $${cicPrice}\n` +
+    `\n` +
+    `https://cic.farmageddon.farm/\n` 
     
     sendNotification(message,index);
   }
