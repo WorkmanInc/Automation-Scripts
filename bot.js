@@ -91,12 +91,11 @@ if(lpActive){
 }
 
 const removeToken = async (LPAddress, ChatId) => {
-
   try {
     for(let i=0; i<configs.length; i++){
       if(configs[i].LPADDRESS === LPAddress){
         for(let c=0; c<configs[i].CHANNEL.length; c++){
-          if(configs[i].CHANNEL[c] === ChatId) {
+          if(configs[i].CHANNEL[c].CHATID === ChatId) {
             configs[i].CHANNEL[c] = configs[i].CHANNEL[configs[i].CHANNEL.length -1]
             configs[i].CHANNEL.pop()
             if(configs[i].CHANNEL.length === 0) {
@@ -173,6 +172,41 @@ const getBNBPrice = async () => {
   }
 };
 
+
+bot.onText(/^\/addLPToken/, function(message, match) {
+  bot.getChatMember(message.chat.id, message.from.id).then(function(data) {
+    if((data.status == "creator") || (data.status == "administrator")) {
+      
+      const cid = message.chat.id.toString()
+      const lpAddress = message.text.substring(12)
+      let canAdd = true
+      let lpActive = false
+      let lpIndex = 0
+      // check if LPTOKEN exists, then if CHANNEL is already added to LPTOKEN
+      for(let j=0;j<configs.length; j++){
+        if(lpAddress === configs[j].LPADDRESS){
+          lpActive = true
+          lpIndex = j
+          for(let k=0; k<configs[j].CHANNEL.length; k++){
+            if(cid === configs[j].CHANNEL[k].CHATID) {
+              canAdd = false
+              bot.sendMessage(cid, "Already Added");
+            }
+          } 
+        }
+      }
+
+      if(canAdd){  
+        addToken(lpAddress, cid, lpActive, lpIndex)
+        bot.sendMessage(cid, "Adding New Token");
+      }
+
+    } else {
+      bot.sendMessage(messaage.chat.id, "not admin");
+    }
+  })
+})
+
 bot.onText(/^\/addToken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     if((data.status == "creator") || (data.status == "administrator")) {
@@ -201,8 +235,8 @@ bot.onText(/^\/addToken/, function(message, match) {
       }
 
       if(canAdd){  
-        removeToken(lpAddress, cid, lpActive, lpIndex)
-        bot.sendMessage(cid, "Remove Token");
+        addToken(lpAddress, cid, lpActive, lpIndex)
+        bot.sendMessage(cid, "Adding Token");
       }
 
     } else {
@@ -218,7 +252,7 @@ bot.onText(/^\/removeToken/, function(message, match) {
       const tokenAddress =  message.text.substring(13)
       const lpAddress = await factoryContract.getPair(tokenAddress, cic)
       const cid = message.chat.id.toString()
-      removeToken(lpAddress, cid)
+      removeToken(lpAddress.toString(), cid)
     } else {
       bot.sendMessage(messaage.chat.id, "not admin");
     }
@@ -355,7 +389,7 @@ const startListener = async (index) => {
   }
   
 });
-sendNotification(`BuyBot Running for ${configs[index].LPADDRESS}`, index)
+sendNotification(`BuyBot Running for ${configs[index].TOKEN}`, index)
 console.log(`Loaded For ${configs[index].LPADDRESS} | In ${configs[index].CHANNEL.length} Channels`)
 }
 
