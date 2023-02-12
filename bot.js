@@ -32,6 +32,7 @@ const signer = new Wallet(
 
 
 const cic = "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"
+
 const factory = "0xfD35F3f178353572E4357983AD2831fAcd652cC5"
 const factoryContract = new Contract(
   factory,
@@ -71,9 +72,17 @@ if(lpActive){
     newtoken = token0 .toString()
   } else return
 
+  let tcontract = new Contract(
+    newtoken,
+    lpabi,
+    signer
+  );
+  const sym = await tcontract.symbol()
+
     const newInfo = {
       LPADDRESS: LPAddress,
       TOKEN: newtoken,
+      SYM: sym,
       CIC0: cicIs0,
       MINBUY: minBuy,
       PERDOT: perDot,
@@ -92,26 +101,34 @@ if(lpActive){
 
 const removeToken = async (LPAddress, ChatId) => {
   try {
+    let didntExist = true
     for(let i=0; i<configs.length; i++){
       if(configs[i].LPADDRESS === LPAddress){
         for(let c=0; c<configs[i].CHANNEL.length; c++){
           if(configs[i].CHANNEL[c].CHATID === ChatId) {
-            configs[i].CHANNEL[c] = configs[i].CHANNEL[configs[i].CHANNEL.length -1]
-            configs[i].CHANNEL.pop()
-            if(configs[i].CHANNEL.length === 0) {
-               configs[i] = configs[configs.length-1]
-               configs.pop()
-               bot.sendMessage(ChatId,"Removed Token")
+            if(configs[i].CHANNEL.length === 1) {
+              configs[i] = configs[configs.length-1]
+              await stopListener(LPAddress)
+              configs.pop()
+              bot.sendMessage(ChatId,"Removed Token")
+              didntExist = false
+              saveNewConfig(); break;
+            } else {
+              configs[i].CHANNEL[c] = configs[i].CHANNEL[configs[i].CHANNEL.length -1]
+              configs[i].CHANNEL.pop()
+              bot.sendMessage(ChatId,"Removed Token")
+              didntExist = false
+              saveNewConfig(); break;
             }
           }
         }
-      } else {
-        bot.sendMessage(ChatId,"Token Didnt Exist")
-      }
+      } 
     }
-    
-    saveNewConfig()
-  }catch{bot.sendMessage(ChatId,"Error, Check Values")}
+    if(didntExist) bot.sendMessage(ChatId,"Token Not In List")
+
+  }catch{
+    bot.sendMessage(ChatId,"Error, Check Values")
+  }
 }
 
 const init = async () => {
@@ -216,7 +233,6 @@ bot.onText(/^\/addToken/, function(message, match) {
 
 
       const cid = message.chat.id.toString()
-      // const lpAddress = message.text.substring(12)
       let canAdd = true
       let lpActive = false
       let lpIndex = 0
@@ -259,16 +275,14 @@ bot.onText(/^\/removeToken/, function(message, match) {
   })
 })
 
-const getPrice = async (lp) => {
+const getPrice = async (tokenAddress) => {
 
+  const lp = await factoryContract.getPair(tokenAddress, cic)
   let lpcontract = new Contract(
     lp,
     lpabi,
     signer
   );
-
-  
-
   let cicIs0
   const token0 = await lpcontract.token0();
   const token1 = await lpcontract.token1();
@@ -292,8 +306,6 @@ const getPrice = async (lp) => {
   const tDecimals = new BigNumber(await tContract.decimals())
   const dec = new BigNumber(18 - tDecimals)
   const sym = await tContract.symbol()
-
-  // const price =  cicR.shiftedBy(-18).dividedBy(tR.shiftedBy(tDecimals)).multipliedBy(cicPrice).toFixed(18)
  
   const price = cicR.multipliedBy(cicPrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(10)
   return { sym, price }
@@ -305,13 +317,25 @@ const getPrice = async (lp) => {
 
 bot.onText(/^\/price/, async function(message, match) {     
       const cid = message.chat.id.toString()
-      const lpAddress = message.text.substring(7)
-      try {
-        const {sym, price } = await getPrice(lpAddress)
-        sendNotificationToChannel(`${sym}: $${price}`,cid);
+      let tokenAddress = message.text.substring(7)
+      const cicPrice = await getBNBPrice()
+
+    if(tokenAddress === 'CIC') sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
+    else {
+    try {
+        for(let i=0; i<configs.length; i++) {
+          if(configs[i].SYM === tokenAddress) tokenAddress = configs[i].TOKEN
+            const {sym, price } = await getPrice(tokenAddress)
+            sendNotificationToChannel(
+              `${sym} / CIC\n` +
+              `${sym}: $${price}\n` + 
+              `CIC Price: $${cicPrice}`
+              ,cid);
+        }
       } catch {
-        bot.sendMessage(cid, "Not Valid LP TOKEN");
+        bot.sendMessage(cid, "Not Valid TOKEN");
       }
+    }
 })
 
 const saveNewConfig = async () => {
@@ -357,6 +381,14 @@ const sym = (cicSpent) => {
   return dots
 }
 
+const stopListener = async (lp) => {
+  let lpcontract = new Contract(
+    lp,
+    lpabi,
+    signer
+  );
+  lpcontract.off("Swap")
+}
 
 const startListener = async (index) => {
   const isZero = configs[index].CIC0
@@ -389,13 +421,13 @@ const startListener = async (index) => {
   }
   
 });
-sendNotification(`BuyBot Running for ${configs[index].TOKEN}`, index)
-console.log(`Loaded For ${configs[index].LPADDRESS} | In ${configs[index].CHANNEL.length} Channels`)
+// sendNotification(`BuyBot Running for ${configs[index].TOKEN}`, index)
+console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
 }
 
 
 process.on('SIGINT', async () => {
-  await sendKillMsg("FG Bot Shutting Down!")
+  // await sendKillMsg("FG Bot Shutting Down!")
   await sleep(1000);
   process.exit();
 });
