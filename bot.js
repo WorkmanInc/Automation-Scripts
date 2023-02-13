@@ -334,7 +334,6 @@ const getPrice = async (lp) => {
 
   const price = cicR.multipliedBy(cicPrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(10)
   const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
-    console.log(mc)
   return { sym, price, mc }
   
    
