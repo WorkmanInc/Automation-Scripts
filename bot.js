@@ -508,7 +508,7 @@ bot.onText(/^\/price/, async function(message, match) {
             const {sym, price, mc } = await getPrice(LP,cIndex)
 
             sendNotificationToChannel(
-              `<b>${exchange[cIndex].CHAIN.NAME} / ${exchange[cIndex].NAME}</b>\n` +
+              `${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
               `<b>${sym} / ${exchange[cIndex].CHAIN.NAME}</b>\n` +
               `<b>Price:</b> $${price}\n` +
               `<b>MCap:</b> $${mc}\n` +
@@ -596,7 +596,7 @@ const startListener = async (index) => {
 
   if( bought.gt(configs[index].MINBUY) ) {
     var message =
-    `<b>${exchange[cIndex].CHAIN.NAME} / ${exchange[cIndex].NAME}</b>\n` +
+    `${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
     `${configs[index].SYM} - Purchased!\n` +
     dots +
     `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
