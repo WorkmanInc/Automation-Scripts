@@ -537,7 +537,7 @@ bot.onText(/^\/price/, async function(message, match) {
               `<b>${sym} / ${exchange[cIndex].CHAIN.NAME}</b>\n` +
               `<b>Price:</b> $${price}\n` +
               `<b>MCap:</b> $${mc}\n` +
-              `<b>CIC Price:</b> $${cicPrice}\n` + 
+              `<b>${exchange[cIndex].CHAIN.NAME} Price:</b> $${cicPrice}\n` + 
               `\n` +
               `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
               ,cid);
@@ -628,7 +628,7 @@ const startListener = async (index) => {
     `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
     `Received ${bought.shiftedBy(-18).toFixed(2)} ${configs[index].SYM}\n` +
     `${configs[index].SYM} Price: $${FRTcValue}\n` +
-    `CIC: $${cicPrice}\n` +
+    `${exchange[cIndex].CHAIN.NAME}: $${cicPrice}\n` +
     `\n` +
     `cic.farmageddon.farm\n` 
     
