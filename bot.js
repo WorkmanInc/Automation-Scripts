@@ -49,6 +49,10 @@ let exchange = [
     NAME: "DONK",
     FACTORY: "0x04D6b20f805e2bd537DDe84482983AabF59536FF",
     CHAIN: chain[1]
+  },{
+    NAME: "WEN",
+    FACTORY: "0x51eD5a1f2EC7516dB92ff5Ae8d76ea4A2B87A6d1",
+    CHAIN: chain[0]
   }
 ]
 
