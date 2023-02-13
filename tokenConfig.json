@@ -79,5 +79,22 @@
         ]
       }
     ]
+  },
+  {
+    "LPADDRESS": "0x6b75970104032cE9720902Cea0A0E57Ce24a6077",
+    "TOKEN": "0xe5977835A013e3A5a52f44f8422734bd2dc545F0",
+    "SYM": "BALTO",
+    "CIC0": true,
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "EXCHANGE": 1,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001625261042",
+        "THREAD": [
+          null
+        ]
+      }
+    ]
   }
 ]
