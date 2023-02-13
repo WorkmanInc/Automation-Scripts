@@ -90,7 +90,7 @@ const signer = await getSigner(index)
 
 const minBuy = 0
 const perDot = 5
-// try {
+try {
 
   let lpcontract = new Contract(
     LPAddress,
@@ -136,11 +136,13 @@ const perDot = 5
   
   saveNewConfig()
   startListener(configs.length-1)
-// }catch{bot.sendMessage(ChatId,"Error, Check Values")}
+}catch{bot.sendMessage(ChatId,"Error, Check Values")}
 }
 
-const removeToken = async (LPAddress, ChatId, thread) => {
-  try {
+const removeToken = async (LPAddress, ChatId, threadRaw) => {
+  let thread = null
+  // try {
+    if(threadRaw !== undefined) thread = threadRaw
     let didntExist = true
     for(let i=0; i<configs.length; i++){
       if(configs[i].LPADDRESS === LPAddress){
@@ -150,35 +152,35 @@ const removeToken = async (LPAddress, ChatId, thread) => {
               if(configs[i].CHANNEL[c].THREAD[t] === thread){
                 if(configs[i].CHANNEL[c].THREAD.length === 1 && configs[i].CHANNEL.length === 1 ){
                   configs[i] = configs[configs.length-1]
-                  await stopListener(LPAddress)
+                  await stopListener(LPAddress, i)
                   configs.pop()
                   bot.sendMessage(ChatId,"Removed Token")
                   didntExist = false
-                  saveNewConfig(); break;
+                  saveNewConfig(); return
                 } else if(configs[i].CHANNEL[c].THREAD.length === 1){
                   configs[i].CHANNEL[c] = configs[i].CHANNEL[configs[i].CHANNEL.length-1]
                   configs[i].CHANNEL.pop()
                   bot.sendMessage(ChatId,"Removed From Channel!")
                   didntExist = false
-                  saveNewConfig(); break;
+                  saveNewConfig(); return
                 } else {
                   configs[i].CHANNEL[c].THREAD[t]  = configs[i].CHANNEL[c].THREAD[configs[i].CHANNEL[c].THREAD-1]
                   configs[i].CHANNEL[c].THREAD.pop()
                   bot.sendMessage(ChatId,"Removed From Topic")
                   didntExist = false
-                  saveNewConfig(); break;
+                  saveNewConfig(); return
                 }
               }
             }
           }
         }
-      } 
+      }
     }
     if(didntExist) bot.sendMessage(ChatId,"Token Not In List")
 
-  }catch{
-    bot.sendMessage(ChatId,"Error, Check Values")
-  }
+ // }catch{
+ //   bot.sendMessage(ChatId,"Error, Check Values")
+ // }
 }
 
 const init = async () => {
@@ -247,7 +249,7 @@ const getBNBPrice = async (index) => {
   return { cicPrice, mc }
 };
 
-
+/*
 bot.onText(/^\/addLPToken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(function(data) {
     const thread = message.message_thread_id
@@ -306,6 +308,7 @@ bot.onText(/^\/addLPToken/, function(message, match) {
 
   })
 })
+*/
 
 bot.onText(/^\/addToken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
@@ -584,7 +587,8 @@ const sym = (cicSpent) => {
   return dots
 }
 
-const stopListener = async (lp) => {
+const stopListener = async (lp, index) => {
+  const signer = getSigner(configs[index].EXCHANGE)
   let lpcontract = new Contract(
     lp,
     lpabi,
