@@ -44,6 +44,11 @@ let exchange = [
     NAME: "PCS",
     FACTORY: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
     CHAIN: chain[1]
+  },
+  {
+    NAME: "DONK",
+    FACTORY: "0x04D6b20f805e2bd537DDe84482983AabF59536FF",
+    CHAIN: chain[1]
   }
 ]
 
@@ -134,26 +139,36 @@ const perDot = 5
 // }catch{bot.sendMessage(ChatId,"Error, Check Values")}
 }
 
-const removeToken = async (LPAddress, ChatId) => {
+const removeToken = async (LPAddress, ChatId, thread) => {
   try {
     let didntExist = true
     for(let i=0; i<configs.length; i++){
       if(configs[i].LPADDRESS === LPAddress){
         for(let c=0; c<configs[i].CHANNEL.length; c++){
           if(configs[i].CHANNEL[c].CHATID === ChatId) {
-            if(configs[i].CHANNEL.length === 1) {
-              configs[i] = configs[configs.length-1]
-              await stopListener(LPAddress)
-              configs.pop()
-              bot.sendMessage(ChatId,"Removed Token")
-              didntExist = false
-              saveNewConfig(); break;
-            } else {
-              configs[i].CHANNEL[c] = configs[i].CHANNEL[configs[i].CHANNEL.length -1]
-              configs[i].CHANNEL.pop()
-              bot.sendMessage(ChatId,"Removed Token")
-              didntExist = false
-              saveNewConfig(); break;
+            for(let t =0; t <configs[i].CHANNEL[c].THREAD.length; t++){
+              if(configs[i].CHANNEL[c].THREAD[t] === thread){
+                if(configs[i].CHANNEL[c].THREAD.length === 1 && configs[i].CHANNEL.length === 1 ){
+                  configs[i] = configs[configs.length-1]
+                  await stopListener(LPAddress)
+                  configs.pop()
+                  bot.sendMessage(ChatId,"Removed Token")
+                  didntExist = false
+                  saveNewConfig(); break;
+                } else if(configs[i].CHANNEL[c].THREAD.length === 1){
+                  configs[i].CHANNEL[c] = configs[i].CHANNEL[configs[i].CHANNEL.length-1]
+                  configs[i].CHANNEL.pop()
+                  bot.sendMessage(ChatId,"Removed From Channel!")
+                  didntExist = false
+                  saveNewConfig(); break;
+                } else {
+                  configs[i].CHANNEL[c].THREAD[t]  = configs[i].CHANNEL[c].THREAD[configs[i].CHANNEL[c].THREAD-1]
+                  configs[i].CHANNEL[c].THREAD.pop()
+                  bot.sendMessage(ChatId,"Removed From Topic")
+                  didntExist = false
+                  saveNewConfig(); break;
+                }
+              }
             }
           }
         }
@@ -298,17 +313,20 @@ bot.onText(/^\/addToken/, function(message, match) {
     const cid = message.chat.id.toString()
     if((data.status == "creator") || (data.status == "administrator")) {
       const tokenAddress = message.text.substring(10, 52)
-      console.log(tokenAddress)
       let index = 0
+      let lpAddress
       const exchangeString = message.text.substring(53)
+
       for(let e=0; e<exchange.length; e++){
         if(exchangeString.toLowerCase().includes(exchange[e].NAME.toLowerCase())) index = e
       }
-
-      const factoryContract = await getFactory(index)
-
-      const lpRaw = await factoryContract.getPair(tokenAddress, exchange[index].CHAIN.NATIVE)
-      const lpAddress = lpRaw.toString()
+      
+        const factoryContract = await getFactory(index)
+        const lpRaw = await factoryContract.getPair(tokenAddress, exchange[index].CHAIN.NATIVE)
+        lpAddress = lpRaw.toString()
+     
+      if(lpAddress === "0x0000000000000000000000000000000000000000") sendNotificationToChannel("Bad Exchange Name", cid, thread); 
+      else{
       let DONE = false
       // check if LPTOKEN exists, then if CHANNEL is already added to LPTOKEN
       for(let j=0;j<configs.length; j++){
@@ -346,7 +364,7 @@ bot.onText(/^\/addToken/, function(message, match) {
         sendNotificationToChannel("Added new Token", cid, thread);
       }
       saveNewConfig()
-
+    }
     } else {
       sendNotificationToChannel("now Admin", cid, thread)
     }
@@ -359,14 +377,14 @@ bot.onText(/^\/addToken/, function(message, match) {
 bot.onText(/^\/removeToken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     if((data.status == "creator") || (data.status == "administrator")) {
-      
+      const thread = message.message_thread_id
       const tokenAddress =  message.text.substring(13)
       let lpAddress = tokenAddress
       for(let i=0; i<configs.length; i++) {
-        if(configs[i].TOKEN === tokenAddress) lpAddress = configs[i].LPADDRESS
+        if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) lpAddress = configs[i].LPADDRESS
       }
       const cid = message.chat.id.toString()
-      removeToken(lpAddress, cid)
+      removeToken(lpAddress, cid, thread)
     } else {
       bot.sendMessage(messaage.chat.id, "not admin");
     }

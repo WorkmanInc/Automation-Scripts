@@ -62,5 +62,22 @@
         ]
       }
     ]
+  },
+  {
+    "LPADDRESS": "0x7123431162c1efF257578D1574014e5305Eb7bd4",
+    "TOKEN": "0x3969Fe107bAe2537cb58047159a83C33dfbD73f9",
+    "SYM": "DST",
+    "CIC0": false,
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "EXCHANGE": 2,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001554598852",
+        "THREAD": [
+          null
+        ]
+      }
+    ]
   }
 ]
