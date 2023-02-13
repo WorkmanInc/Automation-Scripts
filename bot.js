@@ -136,7 +136,7 @@ const init = async () => {
   for(let i=0; i<configs.length;i++){
     startListener(i)
   }
-  // sendKillMsg("FG Bot Started Up!")
+  sendKillMsg("FG Bot Started Up!")
 }
 
 const sendKillMsg = async (message) => {
@@ -146,16 +146,16 @@ const sendKillMsg = async (message) => {
     
     for(let c=0; c<configs[i].CHANNEL.length; c++) {
       for(let cc=0; cc<channels.length; cc++){
-        if(configs[i].CHANNEL[c] === channels[cc])canAdd = false
+        if(configs[i].CHANNEL[c].CHATID === channels[cc])canAdd = false
       }
-      if(canAdd) channels.push(configs[i].CHANNEL[c])
+      if(canAdd) channels.push(configs[i].CHANNEL[c].CHATID)
     }
   }
   console.log(channels.length)
   
-  if(channels.length > 1){
-    for(let s=1; s<channels.length; s++){
-      sendNotificationToChannel(message, channels[s].CHATID)
+  if(channels.length > 0){
+    for(let s=0; s<channels.length; s++){
+      sendNotificationToChannel(message, channels[s])
     }
   }
   
@@ -501,7 +501,7 @@ console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.le
 
 
 process.on('SIGINT', async () => {
-  // await sendKillMsg("FG Bot Shutting Down!")
+  await sendKillMsg("FG Bot Shutting Down!")
   await sleep(1000);
   process.exit();
 });
