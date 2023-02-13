@@ -6,13 +6,8 @@
     "CIC0": true,
     "MINBUY": 0,
     "PERDOT": 5,
+    "EXCHANGE": 0,
     "CHANNEL": [
-      {
-        "CHATID": "-1001830742009",
-        "THREAD": [
-          null
-        ]
-      },
       {
         "CHATID": "-1001435750887",
         "THREAD": [
@@ -22,6 +17,12 @@
       },
       {
         "CHATID": "-1001625261042",
+        "THREAD": [
+          null
+        ]
+      },
+      {
+        "CHATID": "-1001830742009",
         "THREAD": [
           null
         ]
@@ -35,9 +36,27 @@
     "CIC0": false,
     "MINBUY": 0,
     "PERDOT": 5,
+    "EXCHANGE": 0,
     "CHANNEL": [
       {
         "CHATID": "-1001554598852",
+        "THREAD": [
+          null
+        ]
+      }
+    ]
+  },
+  {
+    "LPADDRESS": "0x746cdbb1bfBB19e4897Aee3a5312De79C40FD5bB",
+    "TOKEN": "0x4492cA0AFF6D603e18Aea5075B49A5ff76b9Ea06",
+    "SYM": "FG",
+    "CIC0": false,
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "EXCHANGE": 1,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001830742009",
         "THREAD": [
           null
         ]

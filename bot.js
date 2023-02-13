@@ -19,35 +19,73 @@ const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb55
 const lpabi = require("./lp.json");
 const factoryABI = require("./factorcy.json");
 
+let chain = [
+  {
+    NAME: "CIC",
+    API: "https://backend.newscan.cicscan.com/coin_price",
+    RPC: "https://xapi.cicscan.com/",
+    NATIVE: "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"
+  },
+  {
+    NAME: "BNB",
+    API: "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT",
+    RPC: "https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6/",
+    NATIVE: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+  }
+];
+
+let exchange = [
+  {
+    NAME: "FARM",
+    FACTORY: "0xfD35F3f178353572E4357983AD2831fAcd652cC5",
+    CHAIN: chain[0]
+  },
+  {
+    NAME: "PCS",
+    FACTORY: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
+    CHAIN: chain[1]
+  }
+]
+
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
 if (result.error) {
   // throw result.error;
 }
 
-const signer = new Wallet(
-  PRIVATE_KEY,
-  new JsonRpcProvider(process.env.CIC_RPC)
-);
+const getSigner = (index) => {
+  const rpc = exchange[index].CHAIN.RPC
+  const signer = new Wallet(
+    PRIVATE_KEY,
+    new JsonRpcProvider(rpc)
+  );
+  return signer
+}
 
 
-const cic = "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"
+// const cic = "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"
 
-const factory = "0xfD35F3f178353572E4357983AD2831fAcd652cC5"
-const factoryContract = new Contract(
-  factory,
-  factoryABI,
-  signer
-);
+const getFactory = async (index) => {
+  const factory = exchange[index].FACTORY
+  const signer = await getSigner(index)
+  const factoryContract = new Contract(
+    factory,
+    factoryABI,
+    signer
+  );
+  return factoryContract
+}
 // Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
       
 let configs
 
-const addToken = async (LPAddress, ChatId, thread) => {
+const addToken = async (LPAddress, index, ChatId, thread) => {
+
+const signer = await getSigner(index)
 
 const minBuy = 0
 const perDot = 5
-try {
+// try {
 
   let lpcontract = new Contract(
     LPAddress,
@@ -59,10 +97,10 @@ try {
   let newtoken
   const token0 = await lpcontract.token0();
   const token1 = await lpcontract.token1();
-  if(token0 === cic) {
+  if(token0 === exchange[index].CHAIN.NATIVE) {
     cicIs0 = true
     newtoken = token1.toString()
-  } else if (token1 === cic) {
+  } else if (token1 === exchange[index].CHAIN.NATIVE) {
     cicIs0 = false
     newtoken = token0 .toString()
   } else return
@@ -81,6 +119,7 @@ try {
       CIC0: cicIs0,
       MINBUY: minBuy,
       PERDOT: perDot,
+      EXCHANGE: index,
       CHANNEL: [{
         CHATID: ChatId,
         THREAD: [thread],
@@ -92,7 +131,7 @@ try {
   
   saveNewConfig()
   startListener(configs.length-1)
-}catch{bot.sendMessage(ChatId,"Error, Check Values")}
+// }catch{bot.sendMessage(ChatId,"Error, Check Values")}
 }
 
 const removeToken = async (LPAddress, ChatId) => {
@@ -172,8 +211,9 @@ const sendNotification = async (message, index) => {
   }
 }
 
-const getBNBPrice = async () => {
-  const apiUrl = "https://backend.newscan.cicscan.com/coin_price";
+const getBNBPrice = async (index) => {
+  
+  const apiUrl = exchange[index].CHAIN.API;
   let cicPrice = 0
   let mc = 0
   try {
@@ -200,8 +240,13 @@ bot.onText(/^\/addLPToken/, function(message, match) {
 
     if((data.status == "creator") || (data.status == "administrator")) {
       
-      const lpAddress = message.text.substring(12)
-    
+      let index = 0
+      const exchangeString = message.text.substring(55)
+      for(let e=0; e<exchange.length; e++){
+        if(exchangeString.toLowerCase().includes(exchange[e].NAME.toLowerCase())) index = e
+      }
+      
+      const lpAddress = message.text.substring(12, 54)
       let DONE = false
       // check if LPTOKEN exists, then if CHANNEL is already added to LPTOKEN
       for(let j=0;j<configs.length; j++){
@@ -235,7 +280,7 @@ bot.onText(/^\/addLPToken/, function(message, match) {
         }
       }
       if(!DONE){
-        addToken(lpAddress, cid, thread)
+        addToken(lpAddress, index, cid, thread)
         sendNotificationToChannel("Added new Token", cid, thread);
       }
       saveNewConfig()
@@ -252,10 +297,18 @@ bot.onText(/^\/addToken/, function(message, match) {
     const thread = message.message_thread_id
     const cid = message.chat.id.toString()
     if((data.status == "creator") || (data.status == "administrator")) {
-      const tokenAddress =  message.text.substring(10)
-      const lpAddress = await factoryContract.getPair(tokenAddress, cic)
+      const tokenAddress = message.text.substring(10, 52)
+      console.log(tokenAddress)
+      let index = 0
+      const exchangeString = message.text.substring(53)
+      for(let e=0; e<exchange.length; e++){
+        if(exchangeString.toLowerCase().includes(exchange[e].NAME.toLowerCase())) index = e
+      }
 
-      
+      const factoryContract = await getFactory(index)
+
+      const lpRaw = await factoryContract.getPair(tokenAddress, exchange[index].CHAIN.NATIVE)
+      const lpAddress = lpRaw.toString()
       let DONE = false
       // check if LPTOKEN exists, then if CHANNEL is already added to LPTOKEN
       for(let j=0;j<configs.length; j++){
@@ -289,7 +342,7 @@ bot.onText(/^\/addToken/, function(message, match) {
         }
       }
       if(!DONE){
-        addToken(lpAddress, cid, thread)
+        addToken(lpAddress, index, cid, thread)
         sendNotificationToChannel("Added new Token", cid, thread);
       }
       saveNewConfig()
@@ -320,8 +373,9 @@ bot.onText(/^\/removeToken/, function(message, match) {
   })
 })
 
-const getPrice = async (lp) => {
+const getPrice = async (lp, index) => {
 
+  const signer = getSigner(index)
   let lpcontract = new Contract(
     lp,
     lpabi,
@@ -332,16 +386,16 @@ const getPrice = async (lp) => {
   const token1 = await lpcontract.token1();
   const {_reserve0, _reserve1 } = await lpcontract.getReserves()
 
-  if(token0 === cic) {
+  if(token0 === exchange[index].CHAIN.NATIVE) {
     cicIs0 = true
-  } else if (token1 === cic) {
+  } else if (token1 === exchange[index].CHAIN.NATIVE) {
     cicIs0 = false
   } else return
 
   
   const cicR = new BigNumber(cicIs0 ? _reserve0.toString() : _reserve1.toString())
   const tR = new BigNumber(cicIs0 ? _reserve1.toString() : _reserve0.toString())
-  const { cicPrice } = await getBNBPrice()
+  const { cicPrice } = await getBNBPrice(index)
 
   
   let tContract = new Contract(
@@ -360,7 +414,7 @@ const getPrice = async (lp) => {
   const burned = new BigNumber(bRaw.toString())
   const dec = new BigNumber(18 - tDecimals)
  
-  const price = cicR.multipliedBy(cicPrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(10)
+  const price = cicR.multipliedBy(cicPrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
   const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
   return { sym, price, mc }
 }
@@ -368,7 +422,7 @@ const getPrice = async (lp) => {
 bot.onText(/^\/cic/, async function(message, match) {     
   const thread = message.message_thread_id
   const cid = message.chat.id.toString()
-  const { cicPrice, mc } = await getBNBPrice()
+  const { cicPrice, mc } = await getBNBPrice(0)
 
  sendNotificationToChannel(
   `<b>CIC Price:</b> $${cicPrice}\n` +
@@ -378,11 +432,9 @@ bot.onText(/^\/cic/, async function(message, match) {
 
 })
 bot.onText(/^\/CIC/, async function(message, match) {    
-  
   const thread = message.message_thread_id
-  console.log(thread)
   const cid = message.chat.id.toString()
-  const { cicPrice, mc } = await getBNBPrice()
+  const { cicPrice, mc } = await getBNBPrice(0)
 
   sendNotificationToChannel(
     `<b>CIC Price:</b> $${cicPrice}\n` +
@@ -392,39 +444,72 @@ bot.onText(/^\/CIC/, async function(message, match) {
 
 })
 
+bot.onText(/^\/bnb/, async function(message, match) {     
+  const thread = message.message_thread_id
+  const cid = message.chat.id.toString()
+  const { cicPrice } = await getBNBPrice(1)
+
+ sendNotificationToChannel(
+  `<b>CIC Price:</b> $${cicPrice}\n` +
+  `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+ , cid, thread)
+
+})
+bot.onText(/^\/BNB/, async function(message, match) {    
+  const thread = message.message_thread_id
+  const cid = message.chat.id.toString()
+  const { cicPrice } = await getBNBPrice(1)
+
+  sendNotificationToChannel(
+    `<b>CIC Price:</b> $${cicPrice}\n` +
+    `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+   , cid, thread)
+
+})
+
 
 bot.onText(/^\/price/, async function(message, match) { 
-      const thread = message.message_thread_id    
       const cid = message.chat.id.toString()
-      const command = message.text.substring(7)
+      const command = message.text.substring(7,49)
+      const tExchange = message.text.substring(50)
+      let cIndex = 0
       let LP = command
-      const { cicPrice, mc } = await getBNBPrice()
-
-
-    if(command.toLowerCase() === 'cic') sendNotificationToChannel(
-      `<b>CIC Price:</b> $${cicPrice}\n` +
-      `<b>CIC MC:</b> $${mc}\n` +
-      `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
-     , cid,thread)
-    else {
-    try {
+      
+      const cLower = command.toLowerCase()
+     try {
         for(let i=0; i<configs.length; i++) {
-          if(configs[i].SYM.toLowerCase() === command.toLowerCase()) {
-            LP = configs[i].LPADDRESS; break}
-          else if(configs[i].TOKEN === command ) {LP = configs[i].LPADDRESS; break}
+          
+          if(cLower.includes(configs[i].SYM.toLowerCase())) {
+            LP = configs[i].LPADDRESS;
+            cIndex=configs[i].EXCHANGE;
+            break}
+          else if(cLower.includes(configs[i].TOKEN.toLowerCase())) {
+            LP = configs[i].LPADDRESS; 
+            cIndex=configs[i].EXCHANGE;
+            break
+          }
+
           else {
+              for(let c=0; c<exchange.length; c++){
+                if(tExchange.toLowerCase().includes(exchange[c].NAME.toLowerCase())) cIndex = c
+              }
             try {
-              const raw = await factoryContract.getPair(command, cic)
-              LP = raw.toString(); break;
+              const factoryContract = await getFactory(cIndex)
+              const raw = await factoryContract.getPair(command, exchange[cIndex].CHAIN.NATIVE)
+              LP = raw.toString(); 
+              break;
+             
             } catch {
               LP = command
             }
           }
         }  
-            const {sym, price, mc } = await getPrice(LP)
+            const { cicPrice } = await getBNBPrice(cIndex)
+            const {sym, price, mc } = await getPrice(LP,cIndex)
 
             sendNotificationToChannel(
-              `<b>${sym} / CIC</b>\n` +
+              `<b>${exchange[cIndex].CHAIN.NAME} / ${exchange[cIndex].NAME}</b>\n` +
+              `<b>${sym} / ${exchange[cIndex].CHAIN.NAME}</b>\n` +
               `<b>Price:</b> $${price}\n` +
               `<b>MCap:</b> $${mc}\n` +
               `<b>CIC Price:</b> $${cicPrice}\n` + 
@@ -433,9 +518,9 @@ bot.onText(/^\/price/, async function(message, match) {
               ,cid);
         
       } catch {
-        bot.sendMessage(cid, "Not Valid TOKEN");
-     }
-    }
+       bot.sendMessage(cid, "Not Valid TOKEN");
+      }
+    
 })
 
 const saveNewConfig = async () => {
@@ -491,6 +576,7 @@ const stopListener = async (lp) => {
 }
 
 const startListener = async (index) => {
+  const signer = getSigner(configs[index].EXCHANGE)
   const isZero = configs[index].CIC0
 
   let lpcontract = new Contract(
@@ -500,7 +586,7 @@ const startListener = async (index) => {
   );
 
   lpcontract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
-  const { cicPrice } = await getBNBPrice()
+  const { cicPrice } = await getBNBPrice(configs[index].EXCHANGE)
   const inAmount = isZero ? amount0In : amount1In
   const outAmount = isZero ? amount1Out : amount0Out
 
@@ -509,7 +595,8 @@ const startListener = async (index) => {
   const dots = sym(new BigNumber(spent).dividedBy(configs[index].PERDOT).toFixed(0))
 
   if( bought.gt(configs[index].MINBUY) ) {
-    var message = 
+    var message =
+    `<b>${exchange[cIndex].CHAIN.NAME} / ${exchange[cIndex].NAME}</b>\n` +
     `${configs[index].SYM} - Purchased!\n` +
     dots +
     `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
