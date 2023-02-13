@@ -400,7 +400,7 @@ bot.onText(/^\/price/, async function(message, match) {
               `${sym} MC: $${mc}\n` +
               `CIC Price: $${cicPrice}\n` + 
               `\n` +
-              `https://cic.farmageddon.farm/\n` 
+              `cic.farmageddon.farm\n` 
               ,cid);
         
      // } catch {
@@ -488,7 +488,7 @@ const startListener = async (index) => {
     `${configs[index].SYM} Price: $${FRTcValue}\n` +
     `CIC: $${cicPrice}\n` +
     `\n` +
-    `https://cic.farmageddon.farm/\n` 
+    `cic.farmageddon.farm\n` 
     
     sendNotification(message,index);
   }
