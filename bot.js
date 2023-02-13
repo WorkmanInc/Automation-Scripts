@@ -476,7 +476,7 @@ bot.onText(/^\/bnb/, async function(message, match) {
 
  sendNotificationToChannel(
   `<b>BNB Price:</b> $${cicPrice}\n` +
-  `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a>`
  , cid, thread)
 
 })
@@ -487,7 +487,7 @@ bot.onText(/^\/BNB/, async function(message, match) {
 
   sendNotificationToChannel(
     `<b>BNB Price:</b> $${cicPrice}\n` +
-    `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+    `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a>`
    , cid, thread)
 
 })
@@ -531,6 +531,7 @@ bot.onText(/^\/price/, async function(message, match) {
         }  
             const { cicPrice } = await getBNBPrice(cIndex)
             const {sym, price, mc } = await getPrice(LP,cIndex)
+            const link = getLink(cIndex)
 
             sendNotificationToChannel(
               `${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
@@ -539,7 +540,7 @@ bot.onText(/^\/price/, async function(message, match) {
               `<b>MCap:</b> $${mc}\n` +
               `<b>${exchange[cIndex].CHAIN.NAME} Price:</b> $${cicPrice}\n` + 
               `\n` +
-              `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+              link
               ,cid);
         
       } catch {
@@ -547,6 +548,11 @@ bot.onText(/^\/price/, async function(message, match) {
       }
     
 })
+
+const getLink = (index) => {
+  if(exchange[index].CHAIN.NAME === "CIC") return  `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+  return  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a>`
+}
 
 const saveNewConfig = async () => {
   let path = `./tokenConfig.json`
