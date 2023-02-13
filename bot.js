@@ -450,7 +450,7 @@ bot.onText(/^\/bnb/, async function(message, match) {
   const { cicPrice } = await getBNBPrice(1)
 
  sendNotificationToChannel(
-  `<b>CIC Price:</b> $${cicPrice}\n` +
+  `<b>BNB Price:</b> $${cicPrice}\n` +
   `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
  , cid, thread)
 
@@ -461,7 +461,7 @@ bot.onText(/^\/BNB/, async function(message, match) {
   const { cicPrice } = await getBNBPrice(1)
 
   sendNotificationToChannel(
-    `<b>CIC Price:</b> $${cicPrice}\n` +
+    `<b>BNB Price:</b> $${cicPrice}\n` +
     `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
    , cid, thread)
 
