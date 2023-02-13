@@ -189,6 +189,21 @@ const getBNBPrice = async () => {
   }
 };
 
+const getBNBMC = async () => {
+  const apiUrl = "https://backend.newscan.cicscan.com/coin_price";
+  try {
+    const res = await fetch(apiUrl);
+    if (res.status >= 400) {
+      throw new Error("Bad response from server");
+    }
+    const price = await res.json();
+    return parseFloat(price.market_cap);
+    
+  } catch (err) {
+    console.error("Unable to connect to Binance API", err);
+  }
+};
+
 
 bot.onText(/^\/addLPToken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(function(data) {
@@ -307,12 +322,20 @@ const getPrice = async (lp) => {
     lpabi,
     signer
   );
-  const tDecimals = new BigNumber(await tContract.decimals())
+  const tdRaw = await tContract.decimals()
+  const tsRaw = await tContract.totalSupply()
+  const tDecimals = new BigNumber(tdRaw.toString())
+  const totalSupply = new BigNumber(tsRaw.toString())
+  const bRaw = await tContract.balanceOf("0x000000000000000000000000000000000000dEaD")
+  const burned = new BigNumber(bRaw.toString())
   const dec = new BigNumber(18 - tDecimals)
   const sym = await tContract.symbol()
  
+
   const price = cicR.multipliedBy(cicPrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(10)
-  return { sym, price }
+  const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
+    console.log(mc)
+  return { sym, price, mc }
   
    
   
@@ -322,15 +345,23 @@ const getPrice = async (lp) => {
 bot.onText(/^\/cic/, async function(message, match) {     
   const cid = message.chat.id.toString()
   const cicPrice = await getBNBPrice()
+  const mc = await getBNBMC()
 
- sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
+ sendNotificationToChannel(
+  `CIC Price: $${cicPrice}\n` +
+  `CIC MC: $${mc}`
+ , cid)
 
 })
 bot.onText(/^\/CIC/, async function(message, match) {     
   const cid = message.chat.id.toString()
   const cicPrice = await getBNBPrice()
+  const mc = await getBNBMC()
 
- sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
+  sendNotificationToChannel(
+    `CIC Price: $${cicPrice}\n` +
+    `CIC MC: $${mc}`
+   , cid)
 
 })
 
@@ -340,11 +371,15 @@ bot.onText(/^\/price/, async function(message, match) {
       const command = message.text.substring(7)
       let LP = command
       const cicPrice = await getBNBPrice()
+      const mc = await getBNBMC()
 
 
-    if(command.toLowerCase() === 'cic') sendNotificationToChannel(`CIC Price: $${cicPrice}`, cid)
+    if(command.toLowerCase() === 'cic') sendNotificationToChannel(
+      `CIC Price: $${cicPrice}\n` +
+      `CIC MC: $${mc}`
+     , cid)
     else {
-    try {
+    // try {
         for(let i=0; i<configs.length; i++) {
           if(configs[i].SYM.toLowerCase() === command.toLowerCase()) {
             LP = configs[i].LPADDRESS; break}
@@ -358,18 +393,20 @@ bot.onText(/^\/price/, async function(message, match) {
             }
           }
         }  
-            const {sym, price } = await getPrice(LP)
+            const {sym, price, mc } = await getPrice(LP)
+
             sendNotificationToChannel(
               `${sym} / CIC\n` +
-              `${sym}: $${price}\n` + 
+              `${sym}: $${price}\n` +
+              `${sym} MC: $${mc}\n` +
               `CIC Price: $${cicPrice}\n` + 
               `\n` +
               `https://cic.farmageddon.farm/\n` 
               ,cid);
         
-      } catch {
-        bot.sendMessage(cid, "Not Valid TOKEN");
-      }
+     // } catch {
+     //   bot.sendMessage(cid, "Not Valid TOKEN");
+     // }
     }
 })
 
