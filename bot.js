@@ -136,6 +136,7 @@ const init = async () => {
   for(let i=0; i<configs.length;i++){
     startListener(i)
   }
+  // sendKillMsg("FG Bot Started Up!")
 }
 
 const sendKillMsg = async (message) => {
