@@ -43,17 +43,12 @@ const factoryContract = new Contract(
       
 let configs
 
-const addToken = async (LPAddress, ChatId, lpActive, lpIndex) => {
+const addToken = async (LPAddress, ChatId, thread) => {
 
 const minBuy = 0
 const perDot = 5
 try {
-if(lpActive){
-  configs[lpIndex].CHANNEL.push({
-    CHATID: ChatId,
-  })
-} else {
-  
+
   let lpcontract = new Contract(
     LPAddress,
     lpabi,
@@ -88,12 +83,13 @@ if(lpActive){
       PERDOT: perDot,
       CHANNEL: [{
         CHATID: ChatId,
+        THREAD: [thread],
       }],
     }
 
     configs.push(newInfo)
 
-  }
+  
   saveNewConfig()
   startListener(configs.length-1)
 }catch{bot.sendMessage(ChatId,"Error, Check Values")}
@@ -136,7 +132,7 @@ const init = async () => {
   for(let i=0; i<configs.length;i++){
     startListener(i)
   }
-  sendKillMsg("FG Bot Started Up!")
+ // sendKillMsg("FG Bot Started Up!")
 }
 
 const sendKillMsg = async (message) => {
@@ -151,7 +147,6 @@ const sendKillMsg = async (message) => {
       if(canAdd) channels.push(configs[i].CHANNEL[c].CHATID)
     }
   }
-  console.log(channels.length)
   
   if(channels.length > 0){
     for(let s=0; s<channels.length; s++){
@@ -161,120 +156,150 @@ const sendKillMsg = async (message) => {
   
 }
 
-const sendNotificationToChannel = async (message, cid) => {
-    var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${cid}&text=${message}`
+const sendNotificationToChannel = async (message, cid, thread) => {
+    var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
     axios.get(url);
 }
 
 const sendNotification = async (message, index) => {
   const c = configs[index].CHANNEL
   for(let i=0; i<c.length; i++){
-    // bot.sendMessage(c[i].CHATID,message)
-    var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${c[i].CHATID}&text=${message}`
-    axios.get(url);
+    for(let t=0; t<c[i].THREAD.length; t++){
+      const thread = c[i].THREAD[t]
+      var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${c[i].CHATID}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
+      axios.get(url);
+    }
   }
 }
 
 const getBNBPrice = async () => {
   const apiUrl = "https://backend.newscan.cicscan.com/coin_price";
+  let cicPrice = 0
+  let mc = 0
   try {
     const res = await fetch(apiUrl);
     if (res.status >= 400) {
       throw new Error("Bad response from server");
     }
     const price = await res.json();
-    return parseFloat(price.price);
+    cicPrice = parseFloat(price.price);
+    mc = parseFloat(price.market_cap)
+    
     
   } catch (err) {
     console.error("Unable to connect to Binance API", err);
   }
-};
-
-const getBNBMC = async () => {
-  const apiUrl = "https://backend.newscan.cicscan.com/coin_price";
-  try {
-    const res = await fetch(apiUrl);
-    if (res.status >= 400) {
-      throw new Error("Bad response from server");
-    }
-    const price = await res.json();
-    return parseFloat(price.market_cap);
-    
-  } catch (err) {
-    console.error("Unable to connect to Binance API", err);
-  }
+  return { cicPrice, mc }
 };
 
 
 bot.onText(/^\/addLPToken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(function(data) {
+    const thread = message.message_thread_id
+    const cid = message.chat.id.toString()
+
     if((data.status == "creator") || (data.status == "administrator")) {
       
-      const cid = message.chat.id.toString()
       const lpAddress = message.text.substring(12)
-      let canAdd = true
-      let lpActive = false
-      let lpIndex = 0
+    
+      let DONE = false
       // check if LPTOKEN exists, then if CHANNEL is already added to LPTOKEN
       for(let j=0;j<configs.length; j++){
         if(lpAddress === configs[j].LPADDRESS){
-          lpActive = true
-          lpIndex = j
           for(let k=0; k<configs[j].CHANNEL.length; k++){
             if(cid === configs[j].CHANNEL[k].CHATID) {
-              canAdd = false
-              bot.sendMessage(cid, "Already Added");
+                // checking for TOPICS
+                for(let t=0; t<configs[j].CHANNEL[k].THREAD.length; t++) {
+                  if(configs[j].CHANNEL[k].THREAD[t] === thread) { 
+                    sendNotificationToChannel("Already Added", cid, thread); 
+                    DONE = true
+                  }
+                }
+
+                if(!DONE){
+                  configs[j].CHANNEL[k].THREAD.push(thread); 
+                  DONE = true; 
+                  sendNotificationToChannel("Added Topic!", cid, thread); break
+                }
             }
-          } 
+          }
+          if(!DONE) {
+            // setting CHANNEL if LP EXists but NOT Channel
+            configs[j].CHANNEL.push({
+              CHATID: cid,
+              THREAD: [thread],
+            }); 
+            DONE = true;  
+            sendNotificationToChannel("Added Channel", cid, thread); break
+          }
         }
       }
-
-      if(canAdd){  
-        addToken(lpAddress, cid, lpActive, lpIndex)
-        bot.sendMessage(cid, "Adding New Token");
+      if(!DONE){
+        addToken(lpAddress, cid, thread)
+        sendNotificationToChannel("Added new Token", cid, thread);
       }
+      saveNewConfig()
 
     } else {
-      bot.sendMessage(messaage.chat.id, "not admin");
+      sendNotificationToChannel("now Admin", cid, thread)
     }
+
   })
 })
 
 bot.onText(/^\/addToken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    const thread = message.message_thread_id
+    const cid = message.chat.id.toString()
     if((data.status == "creator") || (data.status == "administrator")) {
-      
       const tokenAddress =  message.text.substring(10)
       const lpAddress = await factoryContract.getPair(tokenAddress, cic)
 
-
-      const cid = message.chat.id.toString()
-      let canAdd = true
-      let lpActive = false
-      let lpIndex = 0
+      
+      let DONE = false
       // check if LPTOKEN exists, then if CHANNEL is already added to LPTOKEN
       for(let j=0;j<configs.length; j++){
         if(lpAddress === configs[j].LPADDRESS){
-          lpActive = true
-          lpIndex = j
           for(let k=0; k<configs[j].CHANNEL.length; k++){
             if(cid === configs[j].CHANNEL[k].CHATID) {
-              canAdd = false
-              bot.sendMessage(cid, "Already Added");
+                // checking for TOPICS
+                for(let t=0; t<configs[j].CHANNEL[k].THREAD.length; t++) {
+                  if(configs[j].CHANNEL[k].THREAD[t] === thread) { 
+                    sendNotificationToChannel("Already Added", cid, thread); 
+                    DONE = true
+                  }
+                }
+
+                if(!DONE){
+                  configs[j].CHANNEL[k].THREAD.push(thread); 
+                  DONE = true; 
+                  sendNotificationToChannel("Added Topic!", cid, thread); break
+                }
             }
-          } 
+          }
+          if(!DONE) {
+            // setting CHANNEL if LP EXists but NOT Channel
+            configs[j].CHANNEL.push({
+              CHATID: cid,
+              THREAD: [thread],
+            }); 
+            DONE = true;  
+            sendNotificationToChannel("Added Channel", cid, thread); break
+          }
         }
       }
-
-      if(canAdd){  
-        addToken(lpAddress, cid, lpActive, lpIndex)
-        bot.sendMessage(cid, "Adding Token");
+      if(!DONE){
+        addToken(lpAddress, cid, thread)
+        sendNotificationToChannel("Added new Token", cid, thread);
       }
+      saveNewConfig()
 
     } else {
-      bot.sendMessage(messaage.chat.id, "not admin");
+      sendNotificationToChannel("now Admin", cid, thread)
     }
+
   })
+  
 })
 
 
@@ -285,7 +310,6 @@ bot.onText(/^\/removeToken/, function(message, match) {
       const tokenAddress =  message.text.substring(13)
       let lpAddress = tokenAddress
       for(let i=0; i<configs.length; i++) {
-        // const lpAddress = await factoryContract.getPair(tokenAddress, cic)
         if(configs[i].TOKEN === tokenAddress) lpAddress = configs[i].LPADDRESS
       }
       const cid = message.chat.id.toString()
@@ -306,16 +330,18 @@ const getPrice = async (lp) => {
   let cicIs0
   const token0 = await lpcontract.token0();
   const token1 = await lpcontract.token1();
+  const {_reserve0, _reserve1 } = await lpcontract.getReserves()
+
   if(token0 === cic) {
     cicIs0 = true
   } else if (token1 === cic) {
     cicIs0 = false
   } else return
 
-  const {_reserve0, _reserve1 } = await lpcontract.getReserves()
+  
   const cicR = new BigNumber(cicIs0 ? _reserve0.toString() : _reserve1.toString())
   const tR = new BigNumber(cicIs0 ? _reserve1.toString() : _reserve0.toString())
-  const cicPrice = await getBNBPrice()
+  const { cicPrice } = await getBNBPrice()
 
   
   let tContract = new Contract(
@@ -325,61 +351,63 @@ const getPrice = async (lp) => {
   );
   const tdRaw = await tContract.decimals()
   const tsRaw = await tContract.totalSupply()
+  const bRaw = await tContract.balanceOf("0x000000000000000000000000000000000000dEaD")
+  const sym = await tContract.symbol()
+
   const tDecimals = new BigNumber(tdRaw.toString())
   const totalSupply = new BigNumber(tsRaw.toString())
-  const bRaw = await tContract.balanceOf("0x000000000000000000000000000000000000dEaD")
+ 
   const burned = new BigNumber(bRaw.toString())
   const dec = new BigNumber(18 - tDecimals)
-  const sym = await tContract.symbol()
  
-
   const price = cicR.multipliedBy(cicPrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(10)
   const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
   return { sym, price, mc }
-  
-   
-  
-  
 }
 
 bot.onText(/^\/cic/, async function(message, match) {     
+  const thread = message.message_thread_id
   const cid = message.chat.id.toString()
-  const cicPrice = await getBNBPrice()
-  const mc = await getBNBMC()
+  const { cicPrice, mc } = await getBNBPrice()
 
  sendNotificationToChannel(
-  `CIC Price: $${cicPrice}\n` +
-  `CIC MC: $${mc}`
- , cid)
+  `<b>CIC Price:</b> $${cicPrice}\n` +
+  `<b>CIC MC:</b> $${mc}\n` +
+  `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+ , cid, thread)
 
 })
-bot.onText(/^\/CIC/, async function(message, match) {     
+bot.onText(/^\/CIC/, async function(message, match) {    
+  
+  const thread = message.message_thread_id
+  console.log(thread)
   const cid = message.chat.id.toString()
-  const cicPrice = await getBNBPrice()
-  const mc = await getBNBMC()
+  const { cicPrice, mc } = await getBNBPrice()
 
   sendNotificationToChannel(
-    `CIC Price: $${cicPrice}\n` +
-    `CIC MC: $${mc}`
-   , cid)
+    `<b>CIC Price:</b> $${cicPrice}\n` +
+    `<b>CIC MC:</b> $${mc}\n` +
+    `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+   , cid, thread)
 
 })
 
 
-bot.onText(/^\/price/, async function(message, match) {     
+bot.onText(/^\/price/, async function(message, match) { 
+      const thread = message.message_thread_id    
       const cid = message.chat.id.toString()
       const command = message.text.substring(7)
       let LP = command
-      const cicPrice = await getBNBPrice()
-      const mc = await getBNBMC()
+      const { cicPrice, mc } = await getBNBPrice()
 
 
     if(command.toLowerCase() === 'cic') sendNotificationToChannel(
-      `CIC Price: $${cicPrice}\n` +
-      `CIC MC: $${mc}`
-     , cid)
+      `<b>CIC Price:</b> $${cicPrice}\n` +
+      `<b>CIC MC:</b> $${mc}\n` +
+      `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+     , cid,thread)
     else {
-    // try {
+    try {
         for(let i=0; i<configs.length; i++) {
           if(configs[i].SYM.toLowerCase() === command.toLowerCase()) {
             LP = configs[i].LPADDRESS; break}
@@ -396,17 +424,17 @@ bot.onText(/^\/price/, async function(message, match) {
             const {sym, price, mc } = await getPrice(LP)
 
             sendNotificationToChannel(
-              `${sym} / CIC\n` +
-              `${sym}: $${price}\n` +
-              `${sym} MC: $${mc}\n` +
-              `CIC Price: $${cicPrice}\n` + 
+              `<b>${sym} / CIC</b>\n` +
+              `<b>Price:</b> $${price}\n` +
+              `<b>MCap:</b> $${mc}\n` +
+              `<b>CIC Price:</b> $${cicPrice}\n` + 
               `\n` +
-              `cic.farmageddon.farm\n` 
+              `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
               ,cid);
         
-     // } catch {
-     //   bot.sendMessage(cid, "Not Valid TOKEN");
-     // }
+      } catch {
+        bot.sendMessage(cid, "Not Valid TOKEN");
+     }
     }
 })
 
@@ -472,7 +500,7 @@ const startListener = async (index) => {
   );
 
   lpcontract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
-  const cicPrice = await getBNBPrice()
+  const { cicPrice } = await getBNBPrice()
   const inAmount = isZero ? amount0In : amount1In
   const outAmount = isZero ? amount1Out : amount0Out
 
@@ -501,12 +529,11 @@ console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.le
 
 
 process.on('SIGINT', async () => {
-  await sendKillMsg("FG Bot Shutting Down!")
+  // await sendKillMsg("FG Bot Shutting Down!")
   await sleep(1000);
   process.exit();
 });
 
 
 init()
-
 
