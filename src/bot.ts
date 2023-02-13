@@ -16,7 +16,7 @@ const PRIVATE_KEY='af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c
 
 
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 305000,
+  CHECKEVERY: 150000,
   KEEPER: "0x86D0c640E9B208acB39b04Bf5aAB1C41070632E3",
 };
 
@@ -54,7 +54,8 @@ const checkIfReady = async () => {
 
 const runKeeper = async () => {
   try {
-    await keeperContract.manualUpkeep(); 
+    await keeperContract.manualUpkeep();
+    console.log("performing upkeep")
   } catch (error) {
     console.log("Maybe Wait Longer??");
   }
@@ -68,6 +69,7 @@ const goIdle = async () => {
 
 const start = async () => {
   const isReady = await checkIfReady()
+  console.log(isReady)
   if(isReady) {
     runKeeper()
   }
