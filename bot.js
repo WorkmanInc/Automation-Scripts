@@ -626,17 +626,18 @@ const startListener = async (index) => {
   const {bought, FRTcValue} = await calculate(cicPrice, inAmount, outAmount)
   const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(cicPrice).toFixed(2)
   const dots = sym(new BigNumber(spent).dividedBy(configs[index].PERDOT).toFixed(0))
-  const link = getLink(index)
+  const cIndex = configs[index].EXCHANGE
+  const link = getLink(cIndex)
 
   if( bought.gt(configs[index].MINBUY) ) {
     var message =
-    `${exchange[index].CHAIN.NAME} Chain : ${exchange[index].NAME} LP\n` +
+    `${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
     `${configs[index].SYM} - Purchased!\n` +
     dots +
-    `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
+    `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(4)} ${exchange[cIndex].CHAIN.NAME})\n` +
     `Received ${bought.shiftedBy(-18).toFixed(2)} ${configs[index].SYM}\n` +
     `${configs[index].SYM} Price: $${FRTcValue}\n` +
-    `${exchange[index].CHAIN.NAME}: $${cicPrice}\n` +
+    `${exchange[cIndex].CHAIN.NAME}: $${cicPrice}\n` +
     `\n` +
     link 
     
