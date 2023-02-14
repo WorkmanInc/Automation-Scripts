@@ -628,7 +628,7 @@ const startListener = async (index) => {
 
   if( bought.gt(configs[index].MINBUY) ) {
     var message =
-    `${exchange[index].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
+    `${exchange[index].CHAIN.NAME} Chain : ${exchange[index].NAME} LP\n` +
     `${configs[index].SYM} - Purchased!\n` +
     dots +
     `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
