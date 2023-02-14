@@ -598,7 +598,7 @@ const sym = (cicSpent) => {
 }
 
 const stopListener = async (lp, index) => {
-  const signer = getSigner(index)
+  const signer = getSigner(configs[index].EXCHANGE)
   let lpcontract = new Contract(
     lp,
     lpabi,
@@ -608,7 +608,7 @@ const stopListener = async (lp, index) => {
 }
 
 const startListener = async (index) => {
-  const signer = getSigner(index)
+  const signer = getSigner(configs[index].EXCHANGE)
   const isZero = configs[index].CIC0
 
   let lpcontract = new Contract(
@@ -628,7 +628,7 @@ const startListener = async (index) => {
 
   if( bought.gt(configs[index].MINBUY) ) {
     var message =
-    `${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
+    `${exchange[index].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
     `${configs[index].SYM} - Purchased!\n` +
     dots +
     `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
