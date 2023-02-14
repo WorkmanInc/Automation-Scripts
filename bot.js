@@ -625,6 +625,7 @@ const startListener = async (index) => {
   const {bought, FRTcValue} = await calculate(cicPrice, inAmount, outAmount)
   const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(cicPrice).toFixed(2)
   const dots = sym(new BigNumber(spent).dividedBy(configs[index].PERDOT).toFixed(0))
+  const link = getLink(index)
 
   if( bought.gt(configs[index].MINBUY) ) {
     var message =
@@ -636,7 +637,7 @@ const startListener = async (index) => {
     `${configs[index].SYM} Price: $${FRTcValue}\n` +
     `${exchange[index].CHAIN.NAME}: $${cicPrice}\n` +
     `\n` +
-    `cic.farmageddon.farm\n` 
+    link 
     
     sendNotification(message,index);
   }
