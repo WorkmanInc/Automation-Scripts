@@ -634,7 +634,7 @@ const startListener = async (index) => {
     `\nSpent: $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
     `Received ${bought.shiftedBy(-18).toFixed(2)} ${configs[index].SYM}\n` +
     `${configs[index].SYM} Price: $${FRTcValue}\n` +
-    `${exchange[cIndex].CHAIN.NAME}: $${cicPrice}\n` +
+    `${exchange[index].CHAIN.NAME}: $${cicPrice}\n` +
     `\n` +
     `cic.farmageddon.farm\n` 
     
