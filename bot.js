@@ -495,6 +495,7 @@ bot.onText(/^\/BNB/, async function(message, match) {
 
 bot.onText(/^\/price/, async function(message, match) { 
       const cid = message.chat.id.toString()
+      const thread = message.message_thread_id
       const command = message.text.substring(7,49)
       const tExchange = message.text.substring(50)
       let cIndex = 0
@@ -541,7 +542,7 @@ bot.onText(/^\/price/, async function(message, match) {
               `<b>${exchange[cIndex].CHAIN.NAME} Price:</b> $${cicPrice}\n` + 
               `\n` +
               link
-              ,cid);
+              ,cid, thread);
         
       } catch {
        bot.sendMessage(cid, "Not Valid TOKEN");
