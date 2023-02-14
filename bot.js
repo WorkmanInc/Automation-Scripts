@@ -598,7 +598,7 @@ const sym = (cicSpent) => {
 }
 
 const stopListener = async (lp, index) => {
-  const signer = getSigner(configs[index].EXCHANGE)
+  const signer = getSigner(index)
   let lpcontract = new Contract(
     lp,
     lpabi,
@@ -608,7 +608,7 @@ const stopListener = async (lp, index) => {
 }
 
 const startListener = async (index) => {
-  const signer = getSigner(configs[index].EXCHANGE)
+  const signer = getSigner(index)
   const isZero = configs[index].CIC0
 
   let lpcontract = new Contract(

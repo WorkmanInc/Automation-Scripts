@@ -60,6 +60,12 @@
         "THREAD": [
           null
         ]
+      },
+      {
+        "CHATID": "-1001435750887",
+        "THREAD": [
+          null
+        ]
       }
     ]
   },
@@ -91,6 +97,23 @@
     "CHANNEL": [
       {
         "CHATID": "-1001625261042",
+        "THREAD": [
+          null
+        ]
+      }
+    ]
+  },
+  {
+    "LPADDRESS": "0x2f82C2c7cA7C8f548e0c92C9dc7E8Ee98c658e9D",
+    "TOKEN": "0xd51237A6F3219d186f0C8d8Dd957b1Bcb3Ce5d48",
+    "SYM": "FRT",
+    "CIC0": true,
+    "MINBUY": 0,
+    "PERDOT": 5,
+    "EXCHANGE": 1,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001435750887",
         "THREAD": [
           null
         ]
