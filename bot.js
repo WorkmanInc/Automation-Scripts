@@ -11,8 +11,8 @@ const BigNumber = require("BigNumber.js");
 const telegramBot = require('node-telegram-bot-api');
 
 
-// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -396,7 +396,7 @@ bot.onText(/^\/addToken/, function(message, match) {
     }
     if(lps.length > 0) {
       saveNewConfig()
-    } else sendNotificationToChannel(`${bases[l]} Dont Exist`, cid, thread); 
+    } else sendNotificationToChannel(` Dont Exist - Wrong Dex?`, cid, thread); 
 
     } else {
       sendNotificationToChannel("not Admin", cid, thread)
