@@ -2,7 +2,6 @@
 const dotenv = require("dotenv");
 const axios = require('axios');
 const fs = require("fs");
-const JSBI = require('jsbi');
 const fetch = require("cross-fetch");
 const sleep = require("util").promisify(setTimeout);
 const { JsonRpcProvider } = require("@ethersproject/providers");
