@@ -117,12 +117,6 @@
         "THREAD": [
           0
         ]
-      },
-      {
-        "CHATID": "-1001797513003",
-        "THREAD": [
-          0
-        ]
       }
     ]
   },
@@ -159,13 +153,6 @@
     "MINBUY": 0,
     "PERDOT": 5,
     "EXCHANGE": 5,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001797513003",
-        "THREAD": [
-          0
-        ]
-      }
-    ]
+    "CHANNEL": []
   }
 ]

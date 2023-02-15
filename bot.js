@@ -55,33 +55,39 @@ let exchange = [
   {
     NAME: "FARM",
     FACTORY: "0xfD35F3f178353572E4357983AD2831fAcd652cC5",
-    CHAIN: chain[0]
+    CHAIN: chain[0],
+    DOTS: "\xF0\x9F\x9A\x9C"  // tractor
   },
   {
     NAME: "PCS",
     FACTORY: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
-    CHAIN: chain[1]
+    CHAIN: chain[1],
+    DOTS: "\xF0\x9F\x90\xB0" // rabbit
   },
   {
     NAME: "DONK",
     FACTORY: "0x04D6b20f805e2bd537DDe84482983AabF59536FF",
-    CHAIN: chain[1]
+    CHAIN: chain[1],
+    DOTS: "\xF0\x9F\x90\xB4"
   },
   {
     NAME: "WEN",
     FACTORY: "0x51eD5a1f2EC7516dB92ff5Ae8d76ea4A2B87A6d1",
-    CHAIN: chain[0]
+    CHAIN: chain[0],
+    DOTS: "\xF0\x9F\x94\xB5"
   },
   {
     NAME: "UNIV3",
     FACTORY: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
     CHAIN: chain[2],
-    FEES: [100, 500, 3000, 10000]
+    FEES: [100, 500, 3000, 10000],
+    DOTS: "\xF0\x9F\x92\xB5"
   },
   {
     NAME: "UNIV2",
     FACTORY: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-    CHAIN: chain[2]
+    CHAIN: chain[2],
+    DOTS: "\xF0\x9F\x92\xB0"
   }
 ]
 
@@ -613,7 +619,7 @@ bot.onText(/^\/price/, async function(message, match) {
       for(let c=0; c<exchange.length; c++){
         if(tExchange.toLowerCase() === exchange[c].NAME.toLowerCase()) cIndex = c
       }
-  //   try {
+  try {
     let gotOne = false
         for(let i=0; i<configs.length; i++) {
           
@@ -647,9 +653,9 @@ bot.onText(/^\/price/, async function(message, match) {
               link
               ,cid, thread);
         
-   // } catch {
-   //   bot.sendMessage(cid, "Not Valid TOKEN");
-   // }
+    } catch {
+      bot.sendMessage(cid, "Not Valid TOKEN");
+    }
     
 })
 
