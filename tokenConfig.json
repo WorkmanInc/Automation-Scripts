@@ -143,16 +143,5 @@
         ]
       }
     ]
-  },
-  {
-    "LPADDRESS": "0x2c835F1c68d7f91c5E110Ea93cc2D0f7AFB3d86b",
-    "TOKEN": "0x5955f7d312c5d84B004d259D55072C4F0A478dBC",
-    "SYM": "BALTO",
-    "BASE0": false,
-    "BASEISNATIVE": true,
-    "MINBUY": 0,
-    "PERDOT": 5,
-    "EXCHANGE": 5,
-    "CHANNEL": []
   }
 ]
