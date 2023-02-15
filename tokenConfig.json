@@ -1,8 +1,13 @@
 [
   {
+    
     "LPADDRESS": "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217",
     "TOKEN": "0x9a37bF232466a55B99428479dF22c049cD43c20E",
+    "BASETOKEN": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     "SYM": "FRTc",
+    "TDECIMALS": "18",
+    "BSYM": "WCIC",
+    "BDECIMALS": "18",
     "BASE0": true,
     "BASEISNATIVE": true,
     "MINBUY": 0,
@@ -24,120 +29,6 @@
       },
       {
         "CHATID": "-1001830742009",
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0xA3E66631167Eabf5f6A5476A3095e5a51D0DEB90",
-    "TOKEN": "0x26b31021DC6A9E8a91D029a28541145e3D5654Aa",
-    "SYM": "DSTc",
-    "BASE0": false,
-    "BASEISNATIVE": true,
-    "MINBUY": 0,
-    "PERDOT": 5,
-    "EXCHANGE": 0,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001554598852",
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x746cdbb1bfBB19e4897Aee3a5312De79C40FD5bB",
-    "TOKEN": "0x4492cA0AFF6D603e18Aea5075B49A5ff76b9Ea06",
-    "SYM": "FG",
-    "BASE0": false,
-    "BASEISNATIVE": true,
-    "MINBUY": 0,
-    "PERDOT": 5,
-    "EXCHANGE": 1,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001830742009",
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x7123431162c1efF257578D1574014e5305Eb7bd4",
-    "TOKEN": "0x3969Fe107bAe2537cb58047159a83C33dfbD73f9",
-    "SYM": "DST",
-    "BASE0": false,
-    "BASEISNATIVE": true,
-    "MINBUY": 0,
-    "PERDOT": 5,
-    "EXCHANGE": 2,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001554598852",
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x6b75970104032cE9720902Cea0A0E57Ce24a6077",
-    "TOKEN": "0xe5977835A013e3A5a52f44f8422734bd2dc545F0",
-    "SYM": "BALTO",
-    "BASE0": true,
-    "BASEISNATIVE": true,
-    "MINBUY": 0,
-    "PERDOT": 5,
-    "EXCHANGE": 1,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001625261042",
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x2f82C2c7cA7C8f548e0c92C9dc7E8Ee98c658e9D",
-    "TOKEN": "0xd51237A6F3219d186f0C8d8Dd957b1Bcb3Ce5d48",
-    "SYM": "FRT",
-    "BASE0": true,
-    "BASEISNATIVE": true,
-    "MINBUY": 0,
-    "PERDOT": 5,
-    "EXCHANGE": 1,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001435750887",
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x27DFB939B74d0f848017a101B6d75E175e57184d",
-    "TOKEN": "0xd51237A6F3219d186f0C8d8Dd957b1Bcb3Ce5d48",
-    "SYM": "FRT",
-    "BASE0": false,
-    "BASEISNATIVE": false,
-    "MINBUY": 0,
-    "PERDOT": 5,
-    "EXCHANGE": 1,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001797513003",
-        "THREAD": [
-          0
-        ]
-      },
-      {
-        "CHATID": "-1001435750887",
         "THREAD": [
           0
         ]

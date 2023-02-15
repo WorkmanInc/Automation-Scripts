@@ -11,8 +11,8 @@ const BigNumber = require("BigNumber.js");
 const telegramBot = require('node-telegram-bot-api');
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -22,8 +22,43 @@ const factoryABI = require("./factorcy.json");
 const uniswapABI = require("./uni-Factory.json");
 const uniLPABI = require("./uniLP.json");
 
+bot.onText(/^\/commands/, async function(message, match) {   
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    if((data.status == "creator") || (data.status == "administrator")) { 
+      const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+      const cid = message.chat.id.toString()
+     
+      sendNotificationToChannel(
+      "<b><u> Commands </u></b>\n" +
+       "<b>/addToken</b> [tokenAddress] [dex]\n"+
+       "Adds Token to BuyBot List for DEX\n" +
+        "\n" +
+       "<b>/removeToken</b> [tokenAddress]\n" +
+       "Removes Token from BuyBot list\n" +
+        "\n" +
+       "<b>/price</b> [tokenAddress] [dex]\n" +
+       "Checks price of Token on DEX\n" +
+       "\n" +
+       "<b>/price</b> [token Symbol]\n" +
+       "Checks price of Token by Symbol\n" +
+       "\n<b>IF MULTIPLE OF SAME SYMBOL USE FIRST METHOD</b>\n" +
+       "\n" +
+       "<b>/tokenlist</b>: List of Tokens in group\n" +
+       "<b>/dexlist</b>: List of Dex's available\n" +
+       "<b>/chainlist</b>: List of Chains available\n" +
+       "\n"+
+       "<b>/[Coin Symbol]</b> Checks price of Coin\n" +
+        `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+        , cid, thread)
+    } else {
+          sendNotificationToChannel("not Admin", cid, thread)
+    }
+  })
+})
+
 let chain = [
   {
+    LONGNAME: "Crazy Internet Coin",
     NAME: "CIC",
     API: "https://backend.newscan.cicscan.com/coin_price",
     RPC: "https://xapi.cicscan.com/",
@@ -32,6 +67,7 @@ let chain = [
     BASES: ["0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"]
   },
   {
+    LONGNAME: "Binance",
     NAME: "BNB",
     API: "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT",
     RPC: "https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6/",
@@ -40,6 +76,7 @@ let chain = [
     BASES: ["0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"]
   },
   {
+    LONGNAME: "Ethereum",
     NAME: "ETH",
     API: "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD",
     RPC: "https://rpc.ankr.com/eth/a43f07a7be6cc42d81c31ccab2f9a43e71a3713d40c4809cc4a9886839d5cb76",
@@ -47,36 +84,60 @@ let chain = [
     NATIVE: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     BASES: ["0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "0xdAC17F958D2ee523a2206206994597C13D831ec7"]
   }
-
-  
 ];
+
+bot.onText(/^\/chainlist/, async function(message, match) {   
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    if((data.status == "creator") || (data.status == "administrator")) { 
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+  let chainsList = ""
+  for(let c=0; c<chain.length; c++){
+    chainsList = chainsList + `<b>${chain[c].LONGNAME}:</b> ${chain[c].NAME} \n`
+  }
+
+  sendNotificationToChannel(
+    "<b><u> Chain List </u></b>\n" +
+    chainsList +
+    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   , cid, thread)
+  } else {
+    sendNotificationToChannel("not Admin", cid, thread)
+  }
+})
+})
 
 let exchange = [
   {
+    LONGNAME: "Farmageddon",
     NAME: "FARM",
     FACTORY: "0xfD35F3f178353572E4357983AD2831fAcd652cC5",
     CHAIN: chain[0],
     DOTS: "\xF0\x9F\x9A\x9C"  // tractor
   },
   {
+    LONGNAME: "PancakeSwap",
     NAME: "PCS",
     FACTORY: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
     CHAIN: chain[1],
     DOTS: "\xF0\x9F\x90\xB0" // rabbit
   },
   {
+    LONGNAME: "Donk Swap",
     NAME: "DONK",
     FACTORY: "0x04D6b20f805e2bd537DDe84482983AabF59536FF",
     CHAIN: chain[1],
     DOTS: "\xF0\x9F\x90\xB4"
   },
   {
+    LONGNAME: "WendDex",
     NAME: "WEN",
     FACTORY: "0x51eD5a1f2EC7516dB92ff5Ae8d76ea4A2B87A6d1",
     CHAIN: chain[0],
     DOTS: "\xF0\x9F\x94\xB5"
   },
   {
+    LONGNAME: "UniSwap V3",
     NAME: "UNIV3",
     FACTORY: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
     CHAIN: chain[2],
@@ -84,12 +145,87 @@ let exchange = [
     DOTS: "\xF0\x9F\x92\xB5"
   },
   {
+    LONGNAME: "UniSwap V2",
     NAME: "UNIV2",
     FACTORY: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
     CHAIN: chain[2],
     DOTS: "\xF0\x9F\x92\xB0"
+  },
+  {
+    LONGNAME: "PancakeSwap ETH",
+    NAME: "PCSETH",
+    FACTORY: "0x1097053Fd2ea711dad45caCcc45EfF7548fCB362",
+    CHAIN: chain[2],
+    DOTS:  "\xF0\x9F\x90\xB0"
+  },
+  {
+    LONGNAME: "Ape Swap",
+    NAME: "APE",
+    FACTORY: "0x0841BD0B734E4F5853f0dD8d7Ea041c241fb0Da6",
+    CHAIN: chain[1],
+    DOTS: "\xF0\x9F\x92\xB5"
+  },
+  {
+    LONGNAME: "BiSwap",
+    NAME: "BIS",
+    FACTORY: "0x858e3312ed3a876947ea49d572a7c42de08af7ee",
+    CHAIN: chain[1],
+    DOTS: "\xF0\x9F\x92\xB5"
   }
+  
 ]
+
+bot.onText(/^\/dexlist/, async function(message, match) {    
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    if((data.status == "creator") || (data.status == "administrator")) {
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+  let dexList = ""
+  for(let c=0; c<exchange.length; c++){
+    dexList = dexList + `<b>${exchange[c].LONGNAME} ${exchange[c].CHAIN.NAME}</b>: ${exchange[c].NAME} \n`
+  }
+
+  sendNotificationToChannel(
+    "<b><u> Dex List </u></b>\n" +
+    dexList +
+    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   , cid, thread)
+  } else {
+    sendNotificationToChannel("not Admin", cid, thread)
+  }
+})
+})
+
+bot.onText(/^\/tokenlist/, async function(message, match) {    
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    if((data.status == "creator") || (data.status == "administrator")) {
+      const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+      const cid = message.chat.id.toString()
+      let tokenlist = ""
+      for(let c=0; c<chain.length; c++){
+        for(let ch =0; ch<configs[c].CHANNEL.length; ch++){
+          if(configs[c].CHANNEL[ch].CHATID === cid){
+            for(let t=0; t<configs[c].CHANNEL[ch].THREAD.length; t++) {
+              const e = configs[c].EXCHANGE
+              tokenlist = tokenlist + `<b>${configs[c].SYM}:</b> ${configs[c].TOKEN} <b>${exchange[e].CHAIN.NAME} ${exchange[e].NAME}</b>\n`
+            }
+          }
+        }
+      }
+
+      sendNotificationToChannel(
+        "<b><u> Tokens List </u></b>\n" +
+        tokenlist +
+        `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+        , cid, thread)
+    } else {
+      sendNotificationToChannel("not Admin", cid, thread)
+    }
+  })
+})
+
+
+
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
@@ -108,7 +244,7 @@ const getSigner = (index) => {
 
 const getFactory = async (index) => {
   const factory = exchange[index].FACTORY
-  const abi = index === 4 ? uniswapABI : factoryABI
+  const abi = exchange[index].NAME === "UNIV3" ? uniswapABI : factoryABI
   const signer = await getSigner(index)
   const factoryContract = new Contract(
     factory,
@@ -127,7 +263,7 @@ const signer = await getSigner(index)
 
 const minBuy = 0
 const perDot = 5
-try {
+// try {
 
   let lpcontract = new Contract(
     LPAddress,
@@ -135,7 +271,6 @@ try {
     signer
   );
 
-  
   const token0 = await lpcontract.token0();
   const token1 = await lpcontract.token1();
   let baseIs0 = false
@@ -157,12 +292,27 @@ try {
     lpabi,
     signer
   );
+  let bcontract = new Contract(
+    baseToken,
+    lpabi,
+    signer
+  );
   const sym = await tcontract.symbol()
+  const bsym = await bcontract.symbol()
+  const tdRaw = await tcontract.decimals()
+  const bdRaw = await bcontract.decimals()
+
+  const td = new BigNumber(tdRaw.toString())
+  const bd = new BigNumber(bdRaw.toString())
 
     const newInfo = {
       LPADDRESS: LPAddress,
       TOKEN: newtoken,
+      BASETOKEN: baseToken,
       SYM: sym,
+      TDECIMALS: td,
+      BSYM: bsym,
+      BDECIMALS: bd,
       BASE0: baseIs0,
       BASEISNATIVE: baseIsNative,
       MINBUY: minBuy,
@@ -178,7 +328,7 @@ try {
 
   saveNewConfig()
   startListener(configs.length-1)
- }catch{bot.sendMessage(ChatId,"Error, Check Values")}
+ // }catch{bot.sendMessage(ChatId,"Error, Check Values")}
 }
 
 const removeToken = async (LPAddress, ChatId, thread) => {
@@ -271,9 +421,10 @@ bot.onText(/^\/test/, async function(message, match) {
 
 const sendNotificationToChannel = async (message, cid, thread) => {
     var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
-    axios.get(url).catch((error) => {
-      console.log("Error Sending to Channel")
-    });
+    axios.get(url)
+    // .catch((error) => {
+    //  console.log("Error Sending to Channel")
+    // });
 }
 
 const sendNotification = async (message, index) => {
@@ -290,7 +441,7 @@ const sendNotification = async (message, index) => {
             if(i === toDelete[c]) add = false
           }
           if(add) {
-            toDelete.push(i)
+            toDelete.push([configs[index].LPADDRESS,c[i].CHATID, thread])
           }
         })
     }
@@ -298,8 +449,7 @@ const sendNotification = async (message, index) => {
 
   if(toDelete.length > 0) {
     for(let d=0; d<toDelete.length; d++){
-      c[toDelete[d]] = c[c.length-1]
-      c.pop()
+     removeToken(toDelete[d][0],toDelete[d][1],toDelete[d][2])
     }
     saveNewConfig()
   }
@@ -349,7 +499,7 @@ bot.onText(/^\/addToken/, function(message, match) {
     for(let b=0; b<exchange[index].CHAIN.BASES.length; b++){
         const factoryContract = await getFactory(index)
         let lpRaw
-        if(index === 4){
+        if(exchange[index].NAME === "UNIV3"){
           for(let f=0; f<exchange[index].FEES.length;f++){
             lpRaw = await factoryContract.getPool(tokenAddress, exchange[index].CHAIN.BASES[b], exchange[index].FEES[f])
             lpString = lpRaw.toString()
@@ -433,57 +583,82 @@ bot.onText(/^\/removeToken/, function(message, match) {
   })
 })
 
-const getPrice = async (lp, index) => {
-  const isUNIV3 = index === 4
-
-  const signer = getSigner(index)
+const getPrice = async (lp, cIndex, cicPrice, gotOne, Index) => {
+  const isUNIV3 = exchange[cIndex].NAME === "UNIV3"
+  const signer = getSigner(cIndex)
   let lpcontract = new Contract(
     lp,
     isUNIV3 ? uniLPABI : lpabi,
     signer
   );
-  const { cicPrice } = await getBNBPrice(index)
-  const token0 = await lpcontract.token0();
-  const token1 = await lpcontract.token1();
 
-  let baseIs0 = false
-  let baseToken = token1.toString()
+  let token0
+  let token1
+  let baseIs0
+  let baseToken
 
-  for(let b=0; b<exchange[index].CHAIN.BASES.length; b++){
-    if(token0 === exchange[index].CHAIN.BASES[b]) {
-      baseIs0 = true
-      baseToken = token0.toString()
+  let sym
+  let bsym
+  let tDecimals
+  let bDecimals
+
+  let tContract
+
+  if(gotOne){
+    baseIs0 = configs[Index].BASE0
+    token0 = baseIs0 ? configs[Index].BASETOKEN : configs[Index].TOKEN
+    token1 = baseIs0 ? configs[Index].TOKEN : configs[Index].BASETOKEN
+    baseToken = configs[Index].BASETOKEN
+    sym = configs[Index].SYM
+    bsym = configs[Index].BSYM
+    tDecimals = new BigNumber(configs[Index].TDECIMALS)
+    bDecimals = new BigNumber(configs[Index].BDECIMALS)
+    tContract = new Contract(
+      configs[Index].TOKEN,
+      lpabi,
+      signer
+    );
+  } else {
+    token0 = await lpcontract.token0();
+    token1 = await lpcontract.token1();
+    baseIs0 = false
+    baseToken = token1.toString()
+    for(let b=0; b<exchange[cIndex].CHAIN.BASES.length; b++){
+      if(token0 === exchange[cIndex].CHAIN.BASES[b]) {
+        baseIs0 = true
+        baseToken = token0.toString()
+      }
     }
-  } 
 
-  const baseIsNative = baseToken === exchange[index].CHAIN.NATIVE
+    tContract = new Contract(
+      baseIs0 ? token1.toString() : token0.toString(),
+      lpabi,
+      signer
+    );
+    let bContract = new Contract(
+      baseIs0 ? token0.toString() : token1.toString(),
+      lpabi,
+      signer
+    );
+    const tdRaw = await tContract.decimals()
+    const bdRaw = await bContract.decimals()
+    sym = await tContract.symbol()
+    bsym = await bContract.symbol()
+    
+    tDecimals = new BigNumber(tdRaw.toString())
+    bDecimals = new BigNumber(bdRaw.toString())
+    
+  }
 
+  const dec = new BigNumber(bDecimals - tDecimals)
+  const baseIsNative = baseToken === exchange[cIndex].CHAIN.NATIVE
   const basePrice = baseIsNative ? cicPrice : 1
 
-  let tContract = new Contract(
-    baseIs0 ? token1.toString() : token0.toString(),
-    lpabi,
-    signer
-  );
-  let bContract = new Contract(
-    baseIs0 ? token0.toString() : token1.toString(),
-    lpabi,
-    signer
-  );
-  const tdRaw = await tContract.decimals()
-  const bdRaw = await bContract.decimals()
   const tsRaw = await tContract.totalSupply()
   const bRaw = await tContract.balanceOf("0x000000000000000000000000000000000000dEaD")
-  const sym = await tContract.symbol()
-  const bsym = await bContract.symbol()
-  
-
-  const tDecimals = new BigNumber(tdRaw.toString())
-  const bDecimals = new BigNumber(bdRaw.toString())
   const totalSupply = new BigNumber(tsRaw.toString())
- 
   const burned = new BigNumber(bRaw.toString())
-  const dec = new BigNumber(bDecimals - tDecimals)
+ 
  
   let price
   if(!isUNIV3) { 
@@ -500,7 +675,7 @@ const getPrice = async (lp, index) => {
     const td = new BigNumber(1).shiftedBy(tDecimals.toNumber()).toNumber()
     // const number_1 = JSBI.BigInt(sqrtPriceX96 *sqrtPriceX96* (1eTOKEN0-dec)/(1etoken1-dec)/JSBI.BigInt(2) ** (JSBI.BigInt(192)));
     const number_1 = new BigNumber(sqrtPriceX96 * sqrtPriceX96 * (bd)/(td)).dividedBy(new BigNumber(2) ** (new BigNumber(192)));
-    price = number_1.multipliedBy(cicPrice)
+    price = number_1.multipliedBy(cicPrice).toFixed(14)
   }
 
 
@@ -518,7 +693,7 @@ bot.onText(/^\/cic/, async function(message, match) {
  sendNotificationToChannel(
   `<b>CIC Price:</b> $${cicPrice}\n` +
   `<b>CIC MC:</b> $${mc}\n` +
-  `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+  `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
 
 })
@@ -530,7 +705,7 @@ bot.onText(/^\/CIC/, async function(message, match) {
   sendNotificationToChannel(
     `<b>CIC Price:</b> $${cicPrice}\n` +
     `<b>CIC MC:</b> $${mc}\n` +
-    `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a>`
+    `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
    , cid, thread)
 
 })
@@ -542,7 +717,7 @@ bot.onText(/^\/bnb/, async function(message, match) {
 
  sendNotificationToChannel(
   `<b>BNB Price:</b> $${cicPrice}\n` +
-  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a>`
+  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
 
 })
@@ -553,7 +728,7 @@ bot.onText(/^\/BNB/, async function(message, match) {
 
   sendNotificationToChannel(
     `<b>BNB Price:</b> $${cicPrice}\n` +
-    `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a>`
+    `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
    , cid, thread)
 
 })
@@ -565,7 +740,7 @@ bot.onText(/^\/eth/, async function(message, match) {
 
  sendNotificationToChannel(
   `<b>ETHERUEM Price:</b> $${cicPrice}\n` +
-  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a>`
+  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
 
 })
@@ -576,7 +751,7 @@ bot.onText(/^\/ETH/, async function(message, match) {
 
   sendNotificationToChannel(
     `<b>ETHEREUM Price:</b> $${cicPrice}\n` +
-    `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a>`
+    `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
    , cid, thread)
 
 })
@@ -585,7 +760,7 @@ const getLPToken = async (cIndex, command) => {
   try {
     for(let b=0; b<exchange[cIndex].CHAIN.BASES.length;b++){
       const factoryContract = await getFactory(cIndex)
-      if(cIndex === 4){
+      if(exchange[cIndex].NAME === "UNIV3"){
           for(let f=0; f<exchange[cIndex].FEES.length;f++){
             const raw = await factoryContract.getPool(command, exchange[cIndex].CHAIN.BASES[b], exchange[cIndex].FEES[f])
             LP = raw.toString()
@@ -614,23 +789,27 @@ bot.onText(/^\/price/, async function(message, match) {
       const tExchange = message.text.substring(50)
       let cIndex = 0
       let LP = command
+      let index
       const cLower = command.toLowerCase()
       
       for(let c=0; c<exchange.length; c++){
         if(tExchange.toLowerCase() === exchange[c].NAME.toLowerCase()) cIndex = c
       }
-  try {
+
+    try {
     let gotOne = false
         for(let i=0; i<configs.length; i++) {
           
           if(cLower == configs[i].SYM.toLowerCase()) {
             LP = configs[i].LPADDRESS;
             cIndex=configs[i].EXCHANGE;
+            index = i
             gotOne = true
             break
           } else if(cLower == configs[i].TOKEN.toLowerCase() && tExchange === exchange[configs[i].EXCHANGE].NAME) {
             LP = configs[i].LPADDRESS; 
             cIndex=configs[i].EXCHANGE;
+            index = i
             gotOne = true
             break
           }
@@ -640,7 +819,7 @@ bot.onText(/^\/price/, async function(message, match) {
            }
         
             const { cicPrice } = await getBNBPrice(cIndex)
-            const {sym, price, mc, bsym } = await getPrice(LP,cIndex)
+            const {sym, price, mc, bsym } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
             const link = getLink(cIndex)
 
             sendNotificationToChannel(
@@ -653,9 +832,9 @@ bot.onText(/^\/price/, async function(message, match) {
               link
               ,cid, thread);
         
-    } catch {
-      bot.sendMessage(cid, "Not Valid TOKEN");
-    }
+      } catch {
+       bot.sendMessage(cid, "Not Valid TOKEN");
+     }
     
 })
 
