@@ -1,6 +1,5 @@
 [
   {
-    
     "LPADDRESS": "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217",
     "TOKEN": "0x9a37bF232466a55B99428479dF22c049cD43c20E",
     "BASETOKEN": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
@@ -31,6 +30,13 @@
         "CHATID": "-1001830742009",
         "THREAD": [
           0
+        ]
+      },
+      {
+        "CHATID": "-1001797513003",
+        "THREAD": [
+          0,
+          2
         ]
       }
     ]

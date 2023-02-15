@@ -17,10 +17,10 @@ const bot = new telegramBot(token, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 
-const lpabi = require("./lp.json");
-const factoryABI = require("./factorcy.json");
-const uniswapABI = require("./uni-Factory.json");
-const uniLPABI = require("./uniLP.json");
+const lpabi = require("./abis/lp.json");
+const factoryABI = require("./abis/factorcy.json");
+const uniswapABI = require("./abis/uni-Factory.json");
+const uniLPABI = require("./abis/uniLP.json");
 
 bot.onText(/^\/commands/, async function(message, match) {   
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
@@ -36,18 +36,23 @@ bot.onText(/^\/commands/, async function(message, match) {
        "<b>/removeToken</b> [tokenAddress]\n" +
        "Removes Token from BuyBot list\n" +
         "\n" +
+       "<b>/[Coin Symbol]</b> Checks price of Coin\n" +
+       "\n" +
        "<b>/price</b> [tokenAddress] [dex]\n" +
        "Checks price of Token on DEX\n" +
        "\n" +
        "<b>/price</b> [token Symbol]\n" +
        "Checks price of Token by Symbol\n" +
-       "\n<b>IF MULTIPLE OF SAME SYMBOL USE FIRST METHOD</b>\n" +
+       "<b>IF ERROR USE FIRST METHOD</b>\n" +
        "\n" +
+       "<b><u>Channel Commands</u></b>\n" +
+       "<b>/blockPrice</b> Block Price Commands\n" +
+       "<b>/allowPrice</b> Allows Price Commands\n" +
+       "\n" +
+       "<b><u>LISTS</u></b>\n" +
        "<b>/tokenlist</b>: List of Tokens in group\n" +
        "<b>/dexlist</b>: List of Dex's available\n" +
        "<b>/chainlist</b>: List of Chains available\n" +
-       "\n"+
-       "<b>/[Coin Symbol]</b> Checks price of Coin\n" +
         `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
         , cid, thread)
     } else {
@@ -253,17 +258,15 @@ const getFactory = async (index) => {
   );
   return factoryContract
 }
-
-      
+ 
 let configs
+let blocked
 
 const addToken = async (LPAddress, index, ChatId, thread) => {
-
 const signer = await getSigner(index)
-
 const minBuy = 0
 const perDot = 5
-// try {
+try {
 
   let lpcontract = new Contract(
     LPAddress,
@@ -328,7 +331,7 @@ const perDot = 5
 
   saveNewConfig()
   startListener(configs.length-1)
- // }catch{bot.sendMessage(ChatId,"Error, Check Values")}
+  }catch{bot.sendMessage(ChatId,"Error, Check Values")}
 }
 
 const removeToken = async (LPAddress, ChatId, thread) => {
@@ -386,7 +389,6 @@ const sendKillMsg = async (message) => {
   let channels = []
   for(let i=0; i<configs.length; i++){
     let canAdd = true
-    
     for(let c=0; c<configs[i].CHANNEL.length; c++) {
       for(let cc=0; cc<channels.length; cc++){
         if(configs[i].CHANNEL[c].CHATID === channels[cc])canAdd = false
@@ -394,36 +396,102 @@ const sendKillMsg = async (message) => {
       if(canAdd) channels.push(configs[i].CHANNEL[c].CHATID)
     }
   }
-  
   if(channels.length > 0){
     for(let s=0; s<channels.length; s++){
       sendNotificationToChannel(message, channels[s])
     }
   }
-  
 }
 
-bot.onText(/^\/test/, async function(message, match) {
-  signer = getSigner(4)
-  let lpcontract = new Contract(
-    "0x96E9089595C83F3EA933A84cF82b6415dF4Df9D2",
-    uniLPABI,
-    signer
-  );
-  const { cicPrice } = await getBNBPrice(4)
-  const pool_balance = await lpcontract.slot0();
-  const sqrtPriceX96 = pool_balance.sqrtPriceX96;
-  // const number_1 = JSBI.BigInt(sqrtPriceX96 *sqrtPriceX96* (1eTOKEN0-dec)/(1etoken1-dec)/JSBI.BigInt(2) ** (JSBI.BigInt(192)));
-  const number_1 = new BigNumber(sqrtPriceX96 * sqrtPriceX96 * (1e18)/(1e18)).dividedBy(new BigNumber(2) ** (new BigNumber(192)));
-  const dollar = number_1.multipliedBy(cicPrice)
-  console.log(dollar.toFixed(8), number_1, cicPrice)
- } )
+ const checkIfAllowed = (cid, thread) => {
+    for(let b=0; b<blocked.length; b++){
+      if(blocked[b].CHANNEL === cid){
+        for(let t=0; t<blocked[b].THREADS.length; t++){
+          if(blocked[b].THREADS[t] === thread) return false
+        }
+      }
+    }
+    return true
+ }
+ const addToBlocked = (cid, thread) => {
+  for(let b=0; b<blocked.length; b++){
+    if(blocked[b].CHANNEL === cid){
+      blocked[b].push(thread)
+      saveNewConfig()
+      return
+    }
+  }
+  blocked.push({
+    CHANNEL: cid,
+    THREADS: [thread]
+  })
+  saveNewConfig()
+ }
+
+bot.onText(/^\/blockprice/, async function(message, match) {    
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    if((data.status == "creator") || (data.status == "administrator")) {
+      const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+      const cid = message.chat.id.toString()
+      if(checkIfAllowed(cid, thread)) {
+        addToBlocked(cid, thread)
+        sendNotificationToChannelAdmin("Blocked Price Commands For This Group/Topic", cid, thread)
+      }
+      else sendNotificationToChannelAdmin("Already blocked", cid, thread)
+    }
+  })
+})
+
+const removeFromBlocked = (cid, thread) => {
+  for(let b=0; b<blocked.length; b++){
+    if(blocked[b].CHANNEL === cid){
+      if(blocked[b].THREADS.length === 1){
+        blocked[b] = blocked[blocked.length-1]
+        blocked.pop()
+        saveNewConfig()
+        return
+      } else {
+        for(let t=0; t<blocked[b].THREADS.length; t++){
+          if(blocked[b].THREADS[t] === thread){
+            blocked[b].THREADS[t] = blocked[b].THREADS[blocked[b].THREADS.length -1]
+            blocked[b].THREADS.POP()
+            saveNewConfig()
+            return
+          }
+        }
+      }
+    }
+  }
+ }
+
+bot.onText(/^\/allowprice/, async function(message, match) {    
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    if((data.status == "creator") || (data.status == "administrator")) {
+      const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+      const cid = message.chat.id.toString()
+      if(!checkIfAllowed(cid, thread)){
+        sendNotificationToChannelAdmin("Price Commands Allowed For This Group/Topic", cid, thread)
+        removeFromBlocked(cid, thread)
+      }
+      else sendNotificationToChannelAdmin("Not blocked", cid, thread)
+    }
+  })
+})
+
+const sendNotificationToChannelAdmin = async (message, cid, thread) => {
+    var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
+    axios.get(url).catch((error) => {
+      console.log("Error Sending to Channel")
+    }); 
+}
 
 const sendNotificationToChannel = async (message, cid, thread) => {
+  if(checkIfAllowed(cid, thread)) {
     var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
     axios.get(url).catch((error) => {
       console.log("Error Sending to Channel")
      });
+  }  
 }
 
 const sendNotification = async (message, index) => {
@@ -480,7 +548,7 @@ const getBNBPrice = async (index) => {
 
 
 
-bot.onText(/^\/addToken/, function(message, match) {
+bot.onText(/^\/addtoken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
     const cid = message.chat.id.toString()
@@ -562,7 +630,7 @@ bot.onText(/^\/addToken/, function(message, match) {
 })
 
 
-bot.onText(/^\/removeToken/, function(message, match) {
+bot.onText(/^\/removetoken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     if((data.status == "creator") || (data.status == "administrator")) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
@@ -844,7 +912,9 @@ const getLink = (index) => {
 
 const saveNewConfig = async () => {
   let path = `./tokenConfig.json`
-      fs.writeFileSync(path, JSON.stringify(configs, null, 2))
+  fs.writeFileSync(path, JSON.stringify(configs, null, 2))
+  let path2 = `./blocked.json`
+  fs.writeFileSync(path2, JSON.stringify(blocked, null, 2))
 };
 
 const loadConfig = async () => {
@@ -860,8 +930,22 @@ const loadConfig = async () => {
         return;
       }
       configs =  historyParsed
-      return
-      
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  let path2 = `./blocked.json`
+  try {
+    if (fs.existsSync(path2)) {
+      let history2, historyParsed2;
+      try {
+        history2 = fs.readFileSync(path2);
+        historyParsed2 = JSON.parse(history2);
+      } catch (e) {
+        console.log("Error reading history:", e);
+        return;
+      }
+      blocked =  historyParsed2
     }
   } catch (err) {
     console.error(err);
