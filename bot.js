@@ -750,9 +750,9 @@ const startListener = async (index) => {
     `<b>Received:</b> ${bought.shiftedBy(-18).toFixed(2)} ${configs[index].SYM}\n` +
     `<b>${configs[index].SYM} Price:</b> $${FRTcValue}\n` +
     `<b>${exchange[cIndex].CHAIN.NAME}:</b> $${cicPrice}\n` +
-    `<a href="${exchange[cIndex].CHAIN.EXP}tx/${txhash}"> TX  </a> <b>|</b> 
-    <a href="${exchange[cIndex].CHAIN.EXP}address/${buyer}"><u> Buyer </u></a> <b>|</b> 
-    <a href="${exchange[cIndex].CHAIN.EXP}address/${receiver}"><u> Receiver </u></a>\n` +
+    `<a href="${exchange[cIndex].CHAIN.EXP}tx/${txhash}"> TX  </a> <b>|</b>`+ 
+    `<a href="${exchange[cIndex].CHAIN.EXP}address/${buyer}"><u> Buyer </u></a> <b>|</b>` +
+    `<a href="${exchange[cIndex].CHAIN.EXP}address/${receiver}"><u> Receiver </u></a>\n` +
     `\n` +
     link 
     
