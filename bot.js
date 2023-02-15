@@ -421,10 +421,9 @@ bot.onText(/^\/test/, async function(message, match) {
 
 const sendNotificationToChannel = async (message, cid, thread) => {
     var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
-    axios.get(url)
-    // .catch((error) => {
-    //  console.log("Error Sending to Channel")
-    // });
+    axios.get(url).catch((error) => {
+      console.log("Error Sending to Channel")
+     });
 }
 
 const sendNotification = async (message, index) => {
