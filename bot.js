@@ -696,12 +696,12 @@ const calculate = async (cicP, Ain, Aout) => {
   return { bought, FRTcValue }
 }
 
-const sym = (cicSpent) => {
+const sym = (cicSpent, cIndex) => {
   const howMany = new BigNumber(cicSpent).toNumber()
-  let dots = "\xF0\x9F\x92\xB2"
+  let dots = exchange[cIndex].DOTS
   if(howMany > 1){
     for(let i=1; i<howMany; i++){
-      dots = dots + "\xF0\x9F\x92\xB2"
+      dots = dots + exchange[cIndex].DOTS
     }
   }
   return dots
@@ -742,8 +742,8 @@ const startListener = async (index) => {
 
   const {bought, FRTcValue} = await calculate(basePrice, inAmount, outAmount)
   const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(basePrice).toFixed(2)
-  const dots = sym(new BigNumber(spent).dividedBy(configs[index].PERDOT).toFixed(0))
   const cIndex = configs[index].EXCHANGE
+  const dots = sym(new BigNumber(spent).dividedBy(configs[index].PERDOT).toFixed(0), cIndex)
   const link = getLink(cIndex)
 
   if( bought.gt(configs[index].MINBUY) ) {
