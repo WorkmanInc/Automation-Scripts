@@ -1,0 +1,25 @@
+[
+  {
+    "LPADDRESS": "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217",
+    "TOKEN": "0x9a37bF232466a55B99428479dF22c049cD43c20E",
+    "NAME": "Fertilizer",
+    "BASETOKEN": "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA",
+    "SYM": "FRTc",
+    "TDECIMALS": "18",
+    "BSYM": "WCIC",
+    "BDECIMALS": "18",
+    "BASE0": true,
+    "BASEISNATIVE": true,
+    "EXCHANGE": 0,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001797513003",
+        "MINBUY": 0,
+        "PERDOT": 5,
+        "THREAD": [
+          0
+        ]
+      }
+    ]
+  }
+]

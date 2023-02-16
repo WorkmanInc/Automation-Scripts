@@ -9,10 +9,14 @@ const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
 const BigNumber = require("BigNumber.js");
 const telegramBot = require('node-telegram-bot-api');
+const {
+  chain,
+  exchange
+} = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -22,20 +26,24 @@ const factoryABI = require("./abis/factorcy.json");
 const uniswapABI = require("./abis/uni-Factory.json");
 const uniLPABI = require("./abis/uniLP.json");
 
-bot.onText(/^\/commands/, async function(message, match) {   
-  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
-    if((data.status == "creator") || (data.status == "administrator")) { 
+bot.onText(/^\/fgbot/, async function(message, match) {   
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
      
       sendNotificationToChannel(
-      "<b><u> Commands </u></b>\n" +
-       "<b>/addToken</b> [tokenAddress] [dex]\n"+
+       "<b><u> FG Bot Commands </u></b>\n" +
+       "<b>/addtoken</b> [tokenAddress] [dex]\n"+
        "Adds Token to BuyBot List for DEX\n" +
         "\n" +
-       "<b>/removeToken</b> [tokenAddress]\n" +
+       "<b>/removetoken</b> [tokenAddress]\n" +
        "Removes Token from BuyBot list\n" +
-        "\n" +
+       "\n" +
+       "<b>/minbuy</b> [tokenAddress ] [amount]\n" + 
+       "Set Min $ Buy for Token\n" +
+       "\n" +
+       "<b>/perdot</b> [tokenAddress ] [amount]\n" + 
+       "Set $ Per Dot for Token\n" +
+       "\n" +
        "<b>/[Coin Symbol]</b> Checks price of Coin\n" +
        "\n" +
        "<b>/price</b> [tokenAddress] [dex]\n" +
@@ -46,50 +54,18 @@ bot.onText(/^\/commands/, async function(message, match) {
        "<b>IF ERROR USE FIRST METHOD</b>\n" +
        "\n" +
        "<b><u>Channel Commands</u></b>\n" +
-       "<b>/blockPrice</b> Block Price Commands\n" +
-       "<b>/allowPrice</b> Allows Price Commands\n" +
+       "<b>/blockprice</b> Block Price Commands\n" +
+       "<b>/allowprice</b> Allows Price Commands\n" +
        "\n" +
        "<b><u>LISTS</u></b>\n" +
        "<b>/tokenlist</b>: List of Tokens in group\n" +
-       "<b>/dexlist</b>: List of Dex's available\n" +
+       "<b>/dexlist</b>: List of all Dex's\n" +
+       "<b>/dexlist</b> [chain]: Dex list by Chain\n" +
        "<b>/chainlist</b>: List of Chains available\n" +
         `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
         , cid, thread)
-    } else {
-          sendNotificationToChannel("not Admin", cid, thread)
-    }
-  })
 })
 
-let chain = [
-  {
-    LONGNAME: "Crazy Internet Coin",
-    NAME: "CIC",
-    API: "https://backend.newscan.cicscan.com/coin_price",
-    RPC: "https://xapi.cicscan.com/",
-    EXP: "https://cicscan.com/",
-    NATIVE: "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA",
-    BASES: ["0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"]
-  },
-  {
-    LONGNAME: "Binance",
-    NAME: "BNB",
-    API: "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT",
-    RPC: "https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6/",
-    EXP: "https://bscscan.com/",
-    NATIVE: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-    BASES: ["0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"]
-  },
-  {
-    LONGNAME: "Ethereum",
-    NAME: "ETH",
-    API: "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD",
-    RPC: "https://rpc.ankr.com/eth/a43f07a7be6cc42d81c31ccab2f9a43e71a3713d40c4809cc4a9886839d5cb76",
-    EXP: "https://etherscan.io/",
-    NATIVE: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    BASES: ["0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "0xdAC17F958D2ee523a2206206994597C13D831ec7"]
-  }
-];
 
 bot.onText(/^\/chainlist/, async function(message, match) {   
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
@@ -100,7 +76,6 @@ bot.onText(/^\/chainlist/, async function(message, match) {
   for(let c=0; c<chain.length; c++){
     chainsList = chainsList + `<b>${chain[c].LONGNAME}:</b> ${chain[c].NAME} \n`
   }
-
   sendNotificationToChannel(
     "<b><u> Chain List </u></b>\n" +
     chainsList +
@@ -112,93 +87,47 @@ bot.onText(/^\/chainlist/, async function(message, match) {
 })
 })
 
-let exchange = [
-  {
-    LONGNAME: "Farmageddon",
-    NAME: "FARM",
-    FACTORY: "0xfD35F3f178353572E4357983AD2831fAcd652cC5",
-    CHAIN: chain[0],
-    DOTS: "\xF0\x9F\x9A\x9C"  // tractor
-  },
-  {
-    LONGNAME: "PancakeSwap",
-    NAME: "PCS",
-    FACTORY: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
-    CHAIN: chain[1],
-    DOTS: "\xF0\x9F\x90\xB0" // rabbit
-  },
-  {
-    LONGNAME: "Donk Swap",
-    NAME: "DONK",
-    FACTORY: "0x04D6b20f805e2bd537DDe84482983AabF59536FF",
-    CHAIN: chain[1],
-    DOTS: "\xF0\x9F\x90\xB4"
-  },
-  {
-    LONGNAME: "WendDex",
-    NAME: "WEN",
-    FACTORY: "0x51eD5a1f2EC7516dB92ff5Ae8d76ea4A2B87A6d1",
-    CHAIN: chain[0],
-    DOTS: "\xF0\x9F\x94\xB5"
-  },
-  {
-    LONGNAME: "UniSwap V3",
-    NAME: "UNIV3",
-    FACTORY: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-    CHAIN: chain[2],
-    FEES: [100, 500, 3000, 10000],
-    DOTS: "\xF0\x9F\x92\xB5"
-  },
-  {
-    LONGNAME: "UniSwap V2",
-    NAME: "UNIV2",
-    FACTORY: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-    CHAIN: chain[2],
-    DOTS: "\xF0\x9F\x92\xB0"
-  },
-  {
-    LONGNAME: "PancakeSwap ETH",
-    NAME: "PCSETH",
-    FACTORY: "0x1097053Fd2ea711dad45caCcc45EfF7548fCB362",
-    CHAIN: chain[2],
-    DOTS:  "\xF0\x9F\x90\xB0"
-  },
-  {
-    LONGNAME: "Ape Swap",
-    NAME: "APE",
-    FACTORY: "0x0841BD0B734E4F5853f0dD8d7Ea041c241fb0Da6",
-    CHAIN: chain[1],
-    DOTS: "\xF0\x9F\x92\xB5"
-  },
-  {
-    LONGNAME: "BiSwap",
-    NAME: "BIS",
-    FACTORY: "0x858e3312ed3a876947ea49d572a7c42de08af7ee",
-    CHAIN: chain[1],
-    DOTS: "\xF0\x9F\x92\xB5"
-  }
-  
-]
 
 bot.onText(/^\/dexlist/, async function(message, match) {    
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     if((data.status == "creator") || (data.status == "administrator")) {
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  let dexList = ""
-  for(let c=0; c<exchange.length; c++){
-    dexList = dexList + `<b>${exchange[c].LONGNAME} ${exchange[c].CHAIN.NAME}</b>: ${exchange[c].NAME} \n`
-  }
+      const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+      const cid = message.chat.id.toString()
+      const chainString = message.text.substring(9)
+      let byChain = false
+      let cIndex = 0
+      let dexList = ""
 
-  sendNotificationToChannel(
-    "<b><u> Dex List </u></b>\n" +
-    dexList +
-    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
-   , cid, thread)
-  } else {
-    sendNotificationToChannel("not Admin", cid, thread)
-  }
-})
+      for(let c=0; c<exchange.length; c++){
+        if(exchange[c].CHAIN.NAME.toLowerCase() === chainString.toLowerCase()){
+          byChain = true
+          cIndex = c
+          break
+        }
+      }
+      if(byChain) {
+        for(let c=0; c<exchange.length; c++){
+          if(exchange[c].CHAIN.NAME.toLowerCase() === chainString.toLowerCase()){
+            dexList = dexList + `<b>${exchange[c].LONGNAME} ${exchange[c].CHAIN.NAME}</b>: ${exchange[c].NAME} \n`
+          }
+        }
+        sendNotificationToChannel(
+          `<b><u> Dex List ${exchange[cIndex].LONGNAME} </u></b>\n` +
+          dexList +
+          `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+          , cid, thread)
+      } else {
+        for(let c=0; c<exchange.length; c++){
+          dexList = dexList + `<b>${exchange[c].LONGNAME} ${exchange[c].CHAIN.NAME}</b>: ${exchange[c].NAME} \n`
+        }
+        sendNotificationToChannel(
+          `<b><u> Dex List </u></b>\n` +
+          dexList +
+          `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+          , cid, thread)
+      }
+    }
+  })
 })
 
 bot.onText(/^\/tokenlist/, async function(message, match) {    
@@ -207,17 +136,18 @@ bot.onText(/^\/tokenlist/, async function(message, match) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
       let tokenlist = ""
-      for(let c=0; c<chain.length; c++){
+      for(let c=0; c<configs.length; c++){
         for(let ch =0; ch<configs[c].CHANNEL.length; ch++){
           if(configs[c].CHANNEL[ch].CHATID === cid){
             for(let t=0; t<configs[c].CHANNEL[ch].THREAD.length; t++) {
-              const e = configs[c].EXCHANGE
-              tokenlist = tokenlist + `<b>${configs[c].SYM}:</b> ${configs[c].TOKEN} <b>${exchange[e].CHAIN.NAME} ${exchange[e].NAME}</b>\n`
+              if(configs[c].CHANNEL[ch].THREAD[t] === thread){
+                const e = configs[c].EXCHANGE
+                tokenlist = tokenlist + `<b>${configs[c].SYM}/${configs[c].BSYM}:</b> ${configs[c].TOKEN}\n<b>${exchange[e].CHAIN.NAME} ${exchange[e].NAME}</b>\n`
+              }
             }
           }
         }
       }
-
       sendNotificationToChannel(
         "<b><u> Tokens List </u></b>\n" +
         tokenlist +
@@ -228,6 +158,65 @@ bot.onText(/^\/tokenlist/, async function(message, match) {
     }
   })
 })
+
+bot.onText(/^\/minbuy/, function(message, match) {
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    const cid = message.chat.id.toString()
+    const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+    let changed = false
+    if((data.status == "creator") || (data.status == "administrator")) {
+      const tokenAddress =  message.text.substring(8,50)
+      const amountRaw = message.text.substring(51)
+      const amount = new BigNumber(amountRaw).toNumber()
+      if(amount > 100) return sendNotificationToChannel("Must be between 0 and 100", cid, thread)
+      for(let i=0; i<configs.length; i++) {
+        if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
+          for(let c=0; c<configs[i].CHANNEL.length; c++){
+            if(configs[i].CHANNEL[c].CHATID === cid) {
+              configs[i].CHANNEL[c].MINBUY = amount
+              changed = true
+            }
+          }
+        }
+      }
+     saveNewConfig()
+     if(changed)  sendNotificationToChannel(`Changed MinBuy to $${amount}`, cid, thread);
+     else sendNotificationToChannel(`Token not setup`, cid, thread);
+    } else {
+      sendNotificationToChannel("not Admin", cid, thread)
+    }
+  })
+})
+
+bot.onText(/^\/perdot/, function(message, match) {
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    const cid = message.chat.id.toString()
+    const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+    let changed = false
+    if((data.status == "creator") || (data.status == "administrator")) {
+      const tokenAddress =  message.text.substring(8,50)
+      const amountRaw = message.text.substring(51)
+      const amount = new BigNumber(amountRaw).toNumber()
+      if(amount > 100 && amount < .1) return sendNotificationToChannel("Must be between .1 and 100", cid, thread)
+      for(let i=0; i<configs.length; i++) {
+        if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
+          for(let c=0; c<configs[i].CHANNEL.length; c++){
+            if(configs[i].CHANNEL[c].CHATID === cid) {
+              configs[i].CHANNEL[c].PERDOT = amount
+              changed = true
+            }
+          }
+        }
+      }
+     saveNewConfig()
+     if(changed) sendNotificationToChannel(`Changed to $${amount} Per Dot`, cid, thread);
+     else sendNotificationToChannel(`Token not setup`, cid, thread);
+    } else {
+      sendNotificationToChannel("not Admin", cid, thread)
+    }
+  })
+})
+
 
 
 
@@ -300,6 +289,7 @@ try {
     lpabi,
     signer
   );
+  const name = await tcontract.name()
   const sym = await tcontract.symbol()
   const bsym = await bcontract.symbol()
   const tdRaw = await tcontract.decimals()
@@ -311,6 +301,7 @@ try {
     const newInfo = {
       LPADDRESS: LPAddress,
       TOKEN: newtoken,
+      NAME: name,
       BASETOKEN: baseToken,
       SYM: sym,
       TDECIMALS: td,
@@ -318,11 +309,11 @@ try {
       BDECIMALS: bd,
       BASE0: baseIs0,
       BASEISNATIVE: baseIsNative,
-      MINBUY: minBuy,
-      PERDOT: perDot,
       EXCHANGE: index,
       CHANNEL: [{
         CHATID: ChatId,
+        MINBUY: minBuy,
+        PERDOT: perDot,
         THREAD: [thread],
       }],
     }
@@ -435,9 +426,9 @@ bot.onText(/^\/blockprice/, async function(message, match) {
       const cid = message.chat.id.toString()
       if(checkIfAllowed(cid, thread)) {
         addToBlocked(cid, thread)
-        sendNotificationToChannelAdmin("Blocked Price Commands For This Group/Topic", cid, thread)
+        sendNotificationToChannel("Blocked Price Commands For This Group/Topic", cid, thread)
       }
-      else sendNotificationToChannelAdmin("Already blocked", cid, thread)
+      else sendNotificationToChannel("Already blocked", cid, thread)
     }
   })
 })
@@ -470,22 +461,22 @@ bot.onText(/^\/allowprice/, async function(message, match) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
       if(!checkIfAllowed(cid, thread)){
-        sendNotificationToChannelAdmin("Price Commands Allowed For This Group/Topic", cid, thread)
+        sendNotificationToChannel("Price Commands Allowed For This Group/Topic", cid, thread)
         removeFromBlocked(cid, thread)
       }
-      else sendNotificationToChannelAdmin("Not blocked", cid, thread)
+      else sendNotificationToChannel("Not blocked", cid, thread)
     }
   })
 })
 
-const sendNotificationToChannelAdmin = async (message, cid, thread) => {
+const sendNotificationToChannel = async (message, cid, thread) => {
     var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
     axios.get(url).catch((error) => {
       console.log("Error Sending to Channel")
     }); 
 }
 
-const sendNotificationToChannel = async (message, cid, thread) => {
+const sendNotificationToChannelPrice = async (message, cid, thread) => {
   if(checkIfAllowed(cid, thread)) {
     var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
     axios.get(url).catch((error) => {
@@ -494,33 +485,6 @@ const sendNotificationToChannel = async (message, cid, thread) => {
   }  
 }
 
-const sendNotification = async (message, index) => {
-  const c = configs[index].CHANNEL
-  let toDelete = []
-  for(let i=0; i<c.length; i++){
-    for(let t=0; t<c[i].THREAD.length; t++){
-      const thread = c[i].THREAD[t]
-      var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${c[i].CHATID}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
-    
-        await axios.get(url).catch(() => {
-          add = true
-          for(let c =0; c<toDelete.length; c++){
-            if(i === toDelete[c]) add = false
-          }
-          if(add) {
-            toDelete.push([configs[index].LPADDRESS,c[i].CHATID, thread])
-          }
-        })
-    }
-  }
-
-  if(toDelete.length > 0) {
-    for(let d=0; d<toDelete.length; d++){
-     removeToken(toDelete[d][0],toDelete[d][1],toDelete[d][2])
-    }
-    saveNewConfig()
-  }
-}
 
 const getBNBPrice = async (index) => {
   
@@ -624,9 +588,7 @@ bot.onText(/^\/addtoken/, function(message, match) {
     } else {
       sendNotificationToChannel("not Admin", cid, thread)
     }
-
   })
-  
 })
 
 
@@ -645,7 +607,7 @@ bot.onText(/^\/removetoken/, function(message, match) {
       }
      
     } else {
-      bot.sendMessage(messaage.chat.id, "not admin");
+      sendNotificationToChannel("not Admin", cid, thread)
     }
   })
 })
@@ -757,7 +719,7 @@ bot.onText(/^\/cic/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice, mc } = await getBNBPrice(0)
 
- sendNotificationToChannel(
+ sendNotificationToChannelPrice(
   `<b>CIC Price:</b> $${cicPrice}\n` +
   `<b>CIC MC:</b> $${mc}\n` +
   `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
@@ -769,7 +731,7 @@ bot.onText(/^\/CIC/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice, mc } = await getBNBPrice(0)
 
-  sendNotificationToChannel(
+  sendNotificationToChannelPrice(
     `<b>CIC Price:</b> $${cicPrice}\n` +
     `<b>CIC MC:</b> $${mc}\n` +
     `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
@@ -782,7 +744,7 @@ bot.onText(/^\/bnb/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(1)
 
- sendNotificationToChannel(
+ sendNotificationToChannelPrice(
   `<b>BNB Price:</b> $${cicPrice}\n` +
   `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
@@ -793,7 +755,7 @@ bot.onText(/^\/BNB/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(1)
 
-  sendNotificationToChannel(
+  sendNotificationToChannelPrice(
     `<b>BNB Price:</b> $${cicPrice}\n` +
     `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
    , cid, thread)
@@ -805,7 +767,7 @@ bot.onText(/^\/eth/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(4)
 
- sendNotificationToChannel(
+ sendNotificationToChannelPrice(
   `<b>ETHERUEM Price:</b> $${cicPrice}\n` +
   `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
@@ -816,7 +778,7 @@ bot.onText(/^\/ETH/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(4)
 
-  sendNotificationToChannel(
+  sendNotificationToChannelPrice(
     `<b>ETHEREUM Price:</b> $${cicPrice}\n` +
     `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
    , cid, thread)
@@ -889,7 +851,7 @@ bot.onText(/^\/price/, async function(message, match) {
             const {sym, price, mc, bsym } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
             const link = getLink(cIndex)
 
-            sendNotificationToChannel(
+            sendNotificationToChannelPrice(
               `${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
               `<b>${sym} / ${bsym}</b>\n` +
               `<b>Price:</b> $${price}\n` +
@@ -911,14 +873,14 @@ const getLink = (index) => {
 }
 
 const saveNewConfig = async () => {
-  let path = `./tokenConfig.json`
+  let path = `./config/tokenConfig.json`
   fs.writeFileSync(path, JSON.stringify(configs, null, 2))
-  let path2 = `./blocked.json`
+  let path2 = `./config/blocked.json`
   fs.writeFileSync(path2, JSON.stringify(blocked, null, 2))
 };
 
 const loadConfig = async () => {
-  let path = `./tokenConfig.json`
+  let path = `./config/tokenConfig.json`
   try {
     if (fs.existsSync(path)) {
       let history, historyParsed;
@@ -934,7 +896,7 @@ const loadConfig = async () => {
   } catch (err) {
     console.error(err);
   }
-  let path2 = `./blocked.json`
+  let path2 = `./config/blocked.json`
   try {
     if (fs.existsSync(path2)) {
       let history2, historyParsed2;
@@ -1004,31 +966,61 @@ const startListener = async (index) => {
 
   const {bought, FRTcValue} = await calculate(basePrice, inAmount, outAmount)
   const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(basePrice).toFixed(2)
-  const cIndex = configs[index].EXCHANGE
-  const dots = sym(new BigNumber(spent).dividedBy(configs[index].PERDOT).toFixed(0), cIndex)
-  const link = getLink(cIndex)
+  
 
-  if( bought.gt(configs[index].MINBUY) ) {
-    var message =
-    `<b>${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP</b>\n` +
-    `<b>${configs[index].SYM}</b> - Purchased!\n` +
-    dots +
-    `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(4)} ${exchange[cIndex].CHAIN.NAME})\n` +
-    `<b>Received:</b> ${bought.shiftedBy(-18).toFixed(2)} ${configs[index].SYM}\n` +
-    `<b>${configs[index].SYM} Price:</b> $${FRTcValue}\n` +
-    `<b>${exchange[cIndex].CHAIN.NAME}:</b> $${cicPrice}\n` +
-    `<a href="${exchange[cIndex].CHAIN.EXP}tx/${txhash}"> TX  </a> <b>|</b>`+ 
-    `<a href="${exchange[cIndex].CHAIN.EXP}address/${buyer}"><u> Buyer </u></a> <b>|</b>` +
-    `<a href="${exchange[cIndex].CHAIN.EXP}address/${receiver}"><u> Receiver </u></a>\n` +
-    `\n` +
-    link 
-    
-    sendNotification(message,index);
-  }
+  sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer);
   
 });
-// sendNotification(`BuyBot Running for ${configs[index].TOKEN}`, index)
 console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
+}
+
+const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer) => {
+  const c = configs[index].CHANNEL
+  let toDelete = []
+  
+  const cIndex = configs[index].EXCHANGE
+  const link = getLink(cIndex)
+
+  for(let i=0; i<c.length; i++){
+    for(let t=0; t<c[i].THREAD.length; t++){
+      const thread = c[i].THREAD[t]
+
+      if( bought.gt(configs[index].CHANNEL[i].MINBUY) ) {
+        const dots = sym(new BigNumber(spent).dividedBy(configs[index].CHANNEL[i].PERDOT).toFixed(0), cIndex)
+        var message =
+        `<b>${configs[index].NAME}</b> Bought!!\n` +
+        `<b>${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP</b>\n` +
+        dots +
+        `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(4)} ${exchange[cIndex].CHAIN.NAME})\n` +
+        `<b>Received:</b> ${bought.shiftedBy(-18).toFixed(2)} ${configs[index].SYM}\n` +
+        `<b>${configs[index].SYM} Price:</b> $${FRTcValue}\n` +
+        `<b>${exchange[cIndex].CHAIN.NAME}:</b> $${cicPrice}\n` +
+        `<a href="${exchange[cIndex].CHAIN.EXP}tx/${txhash}"> TX  </a> <b>|</b>`+ 
+        `<a href="${exchange[cIndex].CHAIN.EXP}address/${buyer}"><u> Buyer </u></a> <b>|</b>` +
+        `<a href="${exchange[cIndex].CHAIN.EXP}address/${receiver}"><u> Receiver </u></a>\n` +
+        `\n` +
+        link 
+        
+        var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${c[i].CHATID}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
+    
+        await axios.get(url).catch(() => {
+          add = true
+          for(let c =0; c<toDelete.length; c++){
+            if(i === toDelete[c]) add = false
+          }
+          if(add) {
+            toDelete.push([configs[index].LPADDRESS,c[i].CHATID, thread])
+          }
+        })
+      } 
+    }
+  }
+  if(toDelete.length > 0) {
+    for(let d=0; d<toDelete.length; d++){
+     removeToken(toDelete[d][0],toDelete[d][1],toDelete[d][2])
+    }
+    saveNewConfig()
+  }
 }
 
 
