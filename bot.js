@@ -742,7 +742,7 @@ bot.onText(/^\/CIC/, async function(message, match) {
 bot.onText(/^\/bnb/, async function(message, match) {     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
-  const { cicPrice } = await getBNBPrice(1)
+  const { cicPrice } = await getBNBPrice(2)
 
  sendNotificationToChannelPrice(
   `<b>BNB Price:</b> $${cicPrice}\n` +
@@ -753,7 +753,7 @@ bot.onText(/^\/bnb/, async function(message, match) {
 bot.onText(/^\/BNB/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
-  const { cicPrice } = await getBNBPrice(1)
+  const { cicPrice } = await getBNBPrice(2)
 
   sendNotificationToChannelPrice(
     `<b>BNB Price:</b> $${cicPrice}\n` +
@@ -765,7 +765,7 @@ bot.onText(/^\/BNB/, async function(message, match) {
 bot.onText(/^\/eth/, async function(message, match) {     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
-  const { cicPrice } = await getBNBPrice(4)
+  const { cicPrice } = await getBNBPrice(7)
 
  sendNotificationToChannelPrice(
   `<b>ETHERUEM Price:</b> $${cicPrice}\n` +
@@ -776,7 +776,7 @@ bot.onText(/^\/eth/, async function(message, match) {
 bot.onText(/^\/ETH/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
-  const { cicPrice } = await getBNBPrice(4)
+  const { cicPrice } = await getBNBPrice(7)
 
   sendNotificationToChannelPrice(
     `<b>ETHEREUM Price:</b> $${cicPrice}\n` +
