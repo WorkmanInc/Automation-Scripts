@@ -11,7 +11,7 @@ let chain = [
     {
       LONGNAME: "Binance",
       NAME: "BNB",
-      API: "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT",
+      API: "https://min-api.cryptocompare.com/data/price?fsym=BNB&tsyms=USD",
       RPC: "https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6/",
       EXP: "https://bscscan.com/",
       NATIVE: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",

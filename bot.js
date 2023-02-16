@@ -498,7 +498,7 @@ const getBNBPrice = async (index) => {
       throw new Error("Bad response from server");
     }
     const price = await res.json();
-    if(exchange[index].CHAIN.NAME !== "ETH"){
+    if(exchange[index].CHAIN.NAME === "CIC"){
       cicPrice = parseFloat(price.price);
       mc = parseFloat(price.market_cap)
     } else {
