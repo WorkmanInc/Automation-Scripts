@@ -11,7 +11,8 @@ const BigNumber = require('bignumber.js');
 const telegramBot = require('node-telegram-bot-api');
 const {
   chain,
-  exchange
+  exchange,
+  ads
 } = require("./config/chainConfig");
 
 
@@ -25,6 +26,11 @@ const lpabi = require("./abis/lp.json");
 const factoryABI = require("./abis/factorcy.json");
 const uniswapABI = require("./abis/uni-Factory.json");
 const uniLPABI = require("./abis/uniLP.json");
+
+const getAdLink = () => {
+  const index = Math.floor((Math.random() * ads.length));
+  return  `\nad: <a href="${ads[index].TGLINK}"><u>${ads[index].NAME}</u></a>`
+}
 
 bot.onText(/^\/fgbot/, async function(message, match) {   
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
@@ -62,7 +68,9 @@ bot.onText(/^\/fgbot/, async function(message, match) {
        "<b>/dexlist</b>: List of all Dex's\n" +
        "<b>/dexlist</b> [chain]: Dex list by Chain\n" +
        "<b>/chainlist</b>: List of Chains available\n" +
+       getAdLink() +
         `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+       
         , cid, thread)
 })
 
@@ -78,8 +86,10 @@ bot.onText(/^\/chainlist/, async function(message, match) {
   }
   sendNotificationToChannel(
     "<b><u> Chain List </u></b>\n" +
-    chainsList +
+    chainsList + "\n" +
+    getAdLink() +
     `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+    
    , cid, thread)
   } else {
     sendNotificationToChannel("not Admin", cid, thread)
@@ -113,8 +123,10 @@ bot.onText(/^\/dexlist/, async function(message, match) {
         }
         sendNotificationToChannel(
           `<b><u> Dex List ${exchange[cIndex].LONGNAME} </u></b>\n` +
-          dexList +
+          dexList + "\n" +
+          getAdLink() +
           `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+         
           , cid, thread)
       } else {
         for(let c=0; c<exchange.length; c++){
@@ -122,7 +134,8 @@ bot.onText(/^\/dexlist/, async function(message, match) {
         }
         sendNotificationToChannel(
           `<b><u> Dex List </u></b>\n` +
-          dexList +
+          dexList + "\n" +
+          getAdLink() +
           `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
           , cid, thread)
       }
@@ -150,8 +163,9 @@ bot.onText(/^\/tokenlist/, async function(message, match) {
       }
       sendNotificationToChannel(
         "<b><u> Tokens List </u></b>\n" +
-        tokenlist +
-        `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+        tokenlist + "\n" +
+        getAdLink() +
+        `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>` 
         , cid, thread)
     } else {
       sendNotificationToChannel("not Admin", cid, thread)
@@ -723,7 +737,8 @@ bot.onText(/^\/cic/, async function(message, match) {
  sendNotificationToChannelPrice(
   `<b>CIC Price:</b> $${cicPrice}\n` +
   `<b>CIC MC:</b> $${mc}\n` +
-  `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+  getAdLink() +
+  `\n<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
 
 })
@@ -735,7 +750,8 @@ bot.onText(/^\/CIC/, async function(message, match) {
   sendNotificationToChannelPrice(
     `<b>CIC Price:</b> $${cicPrice}\n` +
     `<b>CIC MC:</b> $${mc}\n` +
-    `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+    getAdLink() +
+    `\n<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
    , cid, thread)
 
 })
@@ -747,7 +763,8 @@ bot.onText(/^\/bnb/, async function(message, match) {
 
  sendNotificationToChannelPrice(
   `<b>BNB Price:</b> $${cicPrice}\n` +
-  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+  getAdLink() +
+  `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
 
 })
@@ -758,8 +775,9 @@ bot.onText(/^\/BNB/, async function(message, match) {
 
   sendNotificationToChannelPrice(
     `<b>BNB Price:</b> $${cicPrice}\n` +
-    `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
-   , cid, thread)
+    getAdLink() +
+    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+    , cid, thread)
 
 })
 
@@ -770,7 +788,8 @@ bot.onText(/^\/eth/, async function(message, match) {
 
  sendNotificationToChannelPrice(
   `<b>ETHERUEM Price:</b> $${cicPrice}\n` +
-  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+  getAdLink() +
+  `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
 
 })
@@ -781,7 +800,8 @@ bot.onText(/^\/ETH/, async function(message, match) {
 
   sendNotificationToChannelPrice(
     `<b>ETHEREUM Price:</b> $${cicPrice}\n` +
-    `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+    getAdLink() +
+    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
    , cid, thread)
 
 })
@@ -857,8 +877,8 @@ bot.onText(/^\/price/, async function(message, match) {
               `<b>${sym} / ${bsym}</b>\n` +
               `<b>Price:</b> $${price}\n` +
               `<b>MCap:</b> $${mc}\n` +
-              `<b>${exchange[cIndex].CHAIN.NAME} Price:</b> $${cicPrice}\n` + 
-              `\n` +
+              `<b>${exchange[cIndex].CHAIN.NAME} Price:</b> $${cicPrice}\n` +
+              getAdLink() + "\n" +
               link
               ,cid, thread);
         
@@ -999,8 +1019,9 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `<a href="${exchange[cIndex].CHAIN.EXP}tx/${txhash}"> TX  </a> <b>|</b>`+ 
         `<a href="${exchange[cIndex].CHAIN.EXP}address/${buyer}"><u> Buyer </u></a> <b>|</b>` +
         `<a href="${exchange[cIndex].CHAIN.EXP}address/${receiver}"><u> Receiver </u></a>\n` +
+         getAdLink() +
         `\n` +
-        link 
+        link
         
         var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${c[i].CHATID}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
     

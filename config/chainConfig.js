@@ -107,10 +107,19 @@ let exchange = [
     }
   ]
 
+  const ads = 
+  [
+    {
+      NAME: "Apocalypse",
+      TGLINK: "https://t.me/ApocalypseP2E"
+    }
+  ]
+
   
 
 
   module.exports = {
     chain,
-    exchange
+    exchange,
+    ads
   }
