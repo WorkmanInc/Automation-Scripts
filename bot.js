@@ -7,7 +7,7 @@ const sleep = require("util").promisify(setTimeout);
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
-const BigNumber = require("bignumber.js");
+const BigNumber = require('bignumber.js');
 const telegramBot = require('node-telegram-bot-api');
 const {
   chain,
