@@ -2,13 +2,10 @@
 import dotenv from "dotenv";
 import util from "util"
 const sleep = util.promisify(setTimeout);
-import fetch from 'cross-fetch'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Wallet } from '@ethersproject/wallet'
 import { Contract } from 'ethers'
-import BigNumber from "BigNumber.js"
 import abi from "./abi.json"
-import { randomBytes} from "crypto";
 import Web3 from "web3";
 
 
@@ -16,7 +13,7 @@ const PRIVATE_KEY='af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c
 
 
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 150000,
+  CHECKEVERY: 60000,
   KEEPER: "0x86D0c640E9B208acB39b04Bf5aAB1C41070632E3",
 };
 
