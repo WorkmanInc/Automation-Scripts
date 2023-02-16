@@ -10,6 +10,7 @@ import Web3 from "web3";
 
 
 const PRIVATE_KEY='af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8'  // FARM
+const CIC_RPC="https://xapi.cicscan.com/"
 
 
 const GLOBAL_CONFIG = {
@@ -24,7 +25,7 @@ if (result.error) {
   // throw result.error;
 }
 
-const w = new Web3(process.env.BSC_RPC!!);
+const w = new Web3(CIC_RPC);
 
 w.eth.defaultAccount = w.eth.accounts.privateKeyToAccount(
   PRIVATE_KEY
@@ -33,7 +34,7 @@ w.eth.defaultAccount = w.eth.accounts.privateKeyToAccount(
 
 const signer = new Wallet(
   PRIVATE_KEY,
-  new JsonRpcProvider(process.env.CIC_RPC)
+  new JsonRpcProvider(CIC_RPC)
 );
 
 
