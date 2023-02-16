@@ -27,7 +27,7 @@ let chain = [
       LONGNAME: "Ethereum",
       NAME: "ETH",
       API: "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD",
-      RPC: "https://rpc.ankr.com/eth/a43f07a7be6cc42d81c31ccab2f9a43e71a3713d40c4809cc4a9886839d5cb76",
+      RPC: "https://rpc.ankr.com/eth/a43f07a7be6cc42d81c31ccab2f9a43e71a3713d40c4809cc4a9886839d5cb76/",
       EXP: "https://etherscan.io/",
       NATIVE: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
       BASES: [

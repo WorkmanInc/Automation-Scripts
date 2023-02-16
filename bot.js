@@ -491,7 +491,7 @@ const getBNBPrice = async (index) => {
   const apiUrl = exchange[index].CHAIN.API;
   let cicPrice = 0
   let mc = 0
-  try {
+  // try {
     const res = await fetch(apiUrl);
     if (res.status >= 400) {
       throw new Error("Bad response from server");
@@ -503,9 +503,9 @@ const getBNBPrice = async (index) => {
     } else {
       cicPrice = parseFloat(price.USD)
     }    
-  } catch (err) {
-    console.error("Unable to connect to Binance API", err);
-  }
+  // } catch (err) {
+  //  console.error("Unable to connect to Binance API", err);
+  // }
   return { cicPrice, mc }
 };
 
