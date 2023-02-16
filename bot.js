@@ -494,6 +494,7 @@ const getBNBPrice = async (index) => {
   // try {
     const res = await fetch(apiUrl);
     if (res.status >= 400) {
+      console.log(res.status)
       throw new Error("Bad response from server");
     }
     const price = await res.json();
