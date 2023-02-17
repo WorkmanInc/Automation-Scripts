@@ -340,7 +340,7 @@ try {
 }
 
 const removeToken = async (LPAddress, ChatId, thread) => {
-  try {
+ // try {
     let didntExist = true
     for(let i=0; i<configs.length; i++){
       if(configs[i].LPADDRESS === LPAddress){
@@ -349,9 +349,11 @@ const removeToken = async (LPAddress, ChatId, thread) => {
             for(let t =0; t <configs[i].CHANNEL[c].THREAD.length; t++){
               if(configs[i].CHANNEL[c].THREAD[t] === thread){
                 if(configs[i].CHANNEL[c].THREAD.length === 1 && configs[i].CHANNEL.length === 1 ){
-                  configs[i] = configs[configs.length-1]
                   await stopListener(LPAddress, i)
+                  await stopListener(configs[configs.length-1].LPADDRESS, configs.length-1)
+                  configs[i] = configs[configs.length-1]
                   configs.pop()
+                  if(i !== configs.length) await startListener(i)
                   sendNotificationToChannel("Removed Token", ChatId, thread)
                   didntExist = false
                   saveNewConfig(); return
@@ -377,9 +379,9 @@ const removeToken = async (LPAddress, ChatId, thread) => {
     }
     if(didntExist) bot.sendMessage(ChatId,"Token Not In List")
 
- }catch{
-   bot.sendMessage(ChatId,"Error, Check Values")
- }
+ // }catch{
+ //  bot.sendMessage(ChatId,"Error, Check Values")
+// }
 }
 
 const init = async () => {
@@ -567,7 +569,7 @@ bot.onText(/^\/addtoken/, function(message, match) {
                 // checking for TOPICS
                 for(let t=0; t<configs[j].CHANNEL[k].THREAD.length; t++) {
                   if(configs[j].CHANNEL[k].THREAD[t] === thread) { 
-                    sendNotificationToChannel(`${bases[l]} Already added`, cid, thread); 
+                    sendNotificationToChannel(`${tokenAddress} Already added`, cid, thread); 
                     DONE = true
                   }
                 }
@@ -575,7 +577,7 @@ bot.onText(/^\/addtoken/, function(message, match) {
                 if(!DONE){
                   configs[j].CHANNEL[k].THREAD.push(thread); 
                   DONE = true; 
-                  sendNotificationToChannel(`${bases[l]} Added to Topic`, cid, thread); break
+                  sendNotificationToChannel(`${tokenAddress} Added to Topic`, cid, thread); break
                 }
             }
           }
@@ -586,13 +588,13 @@ bot.onText(/^\/addtoken/, function(message, match) {
               THREAD: [thread],
             }); 
             DONE = true;  
-            sendNotificationToChannel(`${bases[l]} Added to Channel`, cid, thread); break
+            sendNotificationToChannel(`${tokenAddress} Added to Channel`, cid, thread); break
           }
         }
       }
       if(!DONE){
         addToken(lps[l], index, cid, thread)
-        sendNotificationToChannel(`${bases[l]} Added New Pair`, cid, thread);
+        sendNotificationToChannel(`${tokenAddress} Added New Pair`, cid, thread);
       }
       
     }
@@ -953,13 +955,6 @@ const sym = (cicSpent, cIndex) => {
   return dots
 }
 
-const findNewIndex = (sym) => {
-  for(let i=0; i<configs.length; i++){
-    if(configs[i].SYM === sym) return i
-  }
-  return 0
-}
-
 const stopListener = async (lp, index) => {
   const signer = getSigner(configs[index].EXCHANGE)
   let lpcontract = new Contract(
@@ -968,6 +963,7 @@ const stopListener = async (lp, index) => {
     signer
   );
   lpcontract.off("Swap")
+  console.log(`Stopped For ${configs[index].TOKEN}`)
 }
 
 const startListener = async (index) => {
@@ -981,12 +977,8 @@ const startListener = async (index) => {
     signer
   );
 
-  const sym = configs[index].SYM
-
   lpcontract.on("Swap", async ( sender, amount0In, amount1In, amount0Out, amount1Out, to, event) => {
 
-    const aIndex = findNewIndex(sym)
-  
     const { cicPrice } = await getBNBPrice(configs[aIndex].EXCHANGE)
 
     const txhash = event.transactionHash.toString()
