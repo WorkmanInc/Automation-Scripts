@@ -102,7 +102,5 @@ dist
 # TernJS port file
 .tern-port
 
-config/tokenConfig.json
-config/blocked.json
 .env
 config/tokenConfig.json
