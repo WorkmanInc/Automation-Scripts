@@ -175,6 +175,12 @@ const start = async () => {
   }
 }
 
+process.on('SIGINT', async () => {
+  sendNotificationToChannel("Lottery Keeper Died!")
+  await sleep(1000);
+  process.exit();
+});
+
 console.log("Loaded Up!")
 start()
 
