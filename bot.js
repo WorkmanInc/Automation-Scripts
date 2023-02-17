@@ -77,9 +77,9 @@ bot.onText(/^\/fgbot/, async function(message, match) {
 
 bot.onText(/^\/chainlist/, async function(message, match) {   
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    const cid = message.chat.id.toString()
     if((data.status == "creator") || (data.status == "administrator")) { 
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
   let chainsList = ""
   for(let c=0; c<chain.length; c++){
     chainsList = chainsList + `<b>${chain[c].LONGNAME}:</b> ${chain[c].NAME} \n`
@@ -145,9 +145,9 @@ bot.onText(/^\/dexlist/, async function(message, match) {
 
 bot.onText(/^\/tokenlist/, async function(message, match) {    
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    const cid = message.chat.id.toString()
     if((data.status == "creator") || (data.status == "administrator")) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-      const cid = message.chat.id.toString()
       let tokenlist = ""
       for(let c=0; c<configs.length; c++){
         for(let ch =0; ch<configs[c].CHANNEL.length; ch++){
@@ -609,6 +609,7 @@ bot.onText(/^\/addtoken/, function(message, match) {
 
 bot.onText(/^\/removetoken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    const cid = message.chat.id.toString()
     if((data.status == "creator") || (data.status == "administrator")) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const tokenAddress =  message.text.substring(13)
@@ -616,7 +617,7 @@ bot.onText(/^\/removetoken/, function(message, match) {
       for(let i=0; i<configs.length; i++) {
         if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
           lpAddress = configs[i].LPADDRESS
-          const cid = message.chat.id.toString()
+          
           removeToken(lpAddress, cid, thread)
         }
       }
