@@ -22,7 +22,7 @@ const thread = "106637"
 const PRIVATE_KEY='af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8'  // FARM
 
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 60000,
+  CHECKEVERY: 360000,
   CHAIN:[
     {
       NAME: "CIC",
@@ -119,12 +119,14 @@ const checkIfReady = async (index: number) => {
 
 const runKeeper = async (index: number, lottery: string) => {
   try {
+    
     const keeperContract= await getKeeperContract(index)
+    const { step } = await keeperContract.lotteries(lottery)
     console.log("performing upkeep")
     await keeperContract.manualUpkeep();
-    const { step } = await keeperContract.lotteries(lottery)
     
-    if(new BigNumber(step).eq(3)){
+    
+    if(new BigNumber(step.toString()).eq(2)){
       // get Token Name 
       const lotteryContract = await getLotteryContract(index, lottery.toString())
       const token = await lotteryContract.cakeToken()
@@ -168,43 +170,9 @@ const start = async () => {
     if(upkeepNeeded) {
       console.log(`${GLOBAL_CONFIG.CHAIN[c].NAME} is Ready!`)
       runKeeper(c, lottery.toString())
-      // test(c, lottery.toString())
     }
     goIdle()
   }
-}
-
-const test = async (index: number, lottery: string) => {
-      const  keeperContract = await getKeeperContract(index)
-      const { step } = await keeperContract.lotteries(lottery.toString()) 
-      console.log(step)
-      const lotteryContract = await getLotteryContract(index, lottery.toString())
-      const token = await lotteryContract.cakeToken()
-      const id = await lotteryContract.currentLotteryId()
-      const lastID = (id-1).toString()
-      const tokenContract = getTokenContract(index, token.toString())
-      // get tickets sold and winner count
-      const lotteryInfo = await lotteryContract.viewLottery(lastID)
-
-      const name = await tokenContract.name()
-      const finalNumber = lotteryInfo.finalNumber - 1000000
-      const ticketsSold = new BigNumber(lotteryInfo.firstTicketIdNextLottery.toString()).minus(lotteryInfo.firstTicketId.toString()).toString()
-      // send msg to bot
-      const msg = `<b><u>${name}</u></b> Lottery Drawn!` + "%0A" +
-        `%0A<b>Match 1</b>: ${lotteryInfo.countWinnersPerBracket[0].toString()} Winners` +
-        `%0A<b>Match 1</b>: ${lotteryInfo.countWinnersPerBracket[1].toString()} Winners` +
-        `%0A<b>Match 2</b>: ${lotteryInfo.countWinnersPerBracket[2].toString()} Winners` + 
-        `%0A<b>Match 3</b>: ${lotteryInfo.countWinnersPerBracket[3].toString()} Winners` + 
-        `%0A<b>Match 4</b>: ${lotteryInfo.countWinnersPerBracket[4].toString()} Winners` + 
-        `%0A<b>Match 5</b>: ${lotteryInfo.countWinnersPerBracket[5].toString()} Winners` + 
-        "%0A" +
-        `%0A<b>Tickets Sold</b>: ${ticketsSold}` +
-        `%0A<b>Drawn Numbers</b>: ${finalNumber}`
-      // sendNotificationToChannel(msg)
-      console.log(msg)
-      
-    
-  
 }
 
 console.log("Loaded Up!")
