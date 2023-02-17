@@ -112,6 +112,10 @@ let exchange = [
     {
       NAME: "Apocalypse",
       TGLINK: "https://t.me/ApocalypseP2E"
+    },
+    {
+      NAME: "Donkey King Casino",
+      TGLINK: "https://t.me/donkeykingegofficial"
     }
   ]
 
