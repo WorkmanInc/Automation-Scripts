@@ -262,8 +262,8 @@ const getFactory = async (index) => {
   return factoryContract
 }
  
-let configs
-let blocked
+let configs = []
+let blocked = []
 
 const addToken = async (LPAddress, index, ChatId, thread) => {
 const signer = await getSigner(index)
