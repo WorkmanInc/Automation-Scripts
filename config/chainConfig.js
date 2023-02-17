@@ -88,7 +88,7 @@ let exchange = [
       NAME: "PCS",
       FACTORY: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
       CHAIN: chain[1],
-      DOTS: "\xF0\x9F\x90\xB0" // rabbit
+      DOTS: "\xF0\x9F\x92\xB5" // rabbit
     },
     {
       LONGNAME: "Ape Swap",
@@ -131,21 +131,21 @@ let exchange = [
       NAME: "PCSETH",
       FACTORY: "0x1097053Fd2ea711dad45caCcc45EfF7548fCB362",
       CHAIN: chain[2],
-      DOTS:  "\xF0\x9F\x90\xB0"
+      DOTS:  "\xF0\x9F\x92\xB5"
     },
     {
       LONGNAME: "CRODEX",
       NAME: "CRO",
       FACTORY: "0xe9c29cB475C0ADe80bE0319B74AD112F1e80058F",
       CHAIN: chain[3],
-      DOTS:  "\xF0\x9F\x90\xB0"
+      DOTS:  "\xF0\x9F\x92\xB5"
     },
     {
       LONGNAME: "Mad Meerkat Finance",
       NAME: "MMF",
       FACTORY: "0xd590cc180601aecd6eeadd9b7f2b7611519544f4",
       CHAIN: chain[3],
-      DOTS:  "\xF0\x9F\x90\xB0"
+      DOTS:  "\xF0\x9F\x92\xB5"
       
     },
     {
@@ -153,7 +153,7 @@ let exchange = [
       NAME: "DXT",
       FACTORY: "0xed7e00862c73eF3a53f33d785c62d312Cc8827d2",
       CHAIN: chain[4],
-      DOTS:  "\xF0\x9F\x90\xB0"
+      DOTS:  "U+1F7E2"
       
     }
     
