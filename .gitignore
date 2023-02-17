@@ -105,3 +105,4 @@ dist
 config/tokenConfig.json
 config/blocked.json
 .env
+config/tokenConfig.json
