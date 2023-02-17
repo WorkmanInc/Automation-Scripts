@@ -1,5 +1,34 @@
 [
   {
+    "LPADDRESS": "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217",
+    "TOKEN": "0x9a37bF232466a55B99428479dF22c049cD43c20E",
+    "NAME": "Fertilizer",
+    "BASETOKEN": "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA",
+    "SYM": "FRTc",
+    "TDECIMALS": "18",
+    "BSYM": "WCIC",
+    "BDECIMALS": "18",
+    "BASE0": true,
+    "BASEISNATIVE": true,
+    "EXCHANGE": 0,
+    "CHANNEL": [
+      {
+        "CHATID": "-1001797513003",
+        "MINBUY": 0,
+        "PERDOT": 5,
+        "THREAD": [
+          0
+        ]
+      },
+      {
+        "CHATID": "-1001830742009",
+        "THREAD": [
+          0
+        ]
+      }
+    ]
+  },
+  {
     "LPADDRESS": "0x6bCA376f1A2aBbFbD38f710a60B6D4977e1A18eD",
     "TOKEN": "0x4492cA0AFF6D603e18Aea5075B49A5ff76b9Ea06",
     "NAME": "Farmageddon",
@@ -37,121 +66,6 @@
     "CHANNEL": [
       {
         "CHATID": "-1001830742009",
-        "MINBUY": 0,
-        "PERDOT": 5,
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x2f82C2c7cA7C8f548e0c92C9dc7E8Ee98c658e9D",
-    "TOKEN": "0xd51237A6F3219d186f0C8d8Dd957b1Bcb3Ce5d48",
-    "NAME": "Fertilizer",
-    "BASETOKEN": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-    "SYM": "FRT",
-    "TDECIMALS": "18",
-    "BSYM": "WBNB",
-    "BDECIMALS": "18",
-    "BASE0": true,
-    "BASEISNATIVE": true,
-    "EXCHANGE": 2,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001625261042",
-        "MINBUY": 0,
-        "PERDOT": 5,
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x27DFB939B74d0f848017a101B6d75E175e57184d",
-    "TOKEN": "0xd51237A6F3219d186f0C8d8Dd957b1Bcb3Ce5d48",
-    "NAME": "Fertilizer",
-    "BASETOKEN": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
-    "SYM": "FRT",
-    "TDECIMALS": "18",
-    "BSYM": "BUSD",
-    "BDECIMALS": "18",
-    "BASE0": false,
-    "BASEISNATIVE": false,
-    "EXCHANGE": 2,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001625261042",
-        "MINBUY": 0,
-        "PERDOT": 5,
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x90E6b9C1e54d00b1766fcbD0Fa83B18349016217",
-    "TOKEN": "0x9a37bF232466a55B99428479dF22c049cD43c20E",
-    "NAME": "Fertilizer",
-    "BASETOKEN": "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA",
-    "SYM": "FRTc",
-    "TDECIMALS": "18",
-    "BSYM": "WCIC",
-    "BDECIMALS": "18",
-    "BASE0": true,
-    "BASEISNATIVE": true,
-    "EXCHANGE": 0,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001625261042",
-        "MINBUY": 0,
-        "PERDOT": 5,
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x6b75970104032cE9720902Cea0A0E57Ce24a6077",
-    "TOKEN": "0xe5977835A013e3A5a52f44f8422734bd2dc545F0",
-    "NAME": "Balto Token",
-    "BASETOKEN": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-    "SYM": "BALTO",
-    "TDECIMALS": "18",
-    "BSYM": "WBNB",
-    "BDECIMALS": "18",
-    "BASE0": true,
-    "BASEISNATIVE": true,
-    "EXCHANGE": 2,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001625261042",
-        "MINBUY": 0,
-        "PERDOT": 5,
-        "THREAD": [
-          0
-        ]
-      }
-    ]
-  },
-  {
-    "LPADDRESS": "0x2c835F1c68d7f91c5E110Ea93cc2D0f7AFB3d86b",
-    "TOKEN": "0x5955f7d312c5d84B004d259D55072C4F0A478dBC",
-    "NAME": "Balto Token",
-    "BASETOKEN": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    "SYM": "BALTO",
-    "TDECIMALS": "18",
-    "BSYM": "WETH",
-    "BDECIMALS": "18",
-    "BASE0": false,
-    "BASEISNATIVE": true,
-    "EXCHANGE": 7,
-    "CHANNEL": [
-      {
-        "CHATID": "-1001625261042",
         "MINBUY": 0,
         "PERDOT": 5,
         "THREAD": [
