@@ -989,13 +989,13 @@ const startListener = async (index) => {
   const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(basePrice).toFixed(2)
   
 
-  sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer);
+  sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice);
   
 });
 console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
 }
 
-const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer) => {
+const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice) => {
   const c = configs[index].CHANNEL
   let toDelete = []
   
