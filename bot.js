@@ -953,6 +953,13 @@ const sym = (cicSpent, cIndex) => {
   return dots
 }
 
+const findNewIndex = (sym) => {
+  for(let i=0; i<configs.length; i++){
+    if(configs[i].SYM === sym) return i
+  }
+  return 0
+}
+
 const stopListener = async (lp, index) => {
   const signer = getSigner(configs[index].EXCHANGE)
   let lpcontract = new Contract(
@@ -974,26 +981,31 @@ const startListener = async (index) => {
     signer
   );
 
+  const sym = configs[index].SYM
+
   lpcontract.on("Swap", async ( sender, amount0In, amount1In, amount0Out, amount1Out, to, event) => {
-  const { cicPrice } = await getBNBPrice(configs[index].EXCHANGE)
 
-  const txhash = event.transactionHash.toString()
-  const receiver = to.toString()
-  const buyer = sender.toString()
+    const aIndex = findNewIndex(sym)
+  
+    const { cicPrice } = await getBNBPrice(configs[aIndex].EXCHANGE)
 
-  const basePrice = baseIsNative ? cicPrice : 1
+    const txhash = event.transactionHash.toString()
+    const receiver = to.toString()
+    const buyer = sender.toString()
 
-  const inAmount = baseIs0 ? amount0In : amount1In
-  const outAmount = baseIs0 ? amount1Out : amount0Out
+    const basePrice = baseIsNative ? cicPrice : 1
 
-  const {bought, FRTcValue} = await calculate(basePrice, inAmount, outAmount)
-  const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(basePrice).toFixed(2)
+    const inAmount = baseIs0 ? amount0In : amount1In
+    const outAmount = baseIs0 ? amount1Out : amount0Out
+
+    const {bought, FRTcValue} = await calculate(basePrice, inAmount, outAmount)
+    const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(basePrice).toFixed(2)
   
 
-  sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice);
+    sendBuyBotMessage(aIndex, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice);
   
-});
-console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
+  });
+  console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
 }
 
 const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice) => {
