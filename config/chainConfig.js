@@ -88,7 +88,7 @@ let exchange = [
       NAME: "PCS",
       FACTORY: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
       CHAIN: chain[1],
-      DOTS: "\xF0\x9F\x92\xB5" // rabbit
+      DOTS: "\xF0\x9F\x92\xB5"
     },
     {
       LONGNAME: "Ape Swap",
