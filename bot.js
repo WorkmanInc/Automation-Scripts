@@ -979,7 +979,7 @@ const startListener = async (index) => {
 
   lpcontract.on("Swap", async ( sender, amount0In, amount1In, amount0Out, amount1Out, to, event) => {
 
-    const { cicPrice } = await getBNBPrice(configs[aIndex].EXCHANGE)
+    const { cicPrice } = await getBNBPrice(configs[index].EXCHANGE)
 
     const txhash = event.transactionHash.toString()
     const receiver = to.toString()
@@ -994,7 +994,7 @@ const startListener = async (index) => {
     const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(basePrice).toFixed(2)
   
 
-    sendBuyBotMessage(aIndex, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice);
+    sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice);
   
   });
   console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
