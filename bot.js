@@ -16,8 +16,8 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -763,51 +763,85 @@ bot.onText(/^\/bnb/, async function(message, match) {
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(3)
-
  sendNotificationToChannelPrice(
   `<b>BNB Price:</b> $${cicPrice}\n` +
   getAdLink() +
   `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
-
 })
 bot.onText(/^\/BNB/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(3)
-
   sendNotificationToChannelPrice(
     `<b>BNB Price:</b> $${cicPrice}\n` +
     getAdLink() +
     `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
     , cid, thread)
-
 })
-
 bot.onText(/^\/eth/, async function(message, match) {     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(7)
-
  sendNotificationToChannelPrice(
   `<b>ETHERUEM Price:</b> $${cicPrice}\n` +
   getAdLink() +
   `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
  , cid, thread)
-
 })
 bot.onText(/^\/ETH/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(7)
-
   sendNotificationToChannelPrice(
     `<b>ETHEREUM Price:</b> $${cicPrice}\n` +
     getAdLink() +
     `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
    , cid, thread)
-
 })
+bot.onText(/^\/cro/, async function(message, match) {     
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+  const { cicPrice } = await getBNBPrice(10)
+ sendNotificationToChannelPrice(
+  `<b>CRO Price:</b> $${cicPrice}\n` +
+  getAdLink() +
+  `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+ , cid, thread)
+})
+bot.onText(/^\/CRO/, async function(message, match) {    
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+  const { cicPrice } = await getBNBPrice(10)
+  sendNotificationToChannelPrice(
+    `<b>CRO Price:</b> $${cicPrice}\n` +
+    getAdLink() +
+    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   , cid, thread)
+})
+bot.onText(/^\/dxt/, async function(message, match) {     
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+  const { cicPrice } = await getBNBPrice(11)
+ sendNotificationToChannelPrice(
+  `<b>DXT Price:</b> $${cicPrice}\n` +
+  getAdLink() +
+  `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+ , cid, thread)
+})
+bot.onText(/^\/DXT/, async function(message, match) {    
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+  const { cicPrice } = await getBNBPrice(11)
+  sendNotificationToChannelPrice(
+    `<b>DXT Price:</b> $${cicPrice}\n` +
+    getAdLink() +
+    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   , cid, thread)
+})
+
+
+
 
 const getLPToken = async (cIndex, command) => {
   try {
@@ -1058,8 +1092,6 @@ process.on('SIGINT', async () => {
   await sleep(1000);
   process.exit();
 });
-
-
 
 
 init()

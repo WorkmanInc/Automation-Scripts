@@ -36,6 +36,34 @@ let chain = [
         "0x4Fabb145d64652a948d72533023f6E7A623C7C53",     // busd
         "0xdAC17F958D2ee523a2206206994597C13D831ec7"      // usdt
       ]
+    },
+    {
+      LONGNAME: "Cronos",
+      NAME: "CRO",
+      API: "https://min-api.cryptocompare.com/data/price?fsym=CRO&tsyms=USD",
+      RPC: "https://evm.cronos.org/",
+      EXP: "https://cronoscan.com/",
+      NATIVE: "0x5C7F8A570d578ED84E63fdFA7b1eE72dEae1AE23",
+      BASES: [
+        "0x5C7F8A570d578ED84E63fdFA7b1eE72dEae1AE23" ,   // cro
+        "0xc21223249CA28397B4B6541dfFaEcC539BfF0c59",   // usdc
+        "0x66e428c3f67a68878562e79A0234c1F83c208770"      // usdt
+      ]
+    },
+    {
+      LONGNAME: "DEXIT",
+      NAME: "DXT",
+      API: "https://min-api.cryptocompare.com/data/price?fsym=DXT&tsyms=USD",
+      RPC: "https://dxt.dexit.network",
+      EXP: "https://dxtscan.com/",
+      NATIVE: "0x414b8BAf9950C87804cf7E23BB43a58AE7e1E202",
+      BASES: [
+        "0x414b8BAf9950C87804cf7E23BB43a58AE7e1E202",   // dxt
+        "0x10Be3d7eE0f77409E0A37e075083d43667Ef1eD1",   // busd
+       "0xE3F5a90F9cb311505cd691a46596599aA1A0AD7D",    // usdt
+       "0x765277EebeCA2e31912C9946eAe1021199B39C61",    // usdc 
+      ]
+      
     }
   ];
 
@@ -104,7 +132,31 @@ let exchange = [
       FACTORY: "0x1097053Fd2ea711dad45caCcc45EfF7548fCB362",
       CHAIN: chain[2],
       DOTS:  "\xF0\x9F\x90\xB0"
+    },
+    {
+      LONGNAME: "CRODEX",
+      NAME: "CRO",
+      FACTORY: "0xe9c29cB475C0ADe80bE0319B74AD112F1e80058F",
+      CHAIN: chain[3],
+      DOTS:  "\xF0\x9F\x90\xB0"
+    },
+    {
+      LONGNAME: "Mad Meerkat Finance",
+      NAME: "MMF",
+      FACTORY: "0xd590cc180601aecd6eeadd9b7f2b7611519544f4",
+      CHAIN: chain[3],
+      DOTS:  "\xF0\x9F\x90\xB0"
+      
+    },
+    {
+      LONGNAME: "Dexit Network",
+      NAME: "DXT",
+      FACTORY: "0xed7e00862c73eF3a53f33d785c62d312Cc8827d2",
+      CHAIN: chain[4],
+      DOTS:  "\xF0\x9F\x90\xB0"
+      
     }
+    
   ]
 
   const ads = 
