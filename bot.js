@@ -1052,7 +1052,9 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
 
 
 process.on('SIGINT', async () => {
-  // await sendKillMsg("FG Bot Shutting Down!")
+  const cid = "-1001435750887"
+  const thread = "0"
+  sendNotificationToChannel("BuyBot Died!", cid, thread)
   await sleep(1000);
   process.exit();
 });
