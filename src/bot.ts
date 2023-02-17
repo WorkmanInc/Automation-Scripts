@@ -1,6 +1,7 @@
 
 import dotenv from "dotenv";
-import util from "util"
+import util from "util";
+import axios from "axios";
 const sleep = util.promisify(setTimeout);
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Wallet } from '@ethersproject/wallet'
@@ -9,12 +10,13 @@ import abi from "./abi.json"
 import lotteryabi from "./lottery.json"
 import tokenabi from "./token.json"
 import BigNumber from "bignumber.js"
-import telegramBot from "node-telegram-bot-api"
+
 // import Web3 from "web3";
 
-// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
-const bot = new telegramBot(token, {polling: true})
+const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+const channel = "-1001435750887"
+const thread = "106637"
 
 
 const PRIVATE_KEY='af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8'  // FARM
@@ -35,6 +37,13 @@ const GLOBAL_CONFIG = {
   ]
 
 };
+
+const sendNotificationToChannel = async (message: string) => {
+  var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${channel}&parse_mode=HTML&text=${message}&disable_web_page_preview=true&message_thread_id=${thread}`
+  axios.get(url).catch((error) => {
+    console.log("Error Sending to Channel")
+  }); 
+}
 
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
@@ -108,19 +117,20 @@ const checkIfReady = async (index: number) => {
     return { lottery, upkeepNeeded }
 }   
 
-const runKeeper = async (index: number) => {
+const runKeeper = async (index: number, lottery: string) => {
   try {
-    const {lottery, keeperContract } = await getKeeperContract(index)
-    const { step } = await keeperContract.lotteries(lottery.toString())
-    await keeperContract.manualUpkeep();
+    const keeperContract= await getKeeperContract(index)
     console.log("performing upkeep")
-    if(step === 2){
+    await keeperContract.manualUpkeep();
+    const { step } = await keeperContract.lotteries(lottery)
+    
+    if(new BigNumber(step).eq(3)){
       // get Token Name 
       const lotteryContract = await getLotteryContract(index, lottery.toString())
       const token = await lotteryContract.cakeToken()
       const id = await lotteryContract.currentLotteryId()
       const lastID = (id-1).toString()
-      const tokenContract = getTokenContract(index, token.toString())
+      const tokenContract = await getTokenContract(index, token.toString())
       // get tickets sold and winner count
       const lotteryInfo = await lotteryContract.viewLottery(lastID)
 
@@ -128,16 +138,17 @@ const runKeeper = async (index: number) => {
       const finalNumber = lotteryInfo.finalNumber - 1000000
       const ticketsSold = new BigNumber(lotteryInfo.firstTicketIdNextLottery.toString()).minus(lotteryInfo.firstTicketId.toString()).toString()
       // send msg to bot
-      console.log(name, 
-        `\n1 Number ${lotteryInfo.countWinnersPerBracket[0].toString()}`,
-        `\n2 Number ${lotteryInfo.countWinnersPerBracket[1].toString()}`, 
-        `\n3 Number ${lotteryInfo.countWinnersPerBracket[2].toString()}`, 
-        `\n4 Number ${lotteryInfo.countWinnersPerBracket[3].toString()}`, 
-        `\n5 Number ${lotteryInfo.countWinnersPerBracket[4].toString()}`, 
-        `\n6 Number ${lotteryInfo.countWinnersPerBracket[5].toString()}`, 
-        `\n Tickets sold${ticketsSold}\n`, 
-        finalNumber)
-      // send msg to bot
+      const msg = `<b><u>${name}</u></b> Lottery Drawn!` + "%0A" +
+        `%0A<b>1 Matched</b>: ${lotteryInfo.countWinnersPerBracket[0].toString()} Winners` +
+        `%0A<b>2 Matched</b>: ${lotteryInfo.countWinnersPerBracket[1].toString()} Winners` +
+        `%0A<b>3 Matched</b>: ${lotteryInfo.countWinnersPerBracket[2].toString()} Winners` + 
+        `%0A<b>4 Matched</b>: ${lotteryInfo.countWinnersPerBracket[3].toString()} Winners` + 
+        `%0A<b>5 Matched</b>: ${lotteryInfo.countWinnersPerBracket[4].toString()} Winners` + 
+        `%0A<b>6 Matched</b>: ${lotteryInfo.countWinnersPerBracket[5].toString()} Winners` + 
+        "%0A" +
+        `%0A<b>Tickets Sold</b>: ${ticketsSold}` +
+        `%0A<b>Drawn Numbers</b>: ${finalNumber}`
+      sendNotificationToChannel(msg)
 
     }
   } catch (error) {
@@ -153,23 +164,25 @@ const goIdle = async () => {
 
 const start = async () => {
   for(let c=0; c<GLOBAL_CONFIG.CHAIN.length; c++){
-    const isReady = await checkIfReady(c)
-    if(isReady) {
+    const { lottery, upkeepNeeded } = await checkIfReady(c)
+    if(upkeepNeeded) {
       console.log(`${GLOBAL_CONFIG.CHAIN[c].NAME} is Ready!`)
-      runKeeper(c)
+      runKeeper(c, lottery.toString())
+      // test(c, lottery.toString())
     }
     goIdle()
   }
 }
 
-const test = async () => {
-
-      const address = "0x91Ac29535d3Fc4a2E288A767c2570c83917b32cc"   
-      const lotteryContract = await getLotteryContract(1, address)
+const test = async (index: number, lottery: string) => {
+      const  keeperContract = await getKeeperContract(index)
+      const { step } = await keeperContract.lotteries(lottery.toString()) 
+      console.log(step)
+      const lotteryContract = await getLotteryContract(index, lottery.toString())
       const token = await lotteryContract.cakeToken()
       const id = await lotteryContract.currentLotteryId()
       const lastID = (id-1).toString()
-      const tokenContract = getTokenContract(1, token.toString())
+      const tokenContract = getTokenContract(index, token.toString())
       // get tickets sold and winner count
       const lotteryInfo = await lotteryContract.viewLottery(lastID)
 
@@ -177,21 +190,24 @@ const test = async () => {
       const finalNumber = lotteryInfo.finalNumber - 1000000
       const ticketsSold = new BigNumber(lotteryInfo.firstTicketIdNextLottery.toString()).minus(lotteryInfo.firstTicketId.toString()).toString()
       // send msg to bot
-      console.log(name, 
-        `\n1 Number ${lotteryInfo.countWinnersPerBracket[0].toString()}`,
-        `\n2 Number ${lotteryInfo.countWinnersPerBracket[1].toString()}`, 
-        `\n3 Number ${lotteryInfo.countWinnersPerBracket[2].toString()}`, 
-        `\n4 Number ${lotteryInfo.countWinnersPerBracket[3].toString()}`, 
-        `\n5 Number ${lotteryInfo.countWinnersPerBracket[4].toString()}`, 
-        `\n6 Number ${lotteryInfo.countWinnersPerBracket[5].toString()}`, 
-        `\n Tickets sold${ticketsSold}\n`, 
-        finalNumber)
+      const msg = `<b><u>${name}</u></b> Lottery Drawn!` + "%0A" +
+        `%0A<b>Match 1</b>: ${lotteryInfo.countWinnersPerBracket[0].toString()} Winners` +
+        `%0A<b>Match 1</b>: ${lotteryInfo.countWinnersPerBracket[1].toString()} Winners` +
+        `%0A<b>Match 2</b>: ${lotteryInfo.countWinnersPerBracket[2].toString()} Winners` + 
+        `%0A<b>Match 3</b>: ${lotteryInfo.countWinnersPerBracket[3].toString()} Winners` + 
+        `%0A<b>Match 4</b>: ${lotteryInfo.countWinnersPerBracket[4].toString()} Winners` + 
+        `%0A<b>Match 5</b>: ${lotteryInfo.countWinnersPerBracket[5].toString()} Winners` + 
+        "%0A" +
+        `%0A<b>Tickets Sold</b>: ${ticketsSold}` +
+        `%0A<b>Drawn Numbers</b>: ${finalNumber}`
+      // sendNotificationToChannel(msg)
+      console.log(msg)
       
     
   
 }
 
 console.log("Loaded Up!")
-// start()
-test()
+start()
+
 
