@@ -159,13 +159,13 @@ const test = async () => {
       const ticketsSold = new BigNumber(lotteryInfo.firstTicketIdNextLottery.toString()).minus(lotteryInfo.firstTicketId.toString()).toString()
       // send msg to bot
       console.log(name, 
-        `1 Number ${lotteryInfo.countWinnersPerBracket[0].toString()}`,
-        `2 Number ${lotteryInfo.countWinnersPerBracket[1].toString()}`, 
-        `3 Number ${lotteryInfo.countWinnersPerBracket[2].toString()}`, 
-        `4 Number ${lotteryInfo.countWinnersPerBracket[3].toString()}`, 
-        `5 Number ${lotteryInfo.countWinnersPerBracket[4].toString()}`, 
-        `6 Number ${lotteryInfo.countWinnersPerBracket[5].toString()}`, 
-        ticketsSold, 
+        `\n1 Number ${lotteryInfo.countWinnersPerBracket[0].toString()}`,
+        `\n2 Number ${lotteryInfo.countWinnersPerBracket[1].toString()}`, 
+        `\n3 Number ${lotteryInfo.countWinnersPerBracket[2].toString()}`, 
+        `\n4 Number ${lotteryInfo.countWinnersPerBracket[3].toString()}`, 
+        `\n5 Number ${lotteryInfo.countWinnersPerBracket[4].toString()}`, 
+        `\n6 Number ${lotteryInfo.countWinnersPerBracket[5].toString()}`, 
+        `\n Tickets sold${ticketsSold}\n`, 
         finalNumber)
       
     
