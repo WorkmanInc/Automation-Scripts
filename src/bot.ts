@@ -6,6 +6,9 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { Wallet } from '@ethersproject/wallet'
 import { Contract } from 'ethers'
 import abi from "./abi.json"
+import lotteryabi from "./lottery.json"
+import tokenabi from "./token.json"
+import BigNumber from "bignumber.js"
 // import Web3 from "web3";
 
 
@@ -59,19 +62,65 @@ const getContract = (index: number) => {
   return keeperContract
 }
 
+const getLotteryContract = (index: number, address: string) => {
+  const RPC = GLOBAL_CONFIG.CHAIN[index].RPC
+  const signer = new Wallet(
+    PRIVATE_KEY,
+    new JsonRpcProvider(RPC)
+  );
+  
+  let contract = new Contract(
+    address,
+    lotteryabi,
+    signer
+  );
+  
+  const keeperContract = contract.connect(signer);
+  return keeperContract
+}
 
+const getTokenContract = (index: number, address: string) => {
+  const RPC = GLOBAL_CONFIG.CHAIN[index].RPC
+  const signer = new Wallet(
+    PRIVATE_KEY,
+    new JsonRpcProvider(RPC)
+  );
+  
+  let contract = new Contract(
+    address,
+    tokenabi,
+    signer
+  );
+  
+  const keeperContract = contract.connect(signer);
+  return keeperContract
+}
 
 const checkIfReady = async (index: number) => {
     const keeperContract = await getContract(index)
-    const {upkeepNeeded} = await keeperContract.upKeepDue();
-    return upkeepNeeded
+
+    const {lottery, upkeepNeeded } = await keeperContract.upKeepDue();
+    return { lottery, upkeepNeeded }
 }   
 
 const runKeeper = async (index: number) => {
   try {
-    const keeperContract = await getContract(index)
+    const {lottery, keeperContract } = await getContract(index)
+    const { step } = await keeperContract.lotteries(lottery.toString())
     await keeperContract.manualUpkeep();
     console.log("performing upkeep")
+    if(step === 2){
+      // get Token Name
+      const lotteryContract = await getLotteryContract(index, lottery.toString())
+      const token = await lotteryContract.cakeToken()
+      const id = await lotteryContract.currentLotteryId()
+      const tokenContract = getTokenContract(index, token.toString())
+      const name = await tokenContract.name()
+      // get tickets sold and winner count
+      const lotteryInfo = await lotteryContract.viewLottery(id.toString())
+      // send msg to bot
+
+    }
   } catch (error) {
     console.log("Maybe Wait Longer??");
   }
@@ -94,6 +143,36 @@ const start = async () => {
   }
 }
 
+const test = async () => {
+
+      const address = "0x91Ac29535d3Fc4a2E288A767c2570c83917b32cc"   
+      const lotteryContract = await getLotteryContract(1, address)
+      const token = await lotteryContract.cakeToken()
+      const id = await lotteryContract.currentLotteryId()
+      const lastID = (id-1).toString()
+      const tokenContract = getTokenContract(1, token.toString())
+      // get tickets sold and winner count
+      const lotteryInfo = await lotteryContract.viewLottery(lastID)
+
+      const name = await tokenContract.name()
+      const finalNumber = lotteryInfo.finalNumber - 1000000
+      const ticketsSold = new BigNumber(lotteryInfo.firstTicketIdNextLottery.toString()).minus(lotteryInfo.firstTicketId.toString()).toString()
+      // send msg to bot
+      console.log(name, 
+        `1 Number ${lotteryInfo.countWinnersPerBracket[0].toString()}`,
+        `2 Number ${lotteryInfo.countWinnersPerBracket[1].toString()}`, 
+        `3 Number ${lotteryInfo.countWinnersPerBracket[2].toString()}`, 
+        `4 Number ${lotteryInfo.countWinnersPerBracket[3].toString()}`, 
+        `5 Number ${lotteryInfo.countWinnersPerBracket[4].toString()}`, 
+        `6 Number ${lotteryInfo.countWinnersPerBracket[5].toString()}`, 
+        ticketsSold, 
+        finalNumber)
+      
+    
+  
+}
+
 console.log("Loaded Up!")
-start()
+// start()
+test()
 
