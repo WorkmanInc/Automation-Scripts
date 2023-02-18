@@ -181,6 +181,11 @@ process.on('SIGINT', async () => {
   process.exit();
 });
 
+process.on('uncaughtException', async () => {
+  await sleep(1000);
+  console.log("uncaught exception error")
+});
+
 console.log("Loaded Up!")
 start()
 
