@@ -1054,14 +1054,14 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
     for(let t=0; t<c[i].THREAD.length; t++){
       const thread = c[i].THREAD[t]
 
-      if( bought.gt(configs[index].CHANNEL[i].MINBUY) ) {
+      if( spent.gt(configs[index].CHANNEL[i].MINBUY) ) {
         const dots = sym(new BigNumber(spent).dividedBy(configs[index].CHANNEL[i].PERDOT).toFixed(0), cIndex)
         var message =
         `<b>${configs[index].NAME}</b> Bought!!\n` +
         `<b>${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP</b>\n` +
         dots +
         `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(4)} ${exchange[cIndex].CHAIN.NAME})\n` +
-        `<b>Received:</b> ${bought.shiftedBy(-configs[index].TDECIMALS).toFixed(2)} ${configs[index].SYM}\n` +
+        `<b>Received:</b> ${bought.shiftedBy.toFixed(2)} ${configs[index].SYM}\n` +
         `<b>${configs[index].SYM} Price:</b> $${FRTcValue}\n` +
         `<b>${exchange[cIndex].CHAIN.NAME}:</b> $${cicPrice}\n` +
         `<a href="${exchange[cIndex].CHAIN.EXP}tx/${txhash}"> TX  </a> <b>|</b>`+ 
