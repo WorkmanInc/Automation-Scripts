@@ -16,11 +16,12 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
-const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"
+const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
+// const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
 const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -34,6 +35,44 @@ const getAdLink = () => {
   const index = Math.floor((Math.random() * ads.length));
   return  `\nad: <a href="${ads[index].TGLINK}"><u>${ads[index].NAME}</u></a>`
 }
+
+bot.onText(/^\/grouplist/, async function(message, match) {   
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    const cid = message.chat.id.toString()
+    if(message.chat.type === "private") {
+      const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+      let groups = []
+      for(let g=0; g<configs.length; g++){
+        for(let d=0; d<configs[g].CHANNEL.length; d++) {
+          // check if in groups
+          let duplicate = false
+          for(let gd=0; gd<groups.length; gd++){
+            if(configs[g].CHANNEL[d].CHATID === groups[gd]) {
+              duplicate = true
+              break
+            } 
+          }
+          if(!duplicate) groups.push(configs[g].CHANNEL[d].CHATID)
+        }
+      }
+      let grouplist = ""
+      for(let c=0; c<groups.length; c++){
+        const apiUrl = `https://api.telegram.org/bot${token}/getChat?chat_id=${groups[c]}`
+        const res = await fetch(apiUrl);
+        const info = await res.json();
+        const title = info.result.title
+        const invitelink = info.result.invite_link
+        grouplist = grouplist + `<a href="${invitelink}"><u>${title}</u></a>\n`
+      }
+      sendNotificationToChannel(
+        "<b><u> group List </u></b>\n" +
+        grouplist + "\n" +
+        getAdLink() +
+        `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+        , cid, thread)
+    }
+  })
+})
 
 bot.onText(/^\/fgbot/, async function(message, match) {   
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
