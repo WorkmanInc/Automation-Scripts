@@ -972,9 +972,12 @@ const loadConfig = async () => {
   }
 };
 
-const calculate = async (cicP, Ain, Aout) => {
-  const bought = await new BigNumber(Aout.toString())
-  const FRTcValue = await  new BigNumber(Ain.toString()).dividedBy(Aout.toString()).multipliedBy(cicP).toFixed(12)
+const calculate = async (cicP, Ain, Aout, index) => {
+  const tdec = configs[index].TDECIMALS
+  const bdec = configs[index].BDECIMALS
+  const bought = await new BigNumber(Aout.toString()).shiftedBy(-tdec)
+  const paid = await new BigNumber(Ain.toString()).shiftedBy(-bdec)
+  const FRTcValue = await  new BigNumber(paid).dividedBy(bought).multipliedBy(cicP).toFixed(12)
   return { bought, FRTcValue }
 }
 
@@ -1024,8 +1027,8 @@ const startListener = async (index) => {
     const inAmount = baseIs0 ? amount0In : amount1In
     const outAmount = baseIs0 ? amount1Out : amount0Out
 
-    const {bought, FRTcValue} = await calculate(basePrice, inAmount, outAmount)
-    const spent = new BigNumber(inAmount.toString()).shiftedBy(-18).multipliedBy(basePrice).toFixed(2)
+    const {bought, FRTcValue} = await calculate(basePrice, inAmount, outAmount, index)
+    const spent = new BigNumber(inAmount.toString()).shiftedBy(-configs[index].BDECIMALS).multipliedBy(basePrice).toFixed(2)
   
 
     sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice);
@@ -1052,7 +1055,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `<b>${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP</b>\n` +
         dots +
         `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(4)} ${exchange[cIndex].CHAIN.NAME})\n` +
-        `<b>Received:</b> ${bought.shiftedBy(-18).toFixed(2)} ${configs[index].SYM}\n` +
+        `<b>Received:</b> ${bought.shiftedBy(-configs[index].TDECIMALS).toFixed(2)} ${configs[index].SYM}\n` +
         `<b>${configs[index].SYM} Price:</b> $${FRTcValue}\n` +
         `<b>${exchange[cIndex].CHAIN.NAME}:</b> $${cicPrice}\n` +
         `<a href="${exchange[cIndex].CHAIN.EXP}tx/${txhash}"> TX  </a> <b>|</b>`+ 

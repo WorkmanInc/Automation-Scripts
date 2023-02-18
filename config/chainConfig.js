@@ -145,7 +145,7 @@ let exchange = [
       NAME: "MMF",
       FACTORY: "0xd590cc180601aecd6eeadd9b7f2b7611519544f4",
       CHAIN: chain[3],
-      DOTS:  "\xF0\x9F\x92\xB5"
+      DOTS: "\xF0\x9F\x92\xB5"
       
     },
     {
@@ -153,7 +153,7 @@ let exchange = [
       NAME: "DXT",
       FACTORY: "0xed7e00862c73eF3a53f33d785c62d312Cc8827d2",
       CHAIN: chain[4],
-      DOTS:  "U+1F7E2"
+      DOTS: "\xF0\x9F\x92\xB5"
       
     }
     
