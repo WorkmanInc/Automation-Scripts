@@ -57,12 +57,17 @@ bot.onText(/^\/grouplist/, async function(message, match) {
       }
       let grouplist = ""
       for(let c=0; c<groups.length; c++){
+        
         const apiUrl = `https://api.telegram.org/bot${token}/getChat?chat_id=${groups[c]}`
         const res = await fetch(apiUrl);
         const info = await res.json();
-        const title = info.result.title
-        const invitelink = info.result.invite_link
-        grouplist = grouplist + `<a href="${invitelink}"><u>${title}</u></a>\n`
+        console.log(info)
+        if(info.ok) {
+          const title = info.result.title
+          const invitelink = info.result.invite_link
+        
+          grouplist = grouplist + `<a href="${invitelink}"><u>${title}</u></a>\n`
+        }
       }
       sendNotificationToChannel(
         "<b><u> group List </u></b>\n" +
