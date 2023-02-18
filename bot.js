@@ -1061,7 +1061,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `<b>${configs[index].NAME}</b> Bought!!\n` +
         `<b>${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP</b>\n` +
         dots +
-        `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(bdec).toFixed(4)} ${configs[index].BSYM})\n` +
+        `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-bdec).toFixed(4)} ${configs[index].BSYM})\n` +
         `<b>Received:</b> ${new BigNumber(bought).toFixed(2)} ${configs[index].SYM}\n` +
         `<b>${configs[index].SYM} Price:</b> $${FRTcValue}\n` +
         `<b>${exchange[cIndex].CHAIN.NAME}:</b> $${cicPrice}\n` +
