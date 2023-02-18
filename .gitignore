@@ -104,3 +104,4 @@ dist
 addresses/list-000000000000.json
 
 .env
+config

@@ -131,7 +131,7 @@ const runKeeper = async (index: number, lottery: string) => {
       const lotteryContract = await getLotteryContract(index, lottery.toString())
       const token = await lotteryContract.cakeToken()
       const id = await lotteryContract.currentLotteryId()
-      const lastID = (id-1).toString()
+      const lastID = (id).toString()
       const tokenContract = await getTokenContract(index, token.toString())
       // get tickets sold and winner count
       const lotteryInfo = await lotteryContract.viewLottery(lastID)
