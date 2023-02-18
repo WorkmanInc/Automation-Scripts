@@ -16,9 +16,12 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
+
+const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"
+const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 
@@ -59,6 +62,8 @@ bot.onText(/^\/fgbot/, async function(message, match) {
        "Checks price of Token by Symbol\n" +
        "<b>IF ERROR USE FIRST METHOD</b>\n" +
        "\n" +
+       `<b>/bcprice</b> [ticker]\n` +
+       "Bitcointry Market Info for Ticker\n" +
        "<b><u>Channel Commands</u></b>\n" +
        "<b>/blockprice</b> Block Price Commands\n" +
        "<b>/allowprice</b> Allows Price Commands\n" +
@@ -845,6 +850,101 @@ bot.onText(/^\/DXT/, async function(message, match) {
     `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
    , cid, thread)
 })
+
+bcbot.onText(/^\/price/, async function(message, match) {    
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+
+  const pairRaw =  message.text.substring(7)
+  const pair = pairRaw.toUpperCase()
+  let sym
+  const info = await getBCInfo(pair)
+  if(!info.status) {
+    sendNotificationToChannel("Error, Check Spelling", cid, thread)
+    return
+  }
+  const symRaw = info.pairs
+  // find _ in pair name
+  let index
+  for(let i=0; i<symRaw.length; i++){
+    if(symRaw[i] === "_"){ index = i; break}
+  }
+  sym = symRaw.substring(0,index)
+  const lastPrice = info.lastPrice
+  const change = info.percentChange
+  const high = info.high24hr
+  const low = info.low24hr
+  const volume = new BigNumber(info.quoteVolume).toFixed(2)
+
+  sendNotificationToChannelPrice(
+    `<a href="https://bitcointry.com/en/market"><b><u>Bitcointry</u></b></a> Market Info!\n` +
+    `<b>${sym} Price:</b> $${lastPrice}\n` +
+    "\n" +
+    `<b>24hr Volume:</b> $${volume}\n` +
+    `<b>24hr Low:</b> $${low}\n` +
+    `<b>24hr High:</b> $${high}\n` +
+    `<b>24hr Change:</b> ${change}%\n` +
+    `<a href="https://bitcointry.com/en/exchange/${symRaw}"><b>Buy ${sym}</b></a>\n` +
+    getAdLink()
+   , cid, thread)
+   
+})
+
+bot.onText(/^\/bcprice/, async function(message, match) {    
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+
+  const pairRaw =  message.text.substring(9)
+  const pair = pairRaw.toUpperCase()
+  let sym
+  const info = await getBCInfo(pair)
+  if(!info.status) {
+    sendNotificationToChannel("Error, Check Spelling", cid, thread)
+    return
+  }
+  const symRaw = info.pairs
+  // find _ in pair name
+  let index
+  for(let i=0; i<symRaw.length; i++){
+    if(symRaw[i] === "_"){ index = i; break}
+  }
+  sym = symRaw.substring(0,index)
+  const lastPrice = info.lastPrice
+  const change = info.percentChange
+  const high = info.high24hr
+  const low = info.low24hr
+  const volume = new BigNumber(info.quoteVolume).toFixed(2)
+
+  sendNotificationToChannelPrice(
+    `<a href="https://bitcointry.com/en/market"><b><u>Bitcointry</u></b></a> Market Info!\n` +
+    `<b>${sym} Price:</b> $${lastPrice}\n` +
+    "\n" +
+    `<b>24hr Volume:</b> $${volume}\n` +
+    `<b>24hr Low:</b> $${low}\n` +
+    `<b>24hr High:</b> $${high}\n` +
+    `<b>24hr Change:</b> ${change}%\n` +
+    `<a href="https://bitcointry.com/en/exchange/${symRaw}"><b>Buy ${sym}</b></a>\n` +
+    getAdLink() +
+    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   , cid, thread)
+   
+})
+
+const getBCInfo = async (pair) => {
+  const apiUrl = `https://api.bitcointry.com/api/v1/ticker?symbol=${pair}USDT`
+  let info
+  try {
+    const res = await fetch(apiUrl);
+    if (res.status >= 400) {
+      console.log(res.status)
+      throw new Error("Bad response from server");
+    }
+    info = await res.json();
+    } catch (err) {
+    console.error("Unable to connect to Binance API", err);
+   }
+  return  info
+};
 
 
 
