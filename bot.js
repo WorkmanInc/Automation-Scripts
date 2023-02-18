@@ -61,7 +61,6 @@ bot.onText(/^\/grouplist/, async function(message, match) {
         const apiUrl = `https://api.telegram.org/bot${token}/getChat?chat_id=${groups[c]}`
         const res = await fetch(apiUrl);
         const info = await res.json();
-        console.log(info)
         if(info.ok) {
           const title = info.result.title
           const invitelink = info.result.invite_link
