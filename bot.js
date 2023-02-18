@@ -542,12 +542,12 @@ bot.onText(/^\/addtoken/, function(message, match) {
       for(let e=0; e<exchange.length; e++){
         if(exchangeString.toLowerCase() === exchange[e].NAME.toLowerCase()) index = e
       }
-/*
+
       if(tokenAddress.toLowerCase() === exchange[index].CHAIN.NATIVE.toLowerCase()) {
         sendNotificationToChannel(`Can't Add Native Token`, cid, thread);
         return; 
       }
-   */   
+   
     let lps = []
     let bases = []
     for(let b=0; b<exchange[index].CHAIN.BASES.length; b++){
