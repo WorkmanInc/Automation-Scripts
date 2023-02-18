@@ -16,8 +16,8 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -542,12 +542,12 @@ bot.onText(/^\/addtoken/, function(message, match) {
       for(let e=0; e<exchange.length; e++){
         if(exchangeString.toLowerCase() === exchange[e].NAME.toLowerCase()) index = e
       }
-
+/*
       if(tokenAddress.toLowerCase() === exchange[index].CHAIN.NATIVE.toLowerCase()) {
         sendNotificationToChannel(`Can't Add Native Token`, cid, thread);
         return; 
       }
-      
+   */   
     let lps = []
     let bases = []
     for(let b=0; b<exchange[index].CHAIN.BASES.length; b++){
