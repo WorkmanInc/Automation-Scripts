@@ -16,8 +16,8 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -1054,7 +1054,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
     for(let t=0; t<c[i].THREAD.length; t++){
       const thread = c[i].THREAD[t]
 
-      if( spent.gt(configs[index].CHANNEL[i].MINBUY) ) {
+      if( new BigNumber(spent).gt(configs[index].CHANNEL[i].MINBUY) ) {
         const dots = sym(new BigNumber(spent).dividedBy(configs[index].CHANNEL[i].PERDOT).toFixed(0), cIndex)
         var message =
         `<b>${configs[index].NAME}</b> Bought!!\n` +
