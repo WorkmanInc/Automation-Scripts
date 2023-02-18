@@ -65,7 +65,6 @@ bot.onText(/^\/grouplist/, async function(message, match) {
           const title = info.result.title
           const invitelink = info.result.invite_link
           const iv = invitelink.substring(14)
-          console.log(iv, invitelink)
           grouplist = grouplist + `<a href="https://t.me/+${iv}"><u>${title}</u></a>\n`
         }
       }
