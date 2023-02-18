@@ -876,7 +876,7 @@ bcbot.onText(/^\/price/, async function(message, match) {
   const low = info.low24hr
   const volume = new BigNumber(info.quoteVolume).toFixed(2)
 
-  sendNotificationToChannelPrice(
+  sendNotificationToBCBot(
     `<a href="https://bitcointry.com/en/market"><b><u>Bitcointry</u></b></a> Market Info!\n` +
     `<b>${sym} Price:</b> $${lastPrice}\n` +
     "\n" +
@@ -889,6 +889,12 @@ bcbot.onText(/^\/price/, async function(message, match) {
    , cid, thread)
    
 })
+const sendNotificationToBCBot = async (message, cid, thread) => {
+  var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
+  axios.get(url).catch((error) => {
+    console.log("Error Sending to Channel")
+  }); 
+}
 
 bot.onText(/^\/bcprice/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
