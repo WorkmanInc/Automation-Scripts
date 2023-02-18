@@ -1053,6 +1053,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
   for(let i=0; i<c.length; i++){
     for(let t=0; t<c[i].THREAD.length; t++){
       const thread = c[i].THREAD[t]
+      const bdec = new BigNumber(configs[index].BDECIMALS).toNumber()
 
       if( new BigNumber(spent).gt(configs[index].CHANNEL[i].MINBUY) ) {
         const dots = sym(new BigNumber(spent).dividedBy(configs[index].CHANNEL[i].PERDOT).toFixed(0), cIndex)
@@ -1060,7 +1061,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `<b>${configs[index].NAME}</b> Bought!!\n` +
         `<b>${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP</b>\n` +
         dots +
-        `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(configs[index].BDECIMALS).toFixed(4)} ${configs[index].BSYM})\n` +
+        `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(bdec).toFixed(4)} ${configs[index].BSYM})\n` +
         `<b>Received:</b> ${new BigNumber(bought).toFixed(2)} ${configs[index].SYM}\n` +
         `<b>${configs[index].SYM} Price:</b> $${FRTcValue}\n` +
         `<b>${exchange[cIndex].CHAIN.NAME}:</b> $${cicPrice}\n` +
