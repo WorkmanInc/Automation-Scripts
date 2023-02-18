@@ -22,7 +22,7 @@ const thread = "106637"
 const PRIVATE_KEY='af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8'  // FARM
 
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 360000,
+  CHECKEVERY: 720000,
   CHAIN:[
     {
       NAME: "CIC",
