@@ -288,6 +288,7 @@ try {
       baseIs0 = true
       newtoken = token1.toString()
       baseToken = token0.toString()
+      break
     }
   }
 
@@ -540,6 +541,11 @@ bot.onText(/^\/addtoken/, function(message, match) {
 
       for(let e=0; e<exchange.length; e++){
         if(exchangeString.toLowerCase() === exchange[e].NAME.toLowerCase()) index = e
+      }
+
+      if(tokenAddress.toLowerCase() === exchange[index].CHAIN.NATIVE.toLowerCase()) {
+        sendNotificationToChannel(`Can't Add Native Token`, cid, thread);
+        return; 
       }
       
     let lps = []
