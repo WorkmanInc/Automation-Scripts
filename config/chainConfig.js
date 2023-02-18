@@ -59,9 +59,7 @@ let chain = [
       NATIVE: "0x414b8BAf9950C87804cf7E23BB43a58AE7e1E202",
       BASES: [
         "0x414b8BAf9950C87804cf7E23BB43a58AE7e1E202",   // dxt
-        "0x10Be3d7eE0f77409E0A37e075083d43667Ef1eD1",   // busd
-       "0xE3F5a90F9cb311505cd691a46596599aA1A0AD7D",    // usdt
-       "0x765277EebeCA2e31912C9946eAe1021199B39C61",    // usdc 
+       "0xE3F5a90F9cb311505cd691a46596599aA1A0AD7D"    // usdt
       ]
       
     }

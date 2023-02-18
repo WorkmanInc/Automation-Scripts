@@ -16,8 +16,8 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -1060,8 +1060,8 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `<b>${configs[index].NAME}</b> Bought!!\n` +
         `<b>${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP</b>\n` +
         dots +
-        `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-18).toFixed(4)} ${exchange[cIndex].CHAIN.NAME})\n` +
-        `<b>Received:</b> ${bought.shiftedBy.toFixed(2)} ${configs[index].SYM}\n` +
+        `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(configs[index].BDECIMALS).toFixed(4)} ${configs[index].BSYM})\n` +
+        `<b>Received:</b> ${new BigNumber(bought).toFixed(2)} ${configs[index].SYM}\n` +
         `<b>${configs[index].SYM} Price:</b> $${FRTcValue}\n` +
         `<b>${exchange[cIndex].CHAIN.NAME}:</b> $${cicPrice}\n` +
         `<a href="${exchange[cIndex].CHAIN.EXP}tx/${txhash}"> TX  </a> <b>|</b>`+ 
