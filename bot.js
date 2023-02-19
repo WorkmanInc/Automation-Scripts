@@ -66,7 +66,7 @@ bot.onText(/^\/grouplist/, async function(message, match) {
           const title = titleRaw.substring(0,38)
           const invitelink = info.result.invite_link
 
-          grouplist = grouplist + `${title}\n(${invitelink})`
+          grouplist = grouplist + `${title}\n(${invitelink})\n\n`
         }
       }
       bot.sendMessage(cid, grouplist)
