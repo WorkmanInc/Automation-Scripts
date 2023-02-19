@@ -22,7 +22,7 @@ const thread = "106637"
 const PRIVATE_KEY='af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8'  // FARM
 
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 720000,
+  CHECKEVERY: 330000,
   CHAIN:[
     {
       NAME: "CIC",
@@ -121,12 +121,13 @@ const runKeeper = async (index: number, lottery: string) => {
   try {
     
     const keeperContract= await getKeeperContract(index)
-    const { step } = await keeperContract.lotteries(lottery)
+    
     console.log("performing upkeep")
     await keeperContract.manualUpkeep();
+    await sleep(10000);
     
-    
-    if(new BigNumber(step.toString()).eq(2)){
+    const { step } = await keeperContract.lotteries(lottery)
+    if(new BigNumber(step.toString()).eq(3)){
       // get Token Name 
       const lotteryContract = await getLotteryContract(index, lottery.toString())
       const token = await lotteryContract.cakeToken()
