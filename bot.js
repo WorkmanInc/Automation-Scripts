@@ -55,25 +55,21 @@ bot.onText(/^\/grouplist/, async function(message, match) {
           if(!duplicate) groups.push(configs[g].CHANNEL[d].CHATID)
         }
       }
-      let grouplist = ""
+      let grouplist = "Group List!\n\n"
       for(let c=0; c<groups.length; c++){
         
         const apiUrl = `https://api.telegram.org/bot${token}/getChat?chat_id=${groups[c]}`
         const res = await fetch(apiUrl);
         const info = await res.json();
         if(info.ok) {
-          const title = info.result.title
+          const titleRaw = info.result.title
+          const title = titleRaw.substring(0,38)
           const invitelink = info.result.invite_link
-          const iv = invitelink.substring(14)
-          grouplist = grouplist + `<a href="https://t.me/+${iv}"><u>${title}</u></a>\n`
+
+          grouplist = grouplist + `${title}\n(${invitelink})`
         }
       }
-      sendNotificationToChannel(
-        "<b><u> group List </u></b>\n" +
-        grouplist + "\n" +
-        getAdLink() +
-        `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
-        , cid, thread)
+      bot.sendMessage(cid, grouplist)
     }
   })
 })
