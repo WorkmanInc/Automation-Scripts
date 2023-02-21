@@ -1236,7 +1236,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `*Received:* ${new BigNumber(bought).toFixed(2)} ${configs[index].SYM}\n` +
         `*${configs[index].SYM} Price:* $${FRTcValue}\n` +
         `*${exchange[cIndex].CHAIN.NAME}:* $${cicPrice}\n` +
-        `[_ TX  _](${exchange[cIndex].CHAIN.EXP}tx/${txhash})` +
+        `[ TX  ](${exchange[cIndex].CHAIN.EXP}tx/${txhash})` +
         ` | ` + 
         `[ Buyer ](${exchange[cIndex].CHAIN.EXP}address/${buyer})` + ` | ` +
         `[ Receiver ](${exchange[cIndex].CHAIN.EXP}address/${receiver})\n` +
