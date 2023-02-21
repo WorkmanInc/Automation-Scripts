@@ -106,7 +106,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         break
       }
     }
-    const settings = [`MINBUY ($${cMIN})`, `PERDOT ($${cPER})`, 'REMOVE']
+    const settings = [`MINBUY ($${cMIN})`, `PERDOT ($${cPER})`, 'REMOVE']  // max 6 letter or change below method
    const il = []
     for(let i=0; i<settings.length; i++){
       il.push([{"text": `${settings[i]}`, "callback_data": settings[i]}])
@@ -124,7 +124,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
   }
 
   if(msg.text === 'Change What?') {
-    optionChosen = action
+    optionChosen = action.substring(0,6)
   if(optionChosen === "REMOVE") {
     removeStep2(tokenAddress, cid, thread)
     bot.deleteMessage(cid, msg.message_id);
@@ -149,8 +149,8 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
   // after chooseing amount
   if(msg.text === 'New Dollar Amount?') {
     bot.deleteMessage(cid, msg.message_id);
-     if(optionChosen === "MINBUY") minBuy(tokenAddress, cid, thread, action)
-     if(optionChosen === "PERDOT") perdot(tokenAddress, cid, thread, action)
+     if(optionChosen === `MINBUY`) minBuy(tokenAddress, cid, thread, action)
+     if(optionChosen === `PERDOT`) perdot(tokenAddress, cid, thread, action)
     
     bot.off('callback_query')
     return
