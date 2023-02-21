@@ -73,7 +73,7 @@ bot.onText(/^\/grouplist/, async function(message, match) {
           grouplist = grouplist + `${title}\n(${invitelink})\n\n`
         }
       }
-      bot.sendMessage(cid, grouplist)
+      sendNotificationToChannel(grouplist, cid)
     }
   })
 })
@@ -96,6 +96,9 @@ bot.onText(/^\/fgbot/, async function(message, match) {
        "<b>/perdot</b> [tokenAddress ] [amount]\n" + 
        "Set $ Per Dot for Token\n" +
        "\n" +
+       "<b>/changedot</b> [emoji]\n" + 
+       "Change the Emoji!\n" +
+       "\n" +
        "<b>/[Coin Symbol]</b> Checks price of Coin\n" +
        "\n" +
        "<b>/price</b> [tokenAddress] [dex]\n" +
@@ -107,6 +110,7 @@ bot.onText(/^\/fgbot/, async function(message, match) {
        "\n" +
        `<b>/bcprice</b> [ticker]\n` +
        "Bitcointry Market Info for Ticker\n" +
+       "\n" +
        "<b><u>Channel Commands</u></b>\n" +
        "<b>/blockprice</b> Block Price Commands\n" +
        "<b>/allowprice</b> Allows Price Commands\n" +
@@ -298,7 +302,7 @@ bot.onText(/^\/changedot/, function(message, match) {
       }
      saveNewConfig()
      if(changed) {
-      bot.sendMessage(cid, `*Changed* Dot to` + image ,  {message_thread_id: thread, parse_mode: 'Markdown' })
+     sendNotificationToChannel(`*Changed* Dot to` + image , cid, thread)
      }
      else sendNotificationToChannel(`Dot Image not setup`, cid, thread);
     } else {
@@ -413,7 +417,7 @@ try {
 
   saveNewConfig()
   startListener(configs.length-1)
-  }catch{bot.sendMessage(ChatId,"Error, Check Values")}
+  }catch{sendNotificationToChannel("Error, Check Values", ChatId, thread)}
 }
 
 const removeToken = async (LPAddress, ChatId, thread) => {
@@ -454,10 +458,10 @@ const removeToken = async (LPAddress, ChatId, thread) => {
         }
       }
     }
-    if(didntExist) bot.sendMessage(ChatId,"Token Not In List")
+    if(didntExist) sendNotificationToChannel("Token Not In List", ChatId, thread)
 
   }catch{
-   bot.sendMessage(ChatId,"Error, Check Values")
+    sendNotificationToChannel("Error Checking Values", ChatId, thread)
  }
 }
 
@@ -546,18 +550,16 @@ bot.onText(/^\/allowprice/, async function(message, match) {
 })
 
 const sendNotificationToChannel = async (message, cid, thread) => {
-    var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
-    axios.get(url).catch((error) => {
-      console.log("Error Sending to Channel")
-    }); 
+  bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread}).catch(() => {
+    console.log("Error Sending to Channel")
+  });
 }
 
 const sendNotificationToChannelPrice = async (message, cid, thread) => {
   if(checkIfAllowed(cid, thread)) {
-    var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
-    axios.get(url).catch((error) => {
+    bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread}).catch(() => {
       console.log("Error Sending to Channel")
-     });
+    });
   }  
 }
 
@@ -1242,9 +1244,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `\n` +
         link
         
-        // var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${c[i].CHATID}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
-    
-        // await axios.get(url).catch(() => {
+       
          bot.sendMessage(c[i].CHATID, message,{ message_thread_id: thread, disable_web_page_preview: true, parse_mode: 'Markdown' } )
           
           .catch(() => {
