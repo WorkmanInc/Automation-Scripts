@@ -1199,7 +1199,9 @@ bcbot.onText(/^\/price/, async function(message, match) {
   const low = info.low24hr
   const volume = new BigNumber(info.quoteVolume).toFixed(2)
 
-  sendNotificationToBCBot(
+  let reply_markup = {"inline_keyboard": [[{"text": `BUY ${sym}` , "url": `https://bitcointry.com/en/exchange/${symRaw}`}]]}
+
+  let msg = 
     `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
     `*${sym} Price:* $${lastPrice}\n` +
     "\n" +
@@ -1207,14 +1209,14 @@ bcbot.onText(/^\/price/, async function(message, match) {
     `*24hr Low:* $${low}\n` +
     `*24hr High:* $${high}\n` +
     `*24hr Change:* ${change}%\n` +
-    `[Buy ${sym}](https://bitcointry.com/en/exchange/${symRaw})\n` +
     getAdLink()
-   , cid, thread)
+  
+   bcbot.sendMessage(cid, msg, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown', reply_markup: reply_markup}).catch(() => {
+    console.log("Error Sending to Channel")
+  });
    
 })
-const sendNotificationToBCBot = async (message, cid, thread) => {
-  bcbot.sendMessage(cid, message, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown'})
-}
+
 
 bot.onText(/^\/bcprice/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
