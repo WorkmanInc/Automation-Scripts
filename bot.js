@@ -1256,7 +1256,7 @@ bot.onText(/^\/bcprice/, async function(message, match) {
     getAdLink() +
    "\n" + getLink(1)
 
-   bcbot.sendMessage(cid, msg, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown', reply_markup: reply_markup}).catch(() => {
+   bot.sendMessage(cid, msg, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown', reply_markup: reply_markup}).catch(() => {
     console.log("Error Sending to Channel")
   });
    
