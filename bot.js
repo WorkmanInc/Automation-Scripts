@@ -1243,7 +1243,9 @@ bot.onText(/^\/bcprice/, async function(message, match) {
   const low = info.low24hr
   const volume = new BigNumber(info.quoteVolume).toFixed(2)
 
-  sendNotificationToChannelPrice(
+  let reply_markup = {"inline_keyboard": [[{"text": `BUY ${sym}` , "url": `https://bitcointry.com/en/exchange/${symRaw}`}]]}
+
+  let msg =
     `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
     `*${sym} Price:* $${lastPrice}\n` +
     "\n" +
@@ -1251,10 +1253,12 @@ bot.onText(/^\/bcprice/, async function(message, match) {
     `*24hr Low:* $${low}\n` +
     `*24hr High:* $${high}\n` +
     `*24hr Change:* ${change}%\n` +
-    `[Buy ${sym}](https://bitcointry.com/en/exchange/${symRaw})\n` +
     getAdLink() +
    "\n" + getLink(1)
-   , cid, thread)
+
+   bcbot.sendMessage(cid, msg, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown', reply_markup: reply_markup}).catch(() => {
+    console.log("Error Sending to Channel")
+  });
    
 })
 
