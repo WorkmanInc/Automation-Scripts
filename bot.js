@@ -1178,7 +1178,6 @@ bot.onText(/^\/DXT/, async function(message, match) {
 bcbot.onText(/^\/price/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
   const pairRaw =  message.text.substring(7)
   const pair = pairRaw.toUpperCase()
   let sym
