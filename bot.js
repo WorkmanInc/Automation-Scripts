@@ -16,12 +16,12 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
-// const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
-const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
+const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
+// const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
 const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -32,10 +32,6 @@ const uniswapABI = require("./abis/uni-Factory.json");
 const uniLPABI = require("./abis/uniLP.json");
 
 const getAdLink = () => {
-  const index = Math.floor((Math.random() * ads.length));
-  return  `\nad: <a href="${ads[index].TGLINK}"><u>${ads[index].NAME}</u></a>`
-}
-const getAdLinkBB = () => {
   const index = Math.floor((Math.random() * ads.length));
   return  `\nad: [${ads[index].NAME}](${ads[index].TGLINK})`
 }
@@ -70,10 +66,10 @@ bot.onText(/^\/grouplist/, async function(message, match) {
           const title = titleRaw.substring(0,38)
           const invitelink = info.result.invite_link
 
-          grouplist = grouplist + `${title}\n(${invitelink})\n\n`
+          grouplist = grouplist + `[${title}](${invitelink})\n`
         }
       }
-      sendNotificationToChannel(grouplist, cid)
+      sendNotificationToChannel(grouplist, cid, 0)
     }
   })
 })
@@ -83,45 +79,45 @@ bot.onText(/^\/fgbot/, async function(message, match) {
       const cid = message.chat.id.toString()
      
       sendNotificationToChannel(
-       "<b><u> FG Bot Commands </u></b>\n" +
-       "<b>/addtoken</b> [tokenAddress] [dex]\n"+
+       "*FG Bot Commands*\n" +
+       "*/addtoken* [tokenAddress] [dex]\n"+
        "Adds Token to BuyBot List for DEX\n" +
         "\n" +
-       "<b>/removetoken</b> [tokenAddress]\n" +
+       "*/removetoken* [tokenAddress]\n" +
        "Removes Token from BuyBot list\n" +
        "\n" +
-       "<b>/minbuy</b> [tokenAddress ] [amount]\n" + 
+       "*/minbuy* [tokenAddress ] [amount]\n" + 
        "Set Min $ Buy for Token\n" +
        "\n" +
-       "<b>/perdot</b> [tokenAddress ] [amount]\n" + 
+       "*/perdot* [tokenAddress ] [amount]\n" + 
        "Set $ Per Dot for Token\n" +
        "\n" +
-       "<b>/changedot</b> [emoji]\n" + 
+       "*/changedot* [emoji]\n" + 
        "Change the Emoji!\n" +
        "\n" +
-       "<b>/[Coin Symbol]</b> Checks price of Coin\n" +
+       "*/[Coin Symbol]* Checks price of Coin\n" +
        "\n" +
-       "<b>/price</b> [tokenAddress] [dex]\n" +
+       "*/price* [tokenAddress] [dex]\n" +
        "Checks price of Token on DEX\n" +
        "\n" +
-       "<b>/price</b> [token Symbol]\n" +
+       "*/price* [token Symbol]\n" +
        "Checks price of Token by Symbol\n" +
-       "<b>IF ERROR USE FIRST METHOD</b>\n" +
+       "*IF ERROR USE FIRST METHOD*\n" +
        "\n" +
-       `<b>/bcprice</b> [ticker]\n` +
+       `*/bcprice* [ticker]\n` +
        "Bitcointry Market Info for Ticker\n" +
        "\n" +
-       "<b><u>Channel Commands</u></b>\n" +
-       "<b>/blockprice</b> Block Price Commands\n" +
-       "<b>/allowprice</b> Allows Price Commands\n" +
+       "*Channel Commands*\n" +
+       "*/blockprice* Block Price Commands\n" +
+       "*/allowprice* Allows Price Commands\n" +
        "\n" +
-       "<b><u>LISTS</u></b>\n" +
-       "<b>/tokenlist</b>: List of Tokens in group\n" +
-       "<b>/dexlist</b>: List of all Dex's\n" +
-       "<b>/dexlist</b> [chain]: Dex list by Chain\n" +
-       "<b>/chainlist</b>: List of Chains available\n" +
+       "*LISTS*\n" +
+       "*/tokenlist*: List of Tokens in group\n" +
+       "*/dexlist*: List of all Dex's\n" +
+       "*/dexlist* [chain]: Dex list by Chain\n" +
+       "*/chainlist*: List of Chains available\n" +
        getAdLink() +
-        `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+       "\n" + getLink(1)
        
         , cid, thread)
 })
@@ -134,13 +130,13 @@ bot.onText(/^\/chainlist/, async function(message, match) {
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   let chainsList = ""
   for(let c=0; c<chain.length; c++){
-    chainsList = chainsList + `<b>${chain[c].LONGNAME}:</b> ${chain[c].NAME} \n`
+    chainsList = chainsList + `*${chain[c].LONGNAME}:* ${chain[c].NAME} \n`
   }
   sendNotificationToChannel(
-    "<b><u> Chain List </u></b>\n" +
+    "* Chain List *\n" +
     chainsList + "\n" +
     getAdLink() +
-    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   "\n" + getLink(1)
     
    , cid, thread)
   } else {
@@ -170,25 +166,25 @@ bot.onText(/^\/dexlist/, async function(message, match) {
       if(byChain) {
         for(let c=0; c<exchange.length; c++){
           if(exchange[c].CHAIN.NAME.toLowerCase() === chainString.toLowerCase()){
-            dexList = dexList + `<b>${exchange[c].LONGNAME} ${exchange[c].CHAIN.NAME}</b>: ${exchange[c].NAME} \n`
+            dexList = dexList + `*${exchange[c].LONGNAME} ${exchange[c].CHAIN.NAME}*: ${exchange[c].NAME} \n`
           }
         }
         sendNotificationToChannel(
-          `<b><u> Dex List ${exchange[cIndex].LONGNAME} </u></b>\n` +
+          `* Dex List ${exchange[cIndex].LONGNAME} *\n` +
           dexList + "\n" +
           getAdLink() +
-          `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+         "\n" + getLink(1)
          
           , cid, thread)
       } else {
         for(let c=0; c<exchange.length; c++){
-          dexList = dexList + `<b>${exchange[c].LONGNAME} ${exchange[c].CHAIN.NAME}</b>: ${exchange[c].NAME} \n`
+          dexList = dexList + `*${exchange[c].LONGNAME} ${exchange[c].CHAIN.NAME}*: ${exchange[c].NAME} \n`
         }
         sendNotificationToChannel(
-          `<b><u> Dex List </u></b>\n` +
+          `* Dex List *\n` +
           dexList + "\n" +
           getAdLink() +
-          `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+         "\n" + getLink(1)
           , cid, thread)
       }
     }
@@ -207,17 +203,17 @@ bot.onText(/^\/tokenlist/, async function(message, match) {
             for(let t=0; t<configs[c].CHANNEL[ch].THREAD.length; t++) {
               if(configs[c].CHANNEL[ch].THREAD[t] === thread){
                 const e = configs[c].EXCHANGE
-                tokenlist = tokenlist + `<b>${configs[c].SYM}/${configs[c].BSYM}:</b> ${configs[c].TOKEN}\n<b>${exchange[e].CHAIN.NAME} ${exchange[e].NAME}</b>\n`
+                tokenlist = tokenlist + `*${configs[c].SYM}/${configs[c].BSYM}: ${exchange[e].CHAIN.NAME} ${exchange[e].NAME}*\n ${configs[c].TOKEN}\n`
               }
             }
           }
         }
       }
       sendNotificationToChannel(
-        "<b><u> Tokens List </u></b>\n" +
+        "* Tokens List *\n" +
         tokenlist + "\n" +
         getAdLink() +
-        `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>` 
+       "\n" + getLink(1) 
         , cid, thread)
     } else {
       sendNotificationToChannel("not Admin", cid, thread)
@@ -807,10 +803,10 @@ bot.onText(/^\/cic/, async function(message, match) {
   const { cicPrice, mc } = await getBNBPrice(0)
 
  sendNotificationToChannelPrice(
-  `<b>CIC Price:</b> $${cicPrice}\n` +
-  `<b>CIC MC:</b> $${mc}\n` +
+  `*CIC Price:* $${cicPrice}\n` +
+  `*CIC MC:* $${mc}\n` +
   getAdLink() +
-  `\n<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+ "\n" + getLink(0)
  , cid, thread)
 
 })
@@ -820,10 +816,10 @@ bot.onText(/^\/CIC/, async function(message, match) {
   const { cicPrice, mc } = await getBNBPrice(0)
 
   sendNotificationToChannelPrice(
-    `<b>CIC Price:</b> $${cicPrice}\n` +
-    `<b>CIC MC:</b> $${mc}\n` +
+    `*CIC Price:* $${cicPrice}\n` +
+    `*CIC MC:* $${mc}\n` +
     getAdLink() +
-    `\n<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   "\n" + getLink(0)
    , cid, thread)
 
 })
@@ -833,9 +829,9 @@ bot.onText(/^\/bnb/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(3)
  sendNotificationToChannelPrice(
-  `<b>BNB Price:</b> $${cicPrice}\n` +
+  `*BNB Price:* $${cicPrice}\n` +
   getAdLink() +
-  `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+ "\n" + getLink(1)
  , cid, thread)
 })
 bot.onText(/^\/BNB/, async function(message, match) {    
@@ -843,9 +839,9 @@ bot.onText(/^\/BNB/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(3)
   sendNotificationToChannelPrice(
-    `<b>BNB Price:</b> $${cicPrice}\n` +
+    `*BNB Price:* $${cicPrice}\n` +
     getAdLink() +
-    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   "\n" + getLink(1)
     , cid, thread)
 })
 bot.onText(/^\/eth/, async function(message, match) {     
@@ -853,9 +849,9 @@ bot.onText(/^\/eth/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(7)
  sendNotificationToChannelPrice(
-  `<b>ETHERUEM Price:</b> $${cicPrice}\n` +
+  `*ETHERUEM Price:* $${cicPrice}\n` +
   getAdLink() +
-  `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+ "\n" + getLink(1)
  , cid, thread)
 })
 bot.onText(/^\/ETH/, async function(message, match) {    
@@ -863,9 +859,9 @@ bot.onText(/^\/ETH/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(7)
   sendNotificationToChannelPrice(
-    `<b>ETHEREUM Price:</b> $${cicPrice}\n` +
+    `*ETHEREUM Price:* $${cicPrice}\n` +
     getAdLink() +
-    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   "\n" + getLink(1)
    , cid, thread)
 })
 bot.onText(/^\/cro/, async function(message, match) {     
@@ -873,9 +869,9 @@ bot.onText(/^\/cro/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(10)
  sendNotificationToChannelPrice(
-  `<b>CRO Price:</b> $${cicPrice}\n` +
+  `*CRO Price:* $${cicPrice}\n` +
   getAdLink() +
-  `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+ "\n" + getLink(1)
  , cid, thread)
 })
 bot.onText(/^\/CRO/, async function(message, match) {    
@@ -883,9 +879,9 @@ bot.onText(/^\/CRO/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(10)
   sendNotificationToChannelPrice(
-    `<b>CRO Price:</b> $${cicPrice}\n` +
+    `*CRO Price:* $${cicPrice}\n` +
     getAdLink() +
-    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   "\n" + getLink(1)
    , cid, thread)
 })
 bot.onText(/^\/dxt/, async function(message, match) {     
@@ -893,9 +889,9 @@ bot.onText(/^\/dxt/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(11)
  sendNotificationToChannelPrice(
-  `<b>DXT Price:</b> $${cicPrice}\n` +
+  `*DXT Price:* $${cicPrice}\n` +
   getAdLink() +
-  `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+ "\n" + getLink(1)
  , cid, thread)
 })
 bot.onText(/^\/DXT/, async function(message, match) {    
@@ -903,9 +899,9 @@ bot.onText(/^\/DXT/, async function(message, match) {
   const cid = message.chat.id.toString()
   const { cicPrice } = await getBNBPrice(11)
   sendNotificationToChannelPrice(
-    `<b>DXT Price:</b> $${cicPrice}\n` +
+    `*DXT Price:* $${cicPrice}\n` +
     getAdLink() +
-    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   "\n" + getLink(1)
    , cid, thread)
 })
 
@@ -935,23 +931,20 @@ bcbot.onText(/^\/price/, async function(message, match) {
   const volume = new BigNumber(info.quoteVolume).toFixed(2)
 
   sendNotificationToBCBot(
-    `<a href="https://bitcointry.com/en/market"><b><u>Bitcointry</u></b></a> Market Info!\n` +
-    `<b>${sym} Price:</b> $${lastPrice}\n` +
+    `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
+    `*${sym} Price:* $${lastPrice}\n` +
     "\n" +
-    `<b>24hr Volume:</b> $${volume}\n` +
-    `<b>24hr Low:</b> $${low}\n` +
-    `<b>24hr High:</b> $${high}\n` +
-    `<b>24hr Change:</b> ${change}%\n` +
-    `<a href="https://bitcointry.com/en/exchange/${symRaw}"><b>Buy ${sym}</b></a>\n` +
+    `*24hr Volume:* $${volume}\n` +
+    `*24hr Low:* $${low}\n` +
+    `*24hr High:* $${high}\n` +
+    `*24hr Change:* ${change}%\n` +
+    `[Buy ${sym}](https://bitcointry.com/en/exchange/${symRaw})\n` +
     getAdLink()
    , cid, thread)
    
 })
 const sendNotificationToBCBot = async (message, cid, thread) => {
-  var url = `https://api.telegram.org/bot${bcToken}/sendMessage?chat_id=${cid}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
-  axios.get(url).catch((error) => {
-    console.log("Error Sending to Channel")
-  }); 
+  bcbot.sendMessage(cid, message, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown'})
 }
 
 bot.onText(/^\/bcprice/, async function(message, match) {    
@@ -980,16 +973,16 @@ bot.onText(/^\/bcprice/, async function(message, match) {
   const volume = new BigNumber(info.quoteVolume).toFixed(2)
 
   sendNotificationToChannelPrice(
-    `<a href="https://bitcointry.com/en/market"><b><u>Bitcointry</u></b></a> Market Info!\n` +
-    `<b>${sym} Price:</b> $${lastPrice}\n` +
+    `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
+    `*${sym} Price:* $${lastPrice}\n` +
     "\n" +
-    `<b>24hr Volume:</b> $${volume}\n` +
-    `<b>24hr Low:</b> $${low}\n` +
-    `<b>24hr High:</b> $${high}\n` +
-    `<b>24hr Change:</b> ${change}%\n` +
-    `<a href="https://bitcointry.com/en/exchange/${symRaw}"><b>Buy ${sym}</b></a>\n` +
+    `*24hr Volume:* $${volume}\n` +
+    `*24hr Low:* $${low}\n` +
+    `*24hr High:* $${high}\n` +
+    `*24hr Change:* ${change}%\n` +
+    `[Buy ${sym}](https://bitcointry.com/en/exchange/${symRaw})\n` +
     getAdLink() +
-    `\n<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+   "\n" + getLink(1)
    , cid, thread)
    
 })
@@ -1081,10 +1074,10 @@ bot.onText(/^\/price/, async function(message, match) {
 
             sendNotificationToChannelPrice(
               `${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
-              `<b>${sym} / ${bsym}</b>\n` +
-              `<b>Price:</b> $${price}\n` +
-              `<b>MCap:</b> $${mc}\n` +
-              `<b>${exchange[cIndex].CHAIN.NAME} Price:</b> $${cicPrice}\n` +
+              `*${sym} / ${bsym}*\n` +
+              `*Price:* $${price}\n` +
+              `*MCap:* $${mc}\n` +
+              `*${exchange[cIndex].CHAIN.NAME} Price:* $${cicPrice}\n` +
               getAdLink() + "\n" +
               link
               ,cid, thread);
@@ -1095,12 +1088,8 @@ bot.onText(/^\/price/, async function(message, match) {
     
 })
 
-const getLink = (index) => {
-  if(exchange[index].CHAIN.NAME === "CIC") return  `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
-  return  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
-}
 
-const getLinkBB = (index) => {
+const getLink = (index) => {
   if(exchange[index].CHAIN.NAME === "CIC") return  `[Farmageddon](https://cic.farmageddon.farm/) | [Telegram](https://t.me/FARMAGEDDON_TOKEN)`
   return  `[Farmageddon](https://farmageddon.farm/) | [Telegram](https://t.me/FARMAGEDDON_TOKEN)`
 }
@@ -1219,7 +1208,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
   let toDelete = []
   
   const cIndex = configs[index].EXCHANGE
-  const link = getLinkBB(cIndex)
+  const link = getLink(cIndex)
 
   for(let i=0; i<c.length; i++){
     for(let t=0; t<c[i].THREAD.length; t++){
@@ -1240,7 +1229,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         ` | ` + 
         `[ Buyer ](${exchange[cIndex].CHAIN.EXP}address/${buyer})` + ` | ` +
         `[ Receiver ](${exchange[cIndex].CHAIN.EXP}address/${receiver})\n` +
-         getAdLinkBB() +
+         getAdLink() +
         `\n` +
         link
         
