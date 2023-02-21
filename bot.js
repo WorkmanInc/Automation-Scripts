@@ -31,10 +31,120 @@ const factoryABI = require("./abis/factorcy.json");
 const uniswapABI = require("./abis/uni-Factory.json");
 const uniLPABI = require("./abis/uniLP.json");
 
+bot.onText(/^\/setup/, function(message, match) {
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+    const cid = message.chat.id.toString()
+
+    if((data.status == "creator") || (data.status == "administrator")) {
+      SetupMenu(cid, thread)
+    } else {
+      sendNotificationToChannel("not Admin", cid, thread)
+    }
+  })
+})
+
+
+const SetupMenu = (cid, thread) => {
+let tokenAddress
+let optionChosen
+
+  let tokenlist = []
+  const itemlist = []
+  for(let c=0; c<configs.length; c++){
+    for(let ch =0; ch<configs[c].CHANNEL.length; ch++){
+      if(configs[c].CHANNEL[ch].CHATID === cid){
+        for(let t=0; t<configs[c].CHANNEL[ch].THREAD.length; t++) {
+          if(configs[c].CHANNEL[ch].THREAD[t] === thread){
+            let added = false
+            for(let i=0; i<tokenlist.length; i++){
+              if(configs[c].TOKEN === tokenlist[i]) added = true
+            }
+            if(!added){
+              tokenlist.push(configs[c].TOKEN)
+              itemlist.push([{"text": `${configs[c].NAME}: ${configs[c].TOKEN}`,"callback_data": c}])
+            }            
+          }
+        }
+      }
+    }
+  }
+
+  let reply_markup = {"inline_keyboard": itemlist}
+  opts = {
+    message_thread_id: thread,
+    disable_web_page_preview: true,
+    parse_mode: 'Markdown',
+    reply_markup: reply_markup
+  }
+
+  bot.sendMessage(cid, 'Edit Which Token?', opts)
+
+bot.on('callback_query', function onCallbackQuery(callbackQuery) { 
+  const action = callbackQuery.data; 
+  const msg = callbackQuery.message;
+
+  // after choosing Token
+  if(msg.text === 'Edit Which Token?') {
+    tokenAddress = configs[action].TOKEN
+    const settings = ['MINBUY', 'PERDOT', 'REMOVE']
+   const il = []
+    for(let i=0; i<settings.length; i++){
+      il.push([{"text": settings[i], "callback_data": settings[i]}])
+    }
+
+    reply_markup = {"inline_keyboard": il}
+
+    const opts1 = { 
+      chat_id: msg.chat.id, 
+      message_id: msg.message_id,
+      reply_markup: reply_markup 
+    }; 
+ 
+    bot.editMessageText('Change What?', opts1); 
+  }
+
+  if(msg.text === 'Change What?') {
+    optionChosen = action
+  if(optionChosen === "REMOVE") {
+    removeStep2(tokenAddress, cid, thread)
+    bot.deleteMessage(cid, msg.message_id);
+    return
+  } else {  
+    const options = [ 0,5,10,25,50,100]
+    let il2 = []
+    for(let m=0; m<options.length; m++){
+      il2.push([{"text": `$${options[m]}.00`, "callback_data": options[m]}])
+    }
+  
+    reply_markup = {"inline_keyboard": il2}
+    const opts2 = { 
+      chat_id: msg.chat.id, 
+      message_id: msg.message_id,
+      reply_markup: reply_markup 
+    }; 
+    bot.editMessageText('New Dollar Amount?', opts2); 
+  }
+  }
+
+  // after chooseing amount
+  if(msg.text === 'New Dollar Amount?') {
+    bot.deleteMessage(cid, msg.message_id);
+     if(optionChosen === "MINBUY") minBuy(tokenAddress, cid, thread, action)
+     if(optionChosen === "PERDOT") perdot(tokenAddress, cid, thread, action)
+    
+    bot.off('callback_query')
+  }
+  
+}); 
+
+}
 const getAdLink = () => {
   const index = Math.floor((Math.random() * ads.length));
   return  `\nad: [${ads[index].NAME}](${ads[index].TGLINK})`
 }
+
+
 
 bot.onText(/^\/grouplist/, async function(message, match) {   
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
@@ -80,31 +190,33 @@ bot.onText(/^\/fgbot/, async function(message, match) {
      
       sendNotificationToChannel(
        "*FG Bot Commands*\n" +
-       "*/addtoken* [tokenAddress] [dex]\n"+
-       "Adds Token to BuyBot List for DEX\n" +
+       "*/addtoken* <tokenAddress>\n"+
+       "Adds Token to BuyBot List\n" +
         "\n" +
-       "*/removetoken* [tokenAddress]\n" +
+        "*/setup*: To Modify Listed Tokens\n"+
+        "\n" +
+       "*/removetoken* <tokenAddress>\n" +
        "Removes Token from BuyBot list\n" +
        "\n" +
-       "*/minbuy* [tokenAddress ] [amount]\n" + 
+       "*/minbuy* <tokenAddress> <amount>\n" + 
        "Set Min $ Buy for Token\n" +
        "\n" +
-       "*/perdot* [tokenAddress ] [amount]\n" + 
+       "*/perdot* <tokenAddress > <amount>\n" + 
        "Set $ Per Dot for Token\n" +
        "\n" +
-       "*/changedot* [emoji]\n" + 
+       "*/changedot* <emoji>\n" + 
        "Change the Emoji!\n" +
        "\n" +
-       "*/[Coin Symbol]* Checks price of Coin\n" +
+       "*/<Coin Symbol>* Checks price of Coin\n" +
        "\n" +
-       "*/price* [tokenAddress] [dex]\n" +
+       "*/price* <tokenAddress> <dex>\n" +
        "Checks price of Token on DEX\n" +
        "\n" +
-       "*/price* [token Symbol]\n" +
+       "*/price* <token Symbol>\n" +
        "Checks price of Token by Symbol\n" +
        "*IF ERROR USE FIRST METHOD*\n" +
        "\n" +
-       `*/bcprice* [ticker]\n` +
+       `*/bcprice* <ticker>\n` +
        "Bitcointry Market Info for Ticker\n" +
        "\n" +
        "*Channel Commands*\n" +
@@ -114,7 +226,7 @@ bot.onText(/^\/fgbot/, async function(message, match) {
        "*LISTS*\n" +
        "*/tokenlist*: List of Tokens in group\n" +
        "*/dexlist*: List of all Dex's\n" +
-       "*/dexlist* [chain]: Dex list by Chain\n" +
+       "*/dexlist* <chain>: Dex list by Chain\n" +
        "*/chainlist*: List of Chains available\n" +
        getAdLink() +
        "\n" + getLink(1)
@@ -221,6 +333,22 @@ bot.onText(/^\/tokenlist/, async function(message, match) {
   })
 })
 
+const minBuy = (tokenAddress, cid, thread, amount) => {
+  for(let i=0; i<configs.length; i++) {
+    if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
+      for(let c=0; c<configs[i].CHANNEL.length; c++){
+        if(configs[i].CHANNEL[c].CHATID === cid) {
+          configs[i].CHANNEL[c].MINBUY = amount
+          changed = true
+        }
+      }
+    }
+  }
+ saveNewConfig()
+ if(changed)  sendNotificationToChannel(`Changed MinBuy to $${amount}`, cid, thread);
+ else sendNotificationToChannel(`Token not setup`, cid, thread);
+}
+
 bot.onText(/^\/minbuy/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const cid = message.chat.id.toString()
@@ -249,6 +377,21 @@ bot.onText(/^\/minbuy/, function(message, match) {
     }
   })
 })
+const perdot = (tokenAddress, cid, thread, amount) => {
+  for(let i=0; i<configs.length; i++) {
+    if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
+      for(let c=0; c<configs[i].CHANNEL.length; c++){
+        if(configs[i].CHANNEL[c].CHATID === cid) {
+          configs[i].CHANNEL[c].PERDOT = amount
+          changed = true
+        }
+      }
+    }
+  }
+ saveNewConfig()
+ if(changed) sendNotificationToChannel(`Changed to $${amount} Per Dot`, cid, thread);
+ else sendNotificationToChannel(`Token not setup`, cid, thread);
+}
 
 bot.onText(/^\/perdot/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
@@ -585,26 +728,86 @@ const getBNBPrice = async (index) => {
 };
 
 
+const chooseDex = (cid, thread,tokenAddress) => {
+  let selectedChain
+  let selectedDex
+  let opts
 
+  const ch = []
+  for(let c=0; c<chain.length; c++) {
+    ch.push([{"text": chain[c].LONGNAME ,"callback_data": c}])
+  }
+  let reply_markup = {"inline_keyboard": ch}
+  opts = {
+    message_thread_id: thread,
+    disable_web_page_preview: true,
+    parse_mode: 'Markdown',
+    reply_markup: reply_markup
+  }
+
+  bot.sendMessage(cid, 'Choose Chain', opts)
+
+bot.on('callback_query', function onCallbackQuery(callbackQuery) { 
+  const action = callbackQuery.data; 
+  const msg = callbackQuery.message;
+
+  // after choosing Chain
+  if(msg.text === 'Choose Chain') {
+    selectedChain = action
+    let ex = []
+    for(let k=0; k<exchange.length; k++) {
+      if(exchange[k].CHAIN === chain[selectedChain]){
+        ex.push([{"text": exchange[k].NAME ,"callback_data": k}])
+      }
+    }
+    reply_markup = {"inline_keyboard": ex}
+    const opts = { 
+      chat_id: msg.chat.id, 
+      message_id: msg.message_id,
+      reply_markup: reply_markup 
+    }; 
+ 
+    bot.editMessageText('Choose Dex', opts); 
+  }
+
+  // after chooseing Dex
+  if(msg.text === 'Choose Dex') {
+    selectedDex = action
+   
+    bot.deleteMessage(cid, msg.message_id);
+    
+      addStep2(cid, thread, tokenAddress, selectedDex)
+    
+    bot.off('callback_query')
+  }
+  
+}); 
+
+}
+bot.on("polling_error", console.log);
 
 bot.onText(/^\/addtoken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
     const cid = message.chat.id.toString()
+    const tokenAddress = message.text.substring(10, 52)
+
     if((data.status == "creator") || (data.status == "administrator")) {
-      const tokenAddress = message.text.substring(10, 52)
-      let index = 0
-      const exchangeString = message.text.substring(53)
+      chooseDex(cid, thread, tokenAddress)
+    } else {
+      sendNotificationToChannel("not Admin", cid, thread)
+    }
+  })
+})
+    
 
-      for(let e=0; e<exchange.length; e++){
-        if(exchangeString.toLowerCase() === exchange[e].NAME.toLowerCase()) index = e
-      }
+const addStep2 = async(cid, thread, tokenAddress, index) => {
 
-      if(tokenAddress.toLowerCase() === exchange[index].CHAIN.NATIVE.toLowerCase()) {
-        sendNotificationToChannel(`Can't Add Native Token`, cid, thread);
-        return; 
-      }
-   
+    if(tokenAddress.toLowerCase() === exchange[index].CHAIN.NATIVE.toLowerCase()) {
+      sendNotificationToChannel(`Can't Add Native Token`, cid, thread);
+      return; 
+    }
+
     let lps = []
     let bases = []
     for(let b=0; b<exchange[index].CHAIN.BASES.length; b++){
@@ -666,14 +869,20 @@ bot.onText(/^\/addtoken/, function(message, match) {
     if(lps.length > 0) {
       saveNewConfig()
     } else sendNotificationToChannel(` Dont Exist - Wrong Dex?`, cid, thread); 
-
-    } else {
-      sendNotificationToChannel("not Admin", cid, thread)
+  }
+  
+  
+const removeStep2 = async(tokenAddress, cid, thread) => {
+  let lpAddress = tokenAddress
+  for(let i=0; i<configs.length; i++) {
+    if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
+      lpAddress = configs[i].LPADDRESS
+      
+      removeToken(lpAddress, cid, thread)
     }
-  })
-})
-
-
+  }
+}
+  
 bot.onText(/^\/removetoken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const cid = message.chat.id.toString()
