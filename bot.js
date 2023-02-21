@@ -16,12 +16,12 @@ const {
 } = require("./config/chainConfig");
 
 
-// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
-const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
-// const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
+// const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
+const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
 const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -35,6 +35,7 @@ bot.onText(/^\/setup/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
     const cid = message.chat.id.toString()
+    bot.deleteMessage(cid, message.message_id);
 
     if((data.status == "creator") || (data.status == "administrator")) {
       SetupMenu(cid, thread)
@@ -48,6 +49,8 @@ bot.onText(/^\/setup/, function(message, match) {
 const SetupMenu = (cid, thread) => {
 let tokenAddress
 let optionChosen
+
+const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
 
   let tokenlist = []
   const itemlist = []
@@ -69,6 +72,7 @@ let optionChosen
       }
     }
   }
+  itemlist.push(cancel)
 
   let reply_markup = {"inline_keyboard": itemlist}
   opts = {
@@ -83,6 +87,12 @@ let optionChosen
 bot.on('callback_query', function onCallbackQuery(callbackQuery) { 
   const action = callbackQuery.data; 
   const msg = callbackQuery.message;
+
+  if(action === "CANCEL") {
+    bot.deleteMessage(cid, msg.message_id);
+    bot.off('callback_query')
+    return
+  }
 
   // after choosing Token
   if(msg.text === 'Edit Which Token?') {
@@ -101,7 +111,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     for(let i=0; i<settings.length; i++){
       il.push([{"text": `${settings[i]}`, "callback_data": settings[i]}])
     }
-
+    il.push(cancel)
     reply_markup = {"inline_keyboard": il}
 
     const opts1 = { 
@@ -125,7 +135,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     for(let m=0; m<options.length; m++){
       il2.push([{"text": `$${options[m]}.00`, "callback_data": options[m]}])
     }
-  
+    il2.push(cancel)
     reply_markup = {"inline_keyboard": il2}
     const opts2 = { 
       chat_id: msg.chat.id, 
@@ -143,7 +153,9 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
      if(optionChosen === "PERDOT") perdot(tokenAddress, cid, thread, action)
     
     bot.off('callback_query')
+    return
   }
+ 
   
 }); 
 
@@ -158,6 +170,7 @@ const getAdLink = () => {
 bot.onText(/^\/grouplist/, async function(message, match) {   
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const cid = message.chat.id.toString()
+    bot.deleteMessage(cid, message.message_id);
     if(message.chat.type === "private") {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       let groups = []
@@ -196,6 +209,7 @@ bot.onText(/^\/grouplist/, async function(message, match) {
 bot.onText(/^\/fgbot/, async function(message, match) {   
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
+      bot.deleteMessage(cid, message.message_id);
      
       sendNotificationToChannel(
        "*FG Bot Commands*\n" +
@@ -247,6 +261,7 @@ bot.onText(/^\/fgbot/, async function(message, match) {
 bot.onText(/^\/chainlist/, async function(message, match) {   
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const cid = message.chat.id.toString()
+    bot.deleteMessage(cid, message.message_id);
     if((data.status == "creator") || (data.status == "administrator")) { 
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   let chainsList = ""
@@ -272,6 +287,7 @@ bot.onText(/^\/dexlist/, async function(message, match) {
     if((data.status == "creator") || (data.status == "administrator")) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
+      bot.deleteMessage(cid, message.message_id);
       const chainString = message.text.substring(9)
       let byChain = false
       let cIndex = 0
@@ -315,6 +331,7 @@ bot.onText(/^\/dexlist/, async function(message, match) {
 bot.onText(/^\/tokenlist/, async function(message, match) {    
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const cid = message.chat.id.toString()
+    bot.deleteMessage(cid, message.message_id);
     if((data.status == "creator") || (data.status == "administrator")) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       let tokenlist = ""
@@ -361,6 +378,7 @@ const minBuy = (tokenAddress, cid, thread, amount) => {
 bot.onText(/^\/minbuy/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const cid = message.chat.id.toString()
+    bot.deleteMessage(cid, message.message_id);
     const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
     let changed = false
     if((data.status == "creator") || (data.status == "administrator")) {
@@ -405,6 +423,7 @@ const perdot = (tokenAddress, cid, thread, amount) => {
 bot.onText(/^\/perdot/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const cid = message.chat.id.toString()
+    bot.deleteMessage(cid, message.message_id);
     const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
     let changed = false
     if((data.status == "creator") || (data.status == "administrator")) {
@@ -435,6 +454,7 @@ bot.onText(/^\/perdot/, function(message, match) {
 bot.onText(/^\/changedot/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const cid = message.chat.id.toString()
+    bot.deleteMessage(cid, message.message_id);
     const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
     let changed = false
     if((data.status == "creator") || (data.status == "administrator")) {
@@ -652,6 +672,7 @@ bot.onText(/^\/blockprice/, async function(message, match) {
     if((data.status == "creator") || (data.status == "administrator")) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
+      bot.deleteMessage(cid, message.message_id);
       if(checkIfAllowed(cid, thread)) {
         addToBlocked(cid, thread)
         sendNotificationToChannel("Blocked Price Commands For This Group/Topic", cid, thread)
@@ -688,6 +709,7 @@ bot.onText(/^\/allowprice/, async function(message, match) {
     if((data.status == "creator") || (data.status == "administrator")) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
+      bot.deleteMessage(cid, message.message_id);
       if(!checkIfAllowed(cid, thread)){
         sendNotificationToChannel("Price Commands Allowed For This Group/Topic", cid, thread)
         removeFromBlocked(cid, thread)
@@ -799,6 +821,7 @@ bot.onText(/^\/addtoken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
     const cid = message.chat.id.toString()
+    bot.deleteMessage(cid, message.message_id);
     const tokenAddress = message.text.substring(10, 52)
 
     if((data.status == "creator") || (data.status == "administrator")) {
@@ -895,6 +918,7 @@ const removeStep2 = async(tokenAddress, cid, thread) => {
 bot.onText(/^\/removetoken/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
     const cid = message.chat.id.toString()
+    bot.deleteMessage(cid, message.message_id);
     if((data.status == "creator") || (data.status == "administrator")) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const tokenAddress =  message.text.substring(13)
@@ -1036,6 +1060,7 @@ bot.onText(/^\/cic/, async function(message, match) {
     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice, mc } = await getBNBPrice(0)
 
  sendNotificationToChannelPrice(
@@ -1049,6 +1074,7 @@ bot.onText(/^\/cic/, async function(message, match) {
 bot.onText(/^\/CIC/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice, mc } = await getBNBPrice(0)
 
   sendNotificationToChannelPrice(
@@ -1063,6 +1089,7 @@ bot.onText(/^\/CIC/, async function(message, match) {
 bot.onText(/^\/bnb/, async function(message, match) {     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getBNBPrice(3)
  sendNotificationToChannelPrice(
   `*BNB Price:* $${cicPrice}\n` +
@@ -1073,6 +1100,7 @@ bot.onText(/^\/bnb/, async function(message, match) {
 bot.onText(/^\/BNB/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getBNBPrice(3)
   sendNotificationToChannelPrice(
     `*BNB Price:* $${cicPrice}\n` +
@@ -1083,6 +1111,7 @@ bot.onText(/^\/BNB/, async function(message, match) {
 bot.onText(/^\/eth/, async function(message, match) {     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getBNBPrice(7)
  sendNotificationToChannelPrice(
   `*ETHERUEM Price:* $${cicPrice}\n` +
@@ -1093,6 +1122,7 @@ bot.onText(/^\/eth/, async function(message, match) {
 bot.onText(/^\/ETH/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getBNBPrice(7)
   sendNotificationToChannelPrice(
     `*ETHEREUM Price:* $${cicPrice}\n` +
@@ -1103,6 +1133,7 @@ bot.onText(/^\/ETH/, async function(message, match) {
 bot.onText(/^\/cro/, async function(message, match) {     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getBNBPrice(10)
  sendNotificationToChannelPrice(
   `*CRO Price:* $${cicPrice}\n` +
@@ -1113,6 +1144,7 @@ bot.onText(/^\/cro/, async function(message, match) {
 bot.onText(/^\/CRO/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getBNBPrice(10)
   sendNotificationToChannelPrice(
     `*CRO Price:* $${cicPrice}\n` +
@@ -1123,6 +1155,7 @@ bot.onText(/^\/CRO/, async function(message, match) {
 bot.onText(/^\/dxt/, async function(message, match) {     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getBNBPrice(11)
  sendNotificationToChannelPrice(
   `*DXT Price:* $${cicPrice}\n` +
@@ -1133,6 +1166,7 @@ bot.onText(/^\/dxt/, async function(message, match) {
 bot.onText(/^\/DXT/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getBNBPrice(11)
   sendNotificationToChannelPrice(
     `*DXT Price:* $${cicPrice}\n` +
@@ -1144,7 +1178,7 @@ bot.onText(/^\/DXT/, async function(message, match) {
 bcbot.onText(/^\/price/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
-
+  bot.deleteMessage(cid, message.message_id);
   const pairRaw =  message.text.substring(7)
   const pair = pairRaw.toUpperCase()
   let sym
@@ -1186,7 +1220,7 @@ const sendNotificationToBCBot = async (message, cid, thread) => {
 bot.onText(/^\/bcprice/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
-
+  bot.deleteMessage(cid, message.message_id);
   const pairRaw =  message.text.substring(9)
   const pair = pairRaw.toUpperCase()
   let sym
@@ -1270,6 +1304,7 @@ const getLPToken = async (cIndex, command) => {
 
 bot.onText(/^\/price/, async function(message, match) { 
       const cid = message.chat.id.toString()
+      bot.deleteMessage(cid, message.message_id);
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const command = message.text.substring(7,49)
       const tExchange = message.text.substring(50)
