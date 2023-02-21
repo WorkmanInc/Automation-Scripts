@@ -16,12 +16,12 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
-// const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
-const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
+const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
+// const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
 const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -785,15 +785,33 @@ const getPrice = async (lp, cIndex, cicPrice, gotOne, Index) => {
     const sqrtPriceX96 = pool_balance.sqrtPriceX96;
     const bd = new BigNumber(1).shiftedBy(bDecimals.toNumber()).toNumber()
     const td = new BigNumber(1).shiftedBy(tDecimals.toNumber()).toNumber()
-    // const number_1 = JSBI.BigInt(sqrtPriceX96 *sqrtPriceX96* (1eTOKEN0-dec)/(1etoken1-dec)/JSBI.BigInt(2) ** (JSBI.BigInt(192)));
     const number_1 = new BigNumber(sqrtPriceX96 * sqrtPriceX96 * (bd)/(td)).dividedBy(new BigNumber(2) ** (new BigNumber(192)));
     price = number_1.multipliedBy(cicPrice).toFixed(14)
   }
 
-
   const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
 
   return { sym, price, mc, bsym }
+}
+
+const getMC = async(tokenAddress, price, cIndex) => {
+  const signer = getSigner(cIndex)
+  tContract = new Contract(
+    tokenAddress,
+    lpabi,
+    signer
+  );
+
+  const tdRaw = await tContract.decimals()
+  const tsRaw = await tContract.totalSupply()
+  const bRaw = await tContract.balanceOf("0x000000000000000000000000000000000000dEaD")
+
+  const tDecimals = new BigNumber(tdRaw.toString())
+  const totalSupply = new BigNumber(tsRaw.toString())
+  const burned = new BigNumber(bRaw.toString())
+
+  const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
+  return mc
 }
 
 bot.onText(/^\/cic/, async function(message, match) {   
@@ -1195,15 +1213,15 @@ const startListener = async (index) => {
 
     const {bought, FRTcValue} = await calculate(basePrice, inAmount, outAmount, index)
     const spent = new BigNumber(inAmount.toString()).shiftedBy(-configs[index].BDECIMALS).multipliedBy(basePrice).toFixed(2)
-  
+    const mc = await getMC(configs[index].TOKEN, FRTcValue, configs[index].EXCHANGE )
 
-    sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice);
+    sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice, mc);
   
   });
   console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
 }
 
-const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice) => {
+const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice, mc) => {
   const c = configs[index].CHANNEL
   let toDelete = []
   
@@ -1215,7 +1233,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
       const thread = c[i].THREAD[t]
       const bdec = new BigNumber(configs[index].BDECIMALS).toNumber()
 
-      if( new BigNumber(spent).gt(configs[index].CHANNEL[i].MINBUY) ) {
+      
         const dots = sym(new BigNumber(spent).dividedBy(configs[index].CHANNEL[i].PERDOT).toFixed(0), cIndex, configs[index].CHANNEL[i])
         var message =
         `*${configs[index].NAME}* Bought!!\n` +
@@ -1224,6 +1242,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `\n*Spent:* $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-bdec).toFixed(4)} ${configs[index].BSYM})\n` +
         `*Received:* ${new BigNumber(bought).toFixed(2)} ${configs[index].SYM}\n` +
         `*${configs[index].SYM} Price:* $${FRTcValue}\n` +
+        `*${configs[index].SYM} MC:* $${mc}\n` +
         `*${exchange[cIndex].CHAIN.NAME}:* $${cicPrice}\n` +
         `[ TX  ](${exchange[cIndex].CHAIN.EXP}tx/${txhash})` +
         ` | ` + 
@@ -1232,9 +1251,10 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
          getAdLink() +
         `\n` +
         link
-        
+
+        if( new BigNumber(spent).gt(configs[index].CHANNEL[i].MINBUY) ) {
        
-         bot.sendMessage(c[i].CHATID, message,{ message_thread_id: thread, disable_web_page_preview: true, parse_mode: 'Markdown' } )
+         bot.sendMessage(c[i].CHATID, message, { message_thread_id: thread, disable_web_page_preview: true, parse_mode: 'Markdown' } )
           
           .catch(() => {
           add = true
