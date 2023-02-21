@@ -16,12 +16,12 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
-// const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
-const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
+const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
+// const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
 const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -34,6 +34,10 @@ const uniLPABI = require("./abis/uniLP.json");
 const getAdLink = () => {
   const index = Math.floor((Math.random() * ads.length));
   return  `\nad: <a href="${ads[index].TGLINK}"><u>${ads[index].NAME}</u></a>`
+}
+const getAdLinkBB = () => {
+  const index = Math.floor((Math.random() * ads.length));
+  return  `\nad: [${ads[index].NAME}](${ads[index].TGLINK})`
 }
 
 bot.onText(/^\/grouplist/, async function(message, match) {   
@@ -276,6 +280,34 @@ bot.onText(/^\/perdot/, function(message, match) {
 })
 
 
+bot.onText(/^\/changedot/, function(message, match) {
+  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
+    const cid = message.chat.id.toString()
+    const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+    let changed = false
+    if((data.status == "creator") || (data.status == "administrator")) {
+      const image = message.text.substring(11)
+
+      for(let i=0; i<configs.length; i++) {
+          for(let c=0; c<configs[i].CHANNEL.length; c++){
+            if(configs[i].CHANNEL[c].CHATID === cid) {
+              configs[i].CHANNEL[c].DOTIMAGE = image
+              changed = true
+            }
+          }
+      }
+     saveNewConfig()
+     if(changed) {
+      bot.sendMessage(cid, `*Changed* Dot to` + image ,  {message_thread_id: thread, parse_mode: 'Markdown' })
+     }
+     else sendNotificationToChannel(`Dot Image not setup`, cid, thread);
+    } else {
+      sendNotificationToChannel("not Admin", cid, thread)
+    }
+  })
+})
+
+
 
 
 
@@ -385,7 +417,7 @@ try {
 }
 
 const removeToken = async (LPAddress, ChatId, thread) => {
- // try {
+  try {
     let didntExist = true
     for(let i=0; i<configs.length; i++){
       if(configs[i].LPADDRESS === LPAddress){
@@ -424,9 +456,9 @@ const removeToken = async (LPAddress, ChatId, thread) => {
     }
     if(didntExist) bot.sendMessage(ChatId,"Token Not In List")
 
- // }catch{
- //  bot.sendMessage(ChatId,"Error, Check Values")
-// }
+  }catch{
+   bot.sendMessage(ChatId,"Error, Check Values")
+ }
 }
 
 const init = async () => {
@@ -434,26 +466,9 @@ const init = async () => {
   for(let i=0; i<configs.length;i++){
     startListener(i)
   }
- // sendKillMsg("FG Bot Started Up!")
 }
 
-const sendKillMsg = async (message) => {
-  let channels = []
-  for(let i=0; i<configs.length; i++){
-    let canAdd = true
-    for(let c=0; c<configs[i].CHANNEL.length; c++) {
-      for(let cc=0; cc<channels.length; cc++){
-        if(configs[i].CHANNEL[c].CHATID === channels[cc])canAdd = false
-      }
-      if(canAdd) channels.push(configs[i].CHANNEL[c].CHATID)
-    }
-  }
-  if(channels.length > 0){
-    for(let s=0; s<channels.length; s++){
-      sendNotificationToChannel(message, channels[s])
-    }
-  }
-}
+
 
  const checkIfAllowed = (cid, thread) => {
     for(let b=0; b<blocked.length; b++){
@@ -635,6 +650,8 @@ bot.onText(/^\/addtoken/, function(message, match) {
             // setting CHANNEL if LP EXists but NOT Channel
             configs[j].CHANNEL.push({
               CHATID: cid,
+              MINBUY: 0,
+              PERDOT: 5,
               THREAD: [thread],
             }); 
             DONE = true;  
@@ -1071,7 +1088,7 @@ bot.onText(/^\/price/, async function(message, match) {
               ,cid, thread);
         
       } catch {
-       bot.sendMessage(cid, "Not Valid TOKEN");
+        sendNotificationToChannelPrice( "Not Valid TOKEN", cid, thread);
      }
     
 })
@@ -1079,6 +1096,11 @@ bot.onText(/^\/price/, async function(message, match) {
 const getLink = (index) => {
   if(exchange[index].CHAIN.NAME === "CIC") return  `<a href="https://cic.farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
   return  `<a href="https://farmageddon.farm/"><u>Farmageddon</u></a> <b>|</b> <a href="https://t.me/FARMAGEDDON_TOKEN"><u>Telegram</u></a>`
+}
+
+const getLinkBB = (index) => {
+  if(exchange[index].CHAIN.NAME === "CIC") return  `[Farmageddon](https://cic.farmageddon.farm/) | [Telegram](https://t.me/FARMAGEDDON_TOKEN)`
+  return  `[Farmageddon](https://farmageddon.farm/) | [Telegram](https://t.me/FARMAGEDDON_TOKEN)`
 }
 
 const saveNewConfig = async () => {
@@ -1132,12 +1154,14 @@ const calculate = async (cicP, Ain, Aout, index) => {
   return { bought, FRTcValue }
 }
 
-const sym = (cicSpent, cIndex) => {
+const sym = (cicSpent, cIndex, channel) => {
+  const image = channel.DOTIMAGE ?? exchange[cIndex].DOTS
+  
   const howMany = new BigNumber(cicSpent).toNumber()
-  let dots = exchange[cIndex].DOTS
+  let dots = image
   if(howMany > 1){
     for(let i=1; i<howMany; i++){
-      dots = dots + exchange[cIndex].DOTS
+      dots = dots + image
     }
   }
   return dots
@@ -1193,7 +1217,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
   let toDelete = []
   
   const cIndex = configs[index].EXCHANGE
-  const link = getLink(cIndex)
+  const link = getLinkBB(cIndex)
 
   for(let i=0; i<c.length; i++){
     for(let t=0; t<c[i].THREAD.length; t++){
@@ -1201,25 +1225,29 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
       const bdec = new BigNumber(configs[index].BDECIMALS).toNumber()
 
       if( new BigNumber(spent).gt(configs[index].CHANNEL[i].MINBUY) ) {
-        const dots = sym(new BigNumber(spent).dividedBy(configs[index].CHANNEL[i].PERDOT).toFixed(0), cIndex)
+        const dots = sym(new BigNumber(spent).dividedBy(configs[index].CHANNEL[i].PERDOT).toFixed(0), cIndex, configs[index].CHANNEL[i])
         var message =
-        `<b>${configs[index].NAME}</b> Bought!!\n` +
-        `<b>${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP</b>\n` +
+        `*${configs[index].NAME}* Bought!!\n` +
+        `*${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP*\n` +
         dots +
-        `\n<b>Spent:</b> $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-bdec).toFixed(4)} ${configs[index].BSYM})\n` +
-        `<b>Received:</b> ${new BigNumber(bought).toFixed(2)} ${configs[index].SYM}\n` +
-        `<b>${configs[index].SYM} Price:</b> $${FRTcValue}\n` +
-        `<b>${exchange[cIndex].CHAIN.NAME}:</b> $${cicPrice}\n` +
-        `<a href="${exchange[cIndex].CHAIN.EXP}tx/${txhash}"> TX  </a> <b>|</b>`+ 
-        `<a href="${exchange[cIndex].CHAIN.EXP}address/${buyer}"><u> Buyer </u></a> <b>|</b>` +
-        `<a href="${exchange[cIndex].CHAIN.EXP}address/${receiver}"><u> Receiver </u></a>\n` +
-         getAdLink() +
+        `\n*Spent:* $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-bdec).toFixed(4)} ${configs[index].BSYM})\n` +
+        `*Received:* ${new BigNumber(bought).toFixed(2)} ${configs[index].SYM}\n` +
+        `*${configs[index].SYM} Price:* $${FRTcValue}\n` +
+        `*${exchange[cIndex].CHAIN.NAME}:* $${cicPrice}\n` +
+        `[_ TX  _](${exchange[cIndex].CHAIN.EXP}tx/${txhash})` +
+        ` | ` + 
+        `[ Buyer ](${exchange[cIndex].CHAIN.EXP}address/${buyer})` + ` | ` +
+        `[ Receiver ](${exchange[cIndex].CHAIN.EXP}address/${receiver})\n` +
+         getAdLinkBB() +
         `\n` +
         link
         
-        var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${c[i].CHATID}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
+        // var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${c[i].CHATID}&text=${message}&parse_mode=HTML&disable_web_page_preview=true&message_thread_id=${thread}`
     
-        await axios.get(url).catch(() => {
+        // await axios.get(url).catch(() => {
+         bot.sendMessage(c[i].CHATID, message,{ message_thread_id: thread, disable_web_page_preview: true, parse_mode: 'Markdown' } )
+          
+          .catch(() => {
           add = true
           for(let c =0; c<toDelete.length; c++){
             if(i === toDelete[c]) add = false
@@ -1228,6 +1256,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
             toDelete.push([configs[index].LPADDRESS,c[i].CHATID, thread])
           }
         })
+        
       } 
     }
   }

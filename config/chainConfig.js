@@ -72,42 +72,42 @@ let exchange = [
       NAME: "FARM",
       FACTORY: "0xfD35F3f178353572E4357983AD2831fAcd652cC5",
       CHAIN: chain[0],
-      DOTS: "\xF0\x9F\x9A\x9C"  // tractor
+      DOTS: "🚜"  // tractor
     },
     {
         LONGNAME: "WendDex",
         NAME: "WEN",
         FACTORY: "0x51eD5a1f2EC7516dB92ff5Ae8d76ea4A2B87A6d1",
         CHAIN: chain[0],
-        DOTS: "\xF0\x9F\x94\xB5"
+        DOTS: "💶"
     },
     {
       LONGNAME: "PancakeSwap",
       NAME: "PCS",
       FACTORY: "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
       CHAIN: chain[1],
-      DOTS: "\xF0\x9F\x92\xB5"
+      DOTS: "💶"
     },
     {
       LONGNAME: "Ape Swap",
       NAME: "APE",
       FACTORY: "0x0841BD0B734E4F5853f0dD8d7Ea041c241fb0Da6",
       CHAIN: chain[1],
-      DOTS: "\xF0\x9F\x92\xB5"
+      DOTS: "💶"
     },
     {
       LONGNAME: "BiSwap",
       NAME: "BIS",
       FACTORY: "0x858e3312ed3a876947ea49d572a7c42de08af7ee",
       CHAIN: chain[1],
-      DOTS: "\xF0\x9F\x92\xB5"
+      DOTS: "💶"
     },
     {
       LONGNAME: "Donk Swap",
       NAME: "DONK",
       FACTORY: "0x04D6b20f805e2bd537DDe84482983AabF59536FF",
       CHAIN: chain[1],
-      DOTS: "\xF0\x9F\x90\xB4"
+      DOTS: "💶"
     },
     {
       LONGNAME: "UniSwap V3",
@@ -115,35 +115,35 @@ let exchange = [
       FACTORY: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
       CHAIN: chain[2],
       FEES: [100, 500, 3000, 10000],
-      DOTS: "\xF0\x9F\x92\xB5"
+      DOTS: "💶"
     },
     {
       LONGNAME: "UniSwap V2",
       NAME: "UNIV2",
       FACTORY: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
       CHAIN: chain[2],
-      DOTS: "\xF0\x9F\x92\xB0"
+      DOTS: "💶"
     },
     {
       LONGNAME: "PancakeSwap ETH",
       NAME: "PCSETH",
       FACTORY: "0x1097053Fd2ea711dad45caCcc45EfF7548fCB362",
       CHAIN: chain[2],
-      DOTS:  "\xF0\x9F\x92\xB5"
+      DOTS:  "💶"
     },
     {
       LONGNAME: "CRODEX",
       NAME: "CRO",
       FACTORY: "0xe9c29cB475C0ADe80bE0319B74AD112F1e80058F",
       CHAIN: chain[3],
-      DOTS:  "\xF0\x9F\x92\xB5"
+      DOTS:  "💶"
     },
     {
       LONGNAME: "Mad Meerkat Finance",
       NAME: "MMF",
       FACTORY: "0xd590cc180601aecd6eeadd9b7f2b7611519544f4",
       CHAIN: chain[3],
-      DOTS: "\xF0\x9F\x92\xB5"
+      DOTS: "💶"
       
     },
     {
@@ -151,7 +151,7 @@ let exchange = [
       NAME: "DXT",
       FACTORY: "0xed7e00862c73eF3a53f33d785c62d312Cc8827d2",
       CHAIN: chain[4],
-      DOTS: "\xF0\x9F\x92\xB5"
+      DOTS: "💶"
       
     }
     
