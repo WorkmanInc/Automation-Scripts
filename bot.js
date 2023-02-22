@@ -105,6 +105,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     if(isPrice){
       bot.deleteMessage(cid, msg.message_id);
       getPrices(cid, thread, tokenAddress, action, true)
+      bot.off('callback_query')
     }else {
       let cMIN
       let cPER
@@ -881,10 +882,17 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
    
     bot.deleteMessage(cid, msg.message_id);
     try {
-      if(isPrice) getPrices(cid, thread, tokenAddress, selectedDex, false)
-      else addStep2(cid, thread, tokenAddress, selectedDex)
+      if(isPrice){
+        getPrices(cid, thread, tokenAddress, selectedDex, false)
+        bot.off('callback_query')
+      }
+      else {
+        addStep2(cid, thread, tokenAddress, selectedDex)
+        bot.off('callback_query')
+      }
     } catch {
       sendNotificationToChannel("ERROR", cid, thread)
+      bot.off('callback_query')
     }
     
     bot.off('callback_query')
@@ -1442,10 +1450,13 @@ bot.onText(/^\/price/, async function(message, match) {
         
       if(gotOne){
         getPrices(cid, thread, LP, index, gotOne)
+        return
       } else if(!gotOne && cIndex === undefined){
         chooseDex(cid, thread, LP, true)
+        return
       } else {
         getPrices(cid, thread, LP, cIndex, gotOne)
+        return
       }
     }
     
