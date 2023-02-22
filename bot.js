@@ -100,13 +100,14 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
 
   // after choosing Token
   if(msg.text === 'Choose Token?') {
-    tokenAddress = configs[action].LPADDRESS
 
     if(isPrice){
+      tokenAddress = configs[action].LPADDRESS
       bot.deleteMessage(cid, msg.message_id);
       getPrices(cid, thread, tokenAddress, action, true)
       bot.off('callback_query')
     }else {
+      tokenAddress = configs[action].TOKEN
       let cMIN
       let cPER
       for(let c=0; c<configs[action].CHANNEL.length; c++) {
@@ -177,7 +178,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     bot.deleteMessage(cid, msg.message_id);
     chgDot(tokenAddress, cid, thread, action)
     bot.off('callback_query')
-    return
+
   }
 
   // after chooseing amount
@@ -185,9 +186,8 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     bot.deleteMessage(cid, msg.message_id);
      if(optionChosen === `MINBUY`) minBuy(tokenAddress, cid, thread, action)
      if(optionChosen === `PERDOT`) perdot(tokenAddress, cid, thread, action)
+     bot.off('callback_query')
     
-    bot.off('callback_query')
-    return
   }
  
   
@@ -394,6 +394,7 @@ bot.onText(/^\/tokenlist/, async function(message, match) {
 })
 
 const minBuy = (tokenAddress, cid, thread, amount) => {
+  let changed = false
   for(let i=0; i<configs.length; i++) {
     if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
       for(let c=0; c<configs[i].CHANNEL.length; c++){
@@ -438,6 +439,7 @@ bot.onText(/^\/minbuy/, function(message, match) {
   })
 })
 const perdot = (tokenAddress, cid, thread, amount) => {
+  let changed = false
   for(let i=0; i<configs.length; i++) {
     if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
       for(let c=0; c<configs[i].CHANNEL.length; c++){
@@ -485,6 +487,7 @@ bot.onText(/^\/perdot/, function(message, match) {
 
 
 const chgDot = (tokenAddress, cid, thread, image) => {
+  let changed = false
       for(let i=0; i<configs.length; i++) {
         if(configs[i].TOKEN === tokenAddress){
           for(let c=0; c<configs[i].CHANNEL.length; c++){
