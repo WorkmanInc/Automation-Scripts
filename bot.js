@@ -65,7 +65,7 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
             }
             if(!added){
               tokenlist.push(configs[c].TOKEN)
-              itemlist.push([{"text": `${configs[c].NAME}: ${configs[c].TOKEN}`,"callback_data": c}])
+              itemlist.push([{"text": `${configs[c].NAME}| ${exchange[configs[c].EXCHANGE].NAME}: ${configs[c].TOKEN}`,"callback_data": c}])
             }            
           }
         }
@@ -106,11 +106,13 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         break
       }
     }
-    const settings = [`MINBUY ($${cMIN})`, `PERDOT ($${cPER})`, 'REMOVE']  // max 6 letter or change below method
-   const il = []
-    for(let i=0; i<settings.length; i++){
-      il.push([{"text": `${settings[i]}`, "callback_data": settings[i]}])
-    }
+
+    const il=[
+      [{"text": `MINBUY ($${cMIN})`, "callback_data": "MINBUY"},{"text": `PERDOT ($${cPER})`, "callback_data": "PERDOT"}],
+      [{"text": "REMOVE", "callback_data": "REMOVE"}] 
+    ]
+  
+
     il.push(cancel)
     reply_markup = {"inline_keyboard": il}
 
@@ -130,10 +132,10 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     bot.deleteMessage(cid, msg.message_id);
     return
   } else {  
-    const options = [ 0,5,10,25,50,100]
+    const options = [ 0,5,10,25,50,100] // multiples of 2!
     let il2 = []
-    for(let m=0; m<options.length; m++){
-      il2.push([{"text": `$${options[m]}.00`, "callback_data": options[m]}])
+    for(let m=0; m<options.length; m=m+2){
+      il2.push([{"text": `$${options[m]}.00`, "callback_data": options[m]},{"text": `$${options[m+1]}.00`, "callback_data": options[m+1]}])
     }
     il2.push(cancel)
     reply_markup = {"inline_keyboard": il2}
@@ -764,10 +766,17 @@ const chooseDex = (cid, thread,tokenAddress) => {
   let selectedDex
   let opts
 
+  const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
+
   const ch = []
-  for(let c=0; c<chain.length; c++) {
-    ch.push([{"text": chain[c].LONGNAME ,"callback_data": c}])
+  for(let c=0; c<chain.length; c=c+2) {
+    if(c+1 >= chain.length){
+      ch.push([{"text": chain[c].LONGNAME ,"callback_data": c}])
+    } else {
+      ch.push([{"text": chain[c].LONGNAME ,"callback_data": c},{"text": chain[c+1].LONGNAME ,"callback_data": c+1}])
+    }
   }
+  ch.push(cancel)
   let reply_markup = {"inline_keyboard": ch}
   opts = {
     message_thread_id: thread,
@@ -782,15 +791,31 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
   const action = callbackQuery.data; 
   const msg = callbackQuery.message;
 
+  if(action === "CANCEL") {
+    bot.deleteMessage(cid, msg.message_id);
+    bot.off('callback_query')
+    return
+  }
+  let tmp = []
   // after choosing Chain
   if(msg.text === 'Choose Chain') {
     selectedChain = action
-    let ex = []
-    for(let k=0; k<exchange.length; k++) {
-      if(exchange[k].CHAIN === chain[selectedChain]){
-        ex.push([{"text": exchange[k].NAME ,"callback_data": k}])
+    for(let d=0; d<exchange.length; d++) {
+      if(exchange[d].CHAIN === chain[selectedChain]){
+        tmp.push(d)
       }
     }
+
+    let ex = []
+    for(let k=0; k<tmp.length; k=k+2) {
+      if(k+1 >= tmp.length) {
+        ex.push([{"text": exchange[tmp[k]].LONGNAME ,"callback_data": tmp[k]}])
+      } else {
+        ex.push([{"text": exchange[tmp[k]].LONGNAME ,"callback_data": tmp[k]},{"text": exchange[tmp[k+1]].LONGNAME ,"callback_data": tmp[k+1]}])
+      }
+      
+    }
+    ex.push(cancel)
     reply_markup = {"inline_keyboard": ex}
     const opts = { 
       chat_id: msg.chat.id, 
