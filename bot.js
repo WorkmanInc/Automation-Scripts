@@ -831,8 +831,11 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     selectedDex = action
    
     bot.deleteMessage(cid, msg.message_id);
-    
+    try {
       addStep2(cid, thread, tokenAddress, selectedDex)
+    } catch {
+      sendNotificationToChannel("ERROR", cid, thread)
+    }
     
     bot.off('callback_query')
   }
@@ -848,7 +851,10 @@ bot.onText(/^\/addtoken/, function(message, match) {
     const cid = message.chat.id.toString()
     bot.deleteMessage(cid, message.message_id);
     const tokenAddress = message.text.substring(10, 52)
-
+    if(tokenAddress.length < 42) {
+      sendNotificationToChannel("Must enter a Token Address", cid, thread)
+      return
+    }
     if((data.status == "creator") || (data.status == "administrator")) {
       chooseDex(cid, thread, tokenAddress)
     } else {
