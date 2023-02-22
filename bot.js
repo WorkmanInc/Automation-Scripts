@@ -38,7 +38,7 @@ bot.onText(/^\/setup/, function(message, match) {
     bot.deleteMessage(cid, message.message_id);
 
     if((data.status == "creator") || (data.status == "administrator")) {
-      SetupMenu(cid, thread)
+      SetupMenu(cid, thread, false)
     } else {
       sendNotificationToChannel("not Admin", cid, thread)
     }
@@ -46,13 +46,16 @@ bot.onText(/^\/setup/, function(message, match) {
 })
 
 
-const SetupMenu = (cid, thread) => {
+const SetupMenu = (cid, thread, isPrice) => {
 let tokenAddress
 let optionChosen
+let cIndex
 
 const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
 
   let tokenlist = []
+  let dexlist = []
+
   const itemlist = []
   for(let c=0; c<configs.length; c++){
     for(let ch =0; ch<configs[c].CHANNEL.length; ch++){
@@ -61,10 +64,11 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
           if(configs[c].CHANNEL[ch].THREAD[t] === thread){
             let added = false
             for(let i=0; i<tokenlist.length; i++){
-              if(configs[c].TOKEN === tokenlist[i]) added = true
+              if(configs[c].TOKEN === tokenlist[i] && configs[c].EXCHANGE === dexlist[i]) added = true
             }
             if(!added){
               tokenlist.push(configs[c].TOKEN)
+              dexlist.push(configs[c].EXCHANGE)
               itemlist.push([{"text": `${configs[c].NAME}| ${exchange[configs[c].EXCHANGE].NAME}: ${configs[c].TOKEN}`,"callback_data": c}])
             }            
           }
@@ -82,7 +86,7 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
     reply_markup: reply_markup
   }
 
-  bot.sendMessage(cid, 'Edit Which Token?', opts)
+  bot.sendMessage(cid, 'Choose Token?', opts)
 
 bot.on('callback_query', function onCallbackQuery(callbackQuery) { 
   const action = callbackQuery.data; 
@@ -95,42 +99,62 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
   }
 
   // after choosing Token
-  if(msg.text === 'Edit Which Token?') {
-    tokenAddress = configs[action].TOKEN
-    let cMIN
-    let cPER
-    for(let c=0; c<configs[action].CHANNEL.length; c++) {
-      if(configs[action].CHANNEL[c].CHATID === cid) {
-        cMIN = configs[action].CHANNEL[c].MINBUY
-        cPER = configs[action].CHANNEL[c].PERDOT
-        break
+  if(msg.text === 'Choose Token?') {
+    tokenAddress = configs[action].LPADDRESS
+
+    if(isPrice){
+      bot.deleteMessage(cid, msg.message_id);
+      getPrices(cid, thread, tokenAddress, action, true)
+    }else {
+      let cMIN
+      let cPER
+      for(let c=0; c<configs[action].CHANNEL.length; c++) {
+        if(configs[action].CHANNEL[c].CHATID === cid) {
+          cMIN = configs[action].CHANNEL[c].MINBUY
+          cPER = configs[action].CHANNEL[c].PERDOT
+          break
+        }
       }
-    }
 
     const il=[
       [{"text": `MINBUY ($${cMIN})`, "callback_data": "MINBUY"},{"text": `PERDOT ($${cPER})`, "callback_data": "PERDOT"}],
+      [{"text": "CHGDOT", "callback_data": "CHGDOT"}],
       [{"text": "REMOVE", "callback_data": "REMOVE"}] 
     ]
-  
+    
+      il.push(cancel)
+      reply_markup = {"inline_keyboard": il}
 
-    il.push(cancel)
-    reply_markup = {"inline_keyboard": il}
-
-    const opts1 = { 
-      chat_id: msg.chat.id, 
-      message_id: msg.message_id,
-      reply_markup: reply_markup 
-    }; 
+      const opts1 = { 
+        chat_id: msg.chat.id, 
+        message_id: msg.message_id,
+        reply_markup: reply_markup 
+      }; 
  
-    bot.editMessageText('Change What?', opts1); 
+      bot.editMessageText('Change What?', opts1); 
+    }
   }
-
+  
   if(msg.text === 'Change What?') {
     optionChosen = action.substring(0,6)
   if(optionChosen === "REMOVE") {
     removeStep2(tokenAddress, cid, thread)
     bot.deleteMessage(cid, msg.message_id);
     return
+  } else if(optionChosen === "CHGDOT"){
+    const options = [ "🟢","🔵","🚜","💶","💰","🤑","💩","🟩"] // multiples of 2!
+    let il4 = []
+    for(let d=0; d<options.length; d=d+2){
+      il4.push([{"text": `${options[d]}`, "callback_data": options[d]},{"text": `${options[d+1]}`, "callback_data": options[d+1]}])
+    }
+    il4.push(cancel)
+    reply_markup = {"inline_keyboard": il4}
+    const opts4 = { 
+      chat_id: msg.chat.id, 
+      message_id: msg.message_id,
+      reply_markup: reply_markup 
+    }; 
+    bot.editMessageText('New Symbol for DOTs', opts4);
   } else {  
     const options = [ 0,5,10,25,50,100,250,500,1000,2000] // multiples of 2!
     let il2 = []
@@ -146,6 +170,13 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     }; 
     bot.editMessageText('New Dollar Amount?', opts2); 
   }
+  }
+
+  if(msg.text === 'New Symbol for DOTs') {
+    bot.deleteMessage(cid, msg.message_id);
+    chgDot(tokenAddress, cid, thread, action)
+    bot.off('callback_query')
+    return
   }
 
   // after chooseing amount
@@ -451,6 +482,24 @@ bot.onText(/^\/perdot/, function(message, match) {
   })
 })
 
+
+const chgDot = (tokenAddress, cid, thread, image) => {
+      for(let i=0; i<configs.length; i++) {
+        if(configs[i].TOKEN === tokenAddress){
+          for(let c=0; c<configs[i].CHANNEL.length; c++){
+            if(configs[i].CHANNEL[c].CHATID === cid) {
+              configs[i].CHANNEL[c].DOTIMAGE = image
+              changed = true
+            }
+          }
+        }
+      }
+     saveNewConfig()
+     if(changed) {
+     sendNotificationToChannel(`*Changed* Dot to` + image , cid, thread)
+     }
+     else sendNotificationToChannel(`Dot Image not setup`, cid, thread);
+}
 
 bot.onText(/^\/changedot/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
@@ -761,7 +810,7 @@ const getBNBPrice = async (index) => {
 };
 
 
-const chooseDex = (cid, thread,tokenAddress) => {
+const chooseDex = (cid, thread,tokenAddress, isPrice) => {
   let selectedChain
   let selectedDex
   let opts
@@ -832,7 +881,8 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
    
     bot.deleteMessage(cid, msg.message_id);
     try {
-      addStep2(cid, thread, tokenAddress, selectedDex)
+      if(isPrice) getPrices(cid, thread, tokenAddress, selectedDex, false)
+      else addStep2(cid, thread, tokenAddress, selectedDex)
     } catch {
       sendNotificationToChannel("ERROR", cid, thread)
     }
@@ -856,7 +906,7 @@ bot.onText(/^\/addtoken/, function(message, match) {
       return
     }
     if((data.status == "creator") || (data.status == "administrator")) {
-      chooseDex(cid, thread, tokenAddress)
+      chooseDex(cid, thread, tokenAddress, false)
     } else {
       sendNotificationToChannel("not Admin", cid, thread)
     }
@@ -1343,18 +1393,28 @@ bot.onText(/^\/price/, async function(message, match) {
       const cid = message.chat.id.toString()
       bot.deleteMessage(cid, message.message_id);
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+
       const command = message.text.substring(7,49)
       const tExchange = message.text.substring(50)
-      let cIndex = 0
-      let LP = command
-      let index
-      const cLower = command.toLowerCase()
-      
-      for(let c=0; c<exchange.length; c++){
-        if(tExchange.toLowerCase() === exchange[c].NAME.toLowerCase()) cIndex = c
-      }
 
-    try {
+      let cIndex =  undefined
+      let LP = command
+
+      const cLower = LP.toLowerCase()
+      let index
+     
+
+  if(command.length === 0){
+    SetupMenu(cid, thread, true)
+  }else{
+
+      
+        for(let c=0; c<exchange.length; c++){
+           if(tExchange.toLowerCase() === exchange[c].NAME.toLowerCase()) cIndex = c
+        }
+      
+    
+
     let gotOne = false
         for(let i=0; i<configs.length; i++) {
           
@@ -1364,7 +1424,13 @@ bot.onText(/^\/price/, async function(message, match) {
             index = i
             gotOne = true
             break
-          } else if(cLower == configs[i].TOKEN.toLowerCase() && tExchange === exchange[configs[i].EXCHANGE].NAME) {
+          } else if(cLower == configs[i].TOKEN.toLowerCase() && cIndex !== undefined && exchange[cIndex].NAME === exchange[configs[i].EXCHANGE].NAME) {
+            LP = configs[i].LPADDRESS; 
+            cIndex=configs[i].EXCHANGE;
+            index = i
+            gotOne = true
+            break
+          } else if (cLower == configs[i].TOKEN.toLowerCase()) {
             LP = configs[i].LPADDRESS; 
             cIndex=configs[i].EXCHANGE;
             index = i
@@ -1372,10 +1438,37 @@ bot.onText(/^\/price/, async function(message, match) {
             break
           }
         }
-           if(!gotOne){
-            LP = getLPToken(cIndex, command)
-           }
+
         
+      if(gotOne){
+        getPrices(cid, thread, LP, index, gotOne)
+      } else if(!gotOne && cIndex === undefined){
+        chooseDex(cid, thread, LP, true)
+      } else {
+        getPrices(cid, thread, LP, cIndex, gotOne)
+      }
+    }
+    
+  })
+
+  const getPrices = async(cid, thread, address, index, gotOne) =>{
+    let cIndex 
+    let LP = address 
+
+    if(gotOne) {
+      cIndex=configs[index].EXCHANGE;
+    } else {
+      cIndex = index
+    }
+          
+            if(!gotOne){
+              LP = await getLPToken(cIndex, address)
+              if(LP === "0x0000000000000000000000000000000000000000"){
+                sendNotificationToChannelPrice("error", cid, thread)
+                return
+              }
+        }
+
             const { cicPrice } = await getBNBPrice(cIndex)
             const {sym, price, mc, bsym } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
             const link = getLink(cIndex)
@@ -1389,12 +1482,8 @@ bot.onText(/^\/price/, async function(message, match) {
               getAdLink() + "\n" +
               link
               ,cid, thread);
-        
-      } catch {
-        sendNotificationToChannelPrice( "Not Valid TOKEN", cid, thread);
-     }
     
-})
+}
 
 
 const getLink = (index) => {
