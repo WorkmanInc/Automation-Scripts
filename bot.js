@@ -1,6 +1,6 @@
 
 const dotenv = require("dotenv");
-const axios = require('axios');
+// const axios = require('axios');
 const fs = require("fs");
 const fetch = require("cross-fetch");
 const sleep = require("util").promisify(setTimeout);
@@ -132,7 +132,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     bot.deleteMessage(cid, msg.message_id);
     return
   } else {  
-    const options = [ 0,5,10,25,50,100] // multiples of 2!
+    const options = [ 0,5,10,25,50,100,250,500,1000,2000] // multiples of 2!
     let il2 = []
     for(let m=0; m<options.length; m=m+2){
       il2.push([{"text": `$${options[m]}.00`, "callback_data": options[m]},{"text": `$${options[m+1]}.00`, "callback_data": options[m+1]}])
@@ -387,7 +387,6 @@ bot.onText(/^\/minbuy/, function(message, match) {
       const tokenAddress =  message.text.substring(8,50)
       const amountRaw = message.text.substring(51)
       const amount = new BigNumber(amountRaw).toNumber()
-      if(amount > 100) return sendNotificationToChannel("Must be between 0 and 100", cid, thread)
       for(let i=0; i<configs.length; i++) {
         if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
           for(let c=0; c<configs[i].CHANNEL.length; c++){
@@ -599,6 +598,7 @@ const removeToken = async (LPAddress, ChatId, thread) => {
           if(configs[i].CHANNEL[c].CHATID === ChatId) {
             for(let t =0; t <configs[i].CHANNEL[c].THREAD.length; t++){
               if(configs[i].CHANNEL[c].THREAD[t] === thread){
+                /*
                 if(configs[i].CHANNEL[c].THREAD.length === 1 && configs[i].CHANNEL.length === 1 ){
                   await stopListener(LPAddress, i)
                   await stopListener(configs[configs.length-1].LPADDRESS, configs.length-1)
@@ -608,7 +608,7 @@ const removeToken = async (LPAddress, ChatId, thread) => {
                   sendNotificationToChannel("Removed Token", ChatId, thread)
                   didntExist = false
                   saveNewConfig(); return
-                } else if(configs[i].CHANNEL[c].THREAD.length === 1){
+                } else*/ if(configs[i].CHANNEL[c].THREAD.length === 1){
                   configs[i].CHANNEL[c] = configs[i].CHANNEL[configs[i].CHANNEL.length-1]
                   configs[i].CHANNEL.pop()
                   sendNotificationToChannel("Removed From Channel", ChatId, thread)
@@ -638,7 +638,7 @@ const removeToken = async (LPAddress, ChatId, thread) => {
 const init = async () => {
   await loadConfig()
   for(let i=0; i<configs.length;i++){
-    startListener(i)
+    if(configs[i].CHANNEL.length >0) startListener(i)
   }
 }
 
@@ -911,6 +911,7 @@ const addStep2 = async(cid, thread, tokenAddress, index) => {
             }
           }
           if(!DONE) {
+            if(configs[j].CHANNEL.length === 0) await startListener(j)
             // setting CHANNEL if LP EXists but NOT Channel
             configs[j].CHANNEL.push({
               CHATID: cid,
@@ -918,7 +919,8 @@ const addStep2 = async(cid, thread, tokenAddress, index) => {
               PERDOT: 5,
               THREAD: [thread],
             }); 
-            DONE = true;  
+            DONE = true;
+             
             sendNotificationToChannel(`${tokenAddress} Added to Channel`, cid, thread); break
           }
         }
@@ -937,11 +939,10 @@ const addStep2 = async(cid, thread, tokenAddress, index) => {
   
 const removeStep2 = async(tokenAddress, cid, thread) => {
   let lpAddress = tokenAddress
-  for(let i=0; i<configs.length; i++) {
+  for(let i=configs.length-1; i>=0; i--) {
     if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
       lpAddress = configs[i].LPADDRESS
-      
-      removeToken(lpAddress, cid, thread)
+      await removeToken(lpAddress, cid, thread)
     }
   }
 }
@@ -954,11 +955,11 @@ bot.onText(/^\/removetoken/, function(message, match) {
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const tokenAddress =  message.text.substring(13)
       let lpAddress = tokenAddress
-      for(let i=0; i<configs.length; i++) {
+      for(let i=configs.length-1; i>=0; i--) {
         if(configs[i].TOKEN.toLowerCase() === tokenAddress.toLowerCase()) {
           lpAddress = configs[i].LPADDRESS
-          
-          removeToken(lpAddress, cid, thread)
+          await removeToken(lpAddress, cid, thread)
+         
         }
       }
      
@@ -1472,8 +1473,8 @@ const stopListener = async (lp, index) => {
     lpabi,
     signer
   );
-  lpcontract.off("Swap")
-  console.log(`Stopped For ${configs[index].TOKEN}`)
+
+  lpcontract.off("Swap", null)
 }
 
 const startListener = async (index) => {
@@ -1487,15 +1488,21 @@ const startListener = async (index) => {
     signer
   );
 
-  lpcontract.on("Swap", async ( sender, amount0In, amount1In, amount0Out, amount1Out, to, event) => {
-
-    const { cicPrice } = await getBNBPrice(configs[index].EXCHANGE)
+  lpcontract.on("Swap", async( sender, amount0In, amount1In, amount0Out, amount1Out, to, event) => {
+    let rawPrice
+    try {
+     const  { cicPrice } = await getBNBPrice(configs[index].EXCHANGE)
+     rawPrice = cicPrice
+    } catch{
+      lpcontract.off('Swap')
+      return
+    }
 
     const txhash = event.transactionHash.toString()
     const receiver = to.toString()
     const buyer = sender.toString()
 
-    const basePrice = baseIsNative ? cicPrice : 1
+    const basePrice = baseIsNative ? rawPrice : 1
 
     const inAmount = baseIs0 ? amount0In : amount1In
     const outAmount = baseIs0 ? amount1Out : amount0Out
@@ -1504,7 +1511,7 @@ const startListener = async (index) => {
     const spent = new BigNumber(inAmount.toString()).shiftedBy(-configs[index].BDECIMALS).multipliedBy(basePrice).toFixed(2)
     const mc = await getMC(configs[index].TOKEN, FRTcValue, configs[index].EXCHANGE )
 
-    sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice, mc);
+    sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, rawPrice, mc);
   
   });
   console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
