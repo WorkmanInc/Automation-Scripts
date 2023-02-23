@@ -1416,9 +1416,6 @@ bot.onText(/^\/price/, async function(message, match) {
       const cLower = LP.toLowerCase()
       let index
 
-      if(command.substring(7,7) !== " ") console.log("not empty")
-     
-
   if(command.length === 0 || command.substring(7,7) !== " "){
     SetupMenu(cid, thread, true)
   }else{
