@@ -780,14 +780,14 @@ bot.onText(/^\/allowprice/, async function(message, match) {
 
 const sendNotificationToChannel = async (message, cid, thread) => {
   bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread}).catch(() => {
-    console.log("Error Sending to Channel")
+    console.log(`Error Sending to Channel ${cid}, ${thread}`)
   });
 }
 
 const sendNotificationToChannelPrice = async (message, cid, thread) => {
   if(checkIfAllowed(cid, thread)) {
     bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread}).catch(() => {
-      console.log("Error Sending to Channel")
+      console.log(`Error Sending to Channel ${cid}, ${thread}`)
     });
   }  
 }
@@ -1314,7 +1314,7 @@ bcbot.onText(/^\/price/, async function(message, match) {
     getAdLink()
   
    bcbot.sendMessage(cid, msg, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown', reply_markup: reply_markup}).catch(() => {
-    console.log("Error Sending to Channel")
+    console.log("BC - Main Bot Price - Error Sending to Channel")
   });
    
 })
@@ -1359,7 +1359,7 @@ bot.onText(/^\/bcprice/, async function(message, match) {
    "\n" + getLink(1)
 
    bot.sendMessage(cid, msg, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown', reply_markup: reply_markup}).catch(() => {
-    console.log("Error Sending to Channel")
+    console.log("BCPRICE command - Error Sending to Channel")
   });
    
 })
