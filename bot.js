@@ -16,12 +16,12 @@ const {
 } = require("./config/chainConfig");
 
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const bot = new telegramBot(token, {polling: true})
 
-// const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
-const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
+const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
+// const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
 const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -91,10 +91,10 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
 bot.on('callback_query', function onCallbackQuery(callbackQuery) { 
   const action = callbackQuery.data; 
   const msg = callbackQuery.message;
-
+if(msg.chat.id == cid){
   if(action === "CANCEL") {
     bot.deleteMessage(cid, msg.message_id);
-    bot.off('callback_query')
+    // bot.off('callback_query')
     return
   }
 
@@ -105,7 +105,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
       tokenAddress = configs[action].LPADDRESS
       bot.deleteMessage(cid, msg.message_id);
       getPrices(cid, thread, tokenAddress, action, true)
-      bot.off('callback_query')
+     // bot.off('callback_query')
     }else {
       tokenAddress = configs[action].TOKEN
       let cMIN
@@ -177,7 +177,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
   if(msg.text === 'New Symbol for DOTs') {
     bot.deleteMessage(cid, msg.message_id);
     chgDot(tokenAddress, cid, thread, action)
-    bot.off('callback_query')
+    // bot.off('callback_query')
 
   }
 
@@ -186,11 +186,11 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     bot.deleteMessage(cid, msg.message_id);
      if(optionChosen === `MINBUY`) minBuy(tokenAddress, cid, thread, action)
      if(optionChosen === `PERDOT`) perdot(tokenAddress, cid, thread, action)
-     bot.off('callback_query')
+     // bot.off('callback_query')
     
   }
  
-  
+}
 }); 
 
 }
@@ -840,13 +840,14 @@ const chooseDex = (cid, thread,tokenAddress, isPrice) => {
 
   bot.sendMessage(cid, 'Choose Chain', opts)
 
-bot.on('callback_query', function onCallbackQuery(callbackQuery) { 
+bot.on('callback_query' , function onCallbackQuery(callbackQuery){ 
   const action = callbackQuery.data; 
   const msg = callbackQuery.message;
+  if(msg.chat.id == cid){
 
   if(action === "CANCEL") {
     bot.deleteMessage(cid, msg.message_id);
-    bot.off('callback_query')
+    // bot.off('callback_query')
     return
   }
   let tmp = []
@@ -887,20 +888,21 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     try {
       if(isPrice){
         getPrices(cid, thread, tokenAddress, selectedDex, false)
-        bot.off('callback_query')
+        // bot.off('callback_query')
       }
       else {
         addStep2(cid, thread, tokenAddress, selectedDex)
-        bot.off('callback_query')
+        // bot.off('callback_query')
       }
     } catch {
       sendNotificationToChannel("ERROR", cid, thread)
-      bot.off('callback_query')
+      // bot.off('callback_query')
     }
     
-    bot.off('callback_query')
+    // bot.off('callback_query')
+
   }
-  
+}  
 }); 
 
 }
