@@ -1419,7 +1419,9 @@ bot.onText(/^\/price/, async function(message, match) {
       const cLower = LP.toLowerCase()
       let index
 
-  if(command.length === 0 || command.substring(7,7) !== " "){
+      const test = message.text.substring(6,7)
+
+  if(command.length === 0 || test !== " "){
     SetupMenu(cid, thread, true)
   }else{
 
@@ -1458,13 +1460,13 @@ bot.onText(/^\/price/, async function(message, match) {
       if(gotOne){
         getPrices(cid, thread, LP, index, gotOne)
         return
-      } else if(!gotOne && cIndex === undefined){
+      } else if(!gotOne && cIndex === undefined && LP.length === 42){
         chooseDex(cid, thread, LP, true)
         return
-      } else {
+      } else if(!gotOne && cIndex !== undefined && LP.length === 42){
         getPrices(cid, thread, LP, cIndex, gotOne)
         return
-      }
+      } sendNotificationToChannelPrice("Failed", cid, thread)
     }
     
   })
