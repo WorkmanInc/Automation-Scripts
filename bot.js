@@ -1053,6 +1053,7 @@ const getPrice = async (lp, cIndex, cicPrice, gotOne, Index) => {
   let bsym
   let tDecimals
   let bDecimals
+  let name
 
   let tContract
 
@@ -1065,6 +1066,8 @@ const getPrice = async (lp, cIndex, cicPrice, gotOne, Index) => {
     bsym = configs[Index].BSYM
     tDecimals = new BigNumber(configs[Index].TDECIMALS)
     bDecimals = new BigNumber(configs[Index].BDECIMALS)
+    name = configs[Index].NAME
+    
     tContract = new Contract(
       configs[Index].TOKEN,
       lpabi,
@@ -1096,6 +1099,7 @@ const getPrice = async (lp, cIndex, cicPrice, gotOne, Index) => {
     const bdRaw = await bContract.decimals()
     sym = await tContract.symbol()
     bsym = await bContract.symbol()
+    name = await tContract.name()
     
     tDecimals = new BigNumber(tdRaw.toString())
     bDecimals = new BigNumber(bdRaw.toString())
@@ -1131,7 +1135,7 @@ const getPrice = async (lp, cIndex, cicPrice, gotOne, Index) => {
 
   const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
 
-  return { sym, price, mc, bsym }
+  return { sym, price, mc, bsym, name }
 }
 
 const getMC = async(tokenAddress, price, cIndex) => {
@@ -1301,11 +1305,11 @@ bcbot.onText(/^\/price/, async function(message, match) {
 
   let msg = 
     `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
-    `*${sym} Price:* $${lastPrice}\n` +
+    `*${sym} Price:* $${parseFloat(lastPrice).toLocaleString("en-US")}\n` +
     "\n" +
-    `*24hr Volume:* $${volume}\n` +
-    `*24hr Low:* $${low}\n` +
-    `*24hr High:* $${high}\n` +
+    `*24hr Volume:* $${parseFloat(volume).toLocaleString("en-US")}\n` +
+    `*24hr Low:* $${parseFloat(low).toLocaleString("en-US")}\n` +
+    `*24hr High:* $${parseFloat(high).toLocaleString("en-US")}\n` +
     `*24hr Change:* ${change}%\n` +
     getAdLink()
   
@@ -1345,11 +1349,11 @@ bot.onText(/^\/bcprice/, async function(message, match) {
 
   let msg =
     `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
-    `*${sym} Price:* $${lastPrice}\n` +
+    `*${sym} Price:* $${parseFloat(lastPrice).toLocaleString("en-US")}\n` +
     "\n" +
-    `*24hr Volume:* $${volume}\n` +
-    `*24hr Low:* $${low}\n` +
-    `*24hr High:* $${high}\n` +
+    `*24hr Volume:* $${parseFloat(volume).toLocaleString("en-US")}\n` +
+    `*24hr Low:* $${parseFloat(low).toLocaleString("en-US")}\n` +
+    `*24hr High:* $${parseFloat(high).toLocaleString("en-US")}\n` +
     `*24hr Change:* ${change}%\n` +
     getAdLink() +
    "\n" + getLink(1)
@@ -1490,14 +1494,15 @@ bot.onText(/^\/price/, async function(message, match) {
         }
 
             const { cicPrice } = await getBNBPrice(cIndex)
-            const {sym, price, mc, bsym } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
+            const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
             const link = getLink(cIndex)
 
             sendNotificationToChannelPrice(
-              `${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP\n` +
+              `*${name}: ${sym}*\n` +
               `*${sym} / ${bsym}*\n` +
+              `*${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].LONGNAME} LP*\n` +
               `*Price:* $${price}\n` +
-              `*MCap:* $${mc}\n` +
+              `*MCap:* $${parseFloat(mc).toLocaleString("en-US")}\n` +
               `*${exchange[cIndex].CHAIN.NAME} Price:* $${cicPrice}\n` +
               getAdLink() + "\n" +
               link
@@ -1642,12 +1647,12 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         const dots = sym(new BigNumber(spent).dividedBy(configs[index].CHANNEL[i].PERDOT).toFixed(0), cIndex, configs[index].CHANNEL[i])
         var message =
         `*${configs[index].NAME}* Bought!!\n` +
-        `*${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].NAME} LP*\n` +
+        `*${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].LONGNAME} LP*\n` +
         dots +
         `\n*Spent:* $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-bdec).toFixed(4)} ${configs[index].BSYM})\n` +
-        `*Received:* ${new BigNumber(bought).toFixed(2)} ${configs[index].SYM}\n` +
+        `*Received:* ${parseFloat(new BigNumber(bought).toFixed(2)).toLocaleString("en-US")} ${configs[index].SYM}\n` +
         `*${configs[index].SYM} Price:* $${FRTcValue}\n` +
-        `*${configs[index].SYM} MC:* $${mc}\n` +
+        `*${configs[index].SYM} MC:* $${parseFloat(mc).toLocaleString("en-US")}\n` +
         `*${exchange[cIndex].CHAIN.NAME}:* $${cicPrice}\n` +
         `[ TX  ](${exchange[cIndex].CHAIN.EXP}tx/${txhash})` +
         ` | ` + 
