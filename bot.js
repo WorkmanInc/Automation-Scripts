@@ -31,6 +31,7 @@ const lpabi = require("./abis/lp.json");
 const factoryABI = require("./abis/factorcy.json");
 const uniswapABI = require("./abis/uni-Factory.json");
 const uniLPABI = require("./abis/uniLP.json");
+const { getEventListeners } = require("events");
 
 
 bot.onText(/^\/setup/, function(message, match) {
@@ -96,14 +97,15 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
     bot.sendMessage(cid, 'Choose Token?', opts)
     
   }
-
-bot.on('callback_query', function onCallbackQuery(callbackQuery) { 
+let fCID
+bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) { 
   const action = callbackQuery.data; 
   const msg = callbackQuery.message;
 if(msg.chat.id == cid){
+
   if(action === "CANCEL") {
     bot.deleteMessage(cid, msg.message_id);
-    // bot.off('callback_query')
+    bot.off('callback_query', fCID)
     return
   }
 
@@ -114,7 +116,7 @@ if(msg.chat.id == cid){
       tokenAddress = configs[action].LPADDRESS
       bot.deleteMessage(cid, msg.message_id);
       getPrices(cid, thread, tokenAddress, action, true)
-     // bot.off('callback_query')
+     bot.off('callback_query', fCID)
     }else {
       tokenAddress = configs[action].TOKEN
       let cMIN
@@ -151,6 +153,7 @@ if(msg.chat.id == cid){
   if(optionChosen === "REMOVE") {
     removeStep2(tokenAddress, cid, thread)
     bot.deleteMessage(cid, msg.message_id);
+    bot.off('callback_query', fCID)
     return
   } else if(optionChosen === "CHGDOT"){
     const options = [ "🟢","🔵","🚜","💶","💰","🤑","💩","🟩"] // multiples of 2!
@@ -186,7 +189,7 @@ if(msg.chat.id == cid){
   if(msg.text === 'New Symbol for DOTs') {
     bot.deleteMessage(cid, msg.message_id);
     chgDot(tokenAddress, cid, thread, action)
-    // bot.off('callback_query')
+    bot.off('callback_query', fCID)
 
   }
 
@@ -195,7 +198,7 @@ if(msg.chat.id == cid){
     bot.deleteMessage(cid, msg.message_id);
      if(optionChosen === `MINBUY`) minBuy(tokenAddress, cid, thread, action)
      if(optionChosen === `PERDOT`) perdot(tokenAddress, cid, thread, action)
-     // bot.off('callback_query')
+     bot.off('callback_query', fCID)
     
   }
  
@@ -203,6 +206,7 @@ if(msg.chat.id == cid){
 }); 
 
 }
+
 const getAdLink = () => {
   const index = Math.floor((Math.random() * ads.length));
   return  `\nad: [${ads[index].NAME}](${ads[index].TGLINK})`
@@ -839,15 +843,15 @@ const chooseDex = (cid, thread,tokenAddress, isPrice) => {
   }
 
   bot.sendMessage(cid, 'Choose Chain', opts)
-
-bot.on('callback_query' , function onCallbackQuery(callbackQuery){ 
+let fCID
+bot.on('callback_query' , fCID = function onCallbackQuery(callbackQuery){ 
   const action = callbackQuery.data; 
   const msg = callbackQuery.message;
   if(msg.chat.id == cid){
 
   if(action === "CANCEL") {
     bot.deleteMessage(cid, msg.message_id);
-    // bot.off('callback_query')
+    bot.off('callback_query', fCID)
     return
   }
   let tmp = []
@@ -888,18 +892,17 @@ bot.on('callback_query' , function onCallbackQuery(callbackQuery){
     try {
       if(isPrice){
         getPrices(cid, thread, tokenAddress, selectedDex, false)
-        // bot.off('callback_query')
-      }
-      else {
+        bot.off('callback_query', fCID)
+      } else {
         addStep2(cid, thread, tokenAddress, selectedDex)
-        // bot.off('callback_query')
+        bot.off('callback_query', fCID)
       }
     } catch {
       sendNotificationToChannel("ERROR", cid, thread)
-      // bot.off('callback_query')
+      bot.off('callback_query', fCID)
     }
     
-    // bot.off('callback_query')
+    bot.off('callback_query', fCID)
 
   }
 }  
