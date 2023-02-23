@@ -56,6 +56,7 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
 
   let tokenlist = []
   let dexlist = []
+  let firstIndex
 
   const itemlist = []
   for(let c=0; c<configs.length; c++){
@@ -70,7 +71,7 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
             if(!added){
               tokenlist.push(configs[c].TOKEN)
               dexlist.push(configs[c].EXCHANGE)
-              tokenAddress = configs[c].LPADDRESS
+              firstIndex = c
               itemlist.push([{"text": `${configs[c].NAME}| ${exchange[configs[c].EXCHANGE].NAME}: ${configs[c].TOKEN}`,"callback_data": c}])
             }            
           }
@@ -78,8 +79,9 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
       }
     }
   }
-  if (itemlist.length === 1 && isPrice){
-    getPrices(cid, thread, tokenAddress, dexlist[0] , true)
+  if (tokenlist.length === 1 && isPrice){
+    const lpAddress = configs[firstIndex].LPADDRESS
+    getPrices(cid, thread, lpAddress, firstIndex , true)
   } else if(itemlist.length > 0) {
     itemlist.push(cancel)
 
