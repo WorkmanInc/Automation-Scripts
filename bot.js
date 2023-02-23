@@ -15,13 +15,17 @@ const {
   ads
 } = require("./config/chainConfig");
 
+const result = dotenv.config();
+if (result.error) {
+  // throw result.error;
+}
 
-const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
+// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
+const token = process.env.BOT_TOKEN  // testing
 const bot = new telegramBot(token, {polling: true})
 
-// const bcToken = "5913793705:AAGpxwO1ZTtXyWarfE-Rbs-PJtrnMigqkhY" // testing
-const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
+const bcToken = process.env.BC_TOKEN // testing
+// const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
 const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -30,6 +34,7 @@ const lpabi = require("./abis/lp.json");
 const factoryABI = require("./abis/factorcy.json");
 const uniswapABI = require("./abis/uni-Factory.json");
 const uniLPABI = require("./abis/uniLP.json");
+
 
 bot.onText(/^\/setup/, function(message, match) {
   bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
@@ -533,15 +538,6 @@ bot.onText(/^\/changedot/, function(message, match) {
   })
 })
 
-
-
-
-
-// not sure what this does, but IT IS REQUIRED to do stuff.
-const result = dotenv.config();
-if (result.error) {
-  // throw result.error;
-}
 
 const getSigner = (index) => {
   const rpc = exchange[index].CHAIN.RPC
