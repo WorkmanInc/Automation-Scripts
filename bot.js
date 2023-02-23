@@ -17,15 +17,12 @@ const {
 
 const result = dotenv.config();
 if (result.error) {
-  // throw result.error;
 }
 
-// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
 const token = process.env.BOT_TOKEN  // testing
 const bot = new telegramBot(token, {polling: true})
 
 const bcToken = process.env.BC_TOKEN // testing
-// const bcToken = "6257861424:AAGpr6cdQw1DIuKJNtjEb3KkrPbNT6Ybcbc"  // prod
 const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
@@ -54,7 +51,6 @@ bot.onText(/^\/setup/, function(message, match) {
 const SetupMenu = (cid, thread, isPrice) => {
 let tokenAddress
 let optionChosen
-let cIndex
 
 const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
 
@@ -74,6 +70,7 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
             if(!added){
               tokenlist.push(configs[c].TOKEN)
               dexlist.push(configs[c].EXCHANGE)
+              tokenAddress = configs[c].LPADDRESS
               itemlist.push([{"text": `${configs[c].NAME}| ${exchange[configs[c].EXCHANGE].NAME}: ${configs[c].TOKEN}`,"callback_data": c}])
             }            
           }
@@ -81,17 +78,22 @@ const cancel = [{"text": "CANCEL", "callback_data": "CANCEL"}]
       }
     }
   }
-  itemlist.push(cancel)
+  if (itemlist.length === 1 && isPrice){
+    getPrices(cid, thread, tokenAddress, dexlist[0] , true)
+  } else if(itemlist.length > 0) {
+    itemlist.push(cancel)
 
-  let reply_markup = {"inline_keyboard": itemlist}
-  opts = {
-    message_thread_id: thread,
-    disable_web_page_preview: true,
-    parse_mode: 'Markdown',
-    reply_markup: reply_markup
+    let reply_markup = {"inline_keyboard": itemlist}
+    opts = {
+      message_thread_id: thread,
+      disable_web_page_preview: true,
+      parse_mode: 'Markdown',
+      reply_markup: reply_markup
+    }
+
+    bot.sendMessage(cid, 'Choose Token?', opts)
+    
   }
-
-  bot.sendMessage(cid, 'Choose Token?', opts)
 
 bot.on('callback_query', function onCallbackQuery(callbackQuery) { 
   const action = callbackQuery.data; 
@@ -878,7 +880,7 @@ bot.on('callback_query' , function onCallbackQuery(callbackQuery){
 
   // after chooseing Dex
   if(msg.text === 'Choose Dex') {
-    selectedDex = action
+    selectedDex = parseInt(action)
    
     bot.deleteMessage(cid, msg.message_id);
     try {
