@@ -121,17 +121,19 @@ if(msg.chat.id == cid){
       tokenAddress = configs[action].TOKEN
       let cMIN
       let cPER
+      let cDOT
       for(let c=0; c<configs[action].CHANNEL.length; c++) {
         if(configs[action].CHANNEL[c].CHATID === cid) {
           cMIN = configs[action].CHANNEL[c].MINBUY
           cPER = configs[action].CHANNEL[c].PERDOT
+          cDOT = configs[action].CHANNEL[c].DOTIMAGE
           break
         }
       }
 
     const il=[
       [{"text": `MINBUY ($${cMIN})`, "callback_data": "MINBUY"},{"text": `PERDOT ($${cPER})`, "callback_data": "PERDOT"}],
-      [{"text": "CHGDOT", "callback_data": "CHGDOT"}],
+      [{"text": `CHGDOT (${cDOT})`, "callback_data": "CHGDOT"}],
       [{"text": "REMOVE", "callback_data": "REMOVE"}] 
     ]
     
