@@ -1275,7 +1275,7 @@ bcbot.onText(/^\/price/, async function(message, match) {
   const pair = pairRaw.toUpperCase()
   let sym
   const info = await getBCInfo(pair)
-  if(!info.status) {
+  if(info === undefined || !info.status) {
     sendNotificationToChannel("Error, Check Spelling", cid, thread)
     return
   }
@@ -1319,7 +1319,7 @@ bot.onText(/^\/bcprice/, async function(message, match) {
   const pair = pairRaw.toUpperCase()
   let sym
   const info = await getBCInfo(pair)
-  if(!info.status) {
+  if(info ===  undefined || !info.status) {
     sendNotificationToChannel("Error, Check Spelling", cid, thread)
     return
   }
@@ -1366,7 +1366,7 @@ const getBCInfo = async (pair) => {
     }
     info = await res.json();
     } catch (err) {
-    console.error("Unable to connect to Binance API", err);
+    console.error("Unable to connect to Bitcointry API", err);
    }
   return  info
 };
