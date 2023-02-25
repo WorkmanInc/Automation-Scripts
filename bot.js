@@ -31,7 +31,6 @@ const lpabi = require("./abis/lp.json");
 const factoryABI = require("./abis/factorcy.json");
 const uniswapABI = require("./abis/uni-Factory.json");
 const uniLPABI = require("./abis/uniLP.json");
-const { getEventListeners } = require("events");
 
 
 bot.onText(/^\/setup/, function(message, match) {
@@ -1307,11 +1306,11 @@ bcbot.onText(/^\/price/, async function(message, match) {
 
   let msg = 
     `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
-    `*${sym} Price:* $${parseFloat(lastPrice).toLocaleString("en-US")}\n` +
+    `*${sym} Price:* $${new BigNumber(lastPrice).toLocaleString()}\n` +
     "\n" +
-    `*24hr Volume:* $${parseFloat(volume).toLocaleString("en-US")}\n` +
-    `*24hr Low:* $${parseFloat(low).toLocaleString("en-US")}\n` +
-    `*24hr High:* $${parseFloat(high).toLocaleString("en-US")}\n` +
+    `*24hr Volume:* $${new BigNumber(volume).toLocaleString()}\n` +
+    `*24hr Low:* $${new BigNumber(low).toLocaleString()}\n` +
+    `*24hr High:* $${new BigNumber(high).toLocaleString()}\n` +
     `*24hr Change:* ${change}%\n` +
     getAdLink()
   
@@ -1348,14 +1347,13 @@ bot.onText(/^\/bcprice/, async function(message, match) {
   const volume = new BigNumber(info.quoteVolume).toFixed(2)
 
   let reply_markup = {"inline_keyboard": [[{"text": `BUY ${sym}` , "url": `https://bitcointry.com/en/exchange/${symRaw}`}]]}
-
   let msg =
     `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
-    `*${sym} Price:* $${parseFloat(lastPrice).toLocaleString("en-US")}\n` +
+    `*${sym} Price:* $${new BigNumber(lastPrice).toLocaleString()}\n` +
     "\n" +
-    `*24hr Volume:* $${parseFloat(volume).toLocaleString("en-US")}\n` +
-    `*24hr Low:* $${parseFloat(low).toLocaleString("en-US")}\n` +
-    `*24hr High:* $${parseFloat(high).toLocaleString("en-US")}\n` +
+    `*24hr Volume:* $${new BigNumber(volume).toLocaleString()}\n` +
+    `*24hr Low:* $${new BigNumber(low).toLocaleString()}\n` +
+    `*24hr High:* $${new BigNumber(high).toLocaleString()}\n` +
     `*24hr Change:* ${change}%\n` +
     getAdLink() +
    "\n" + getLink(1)
@@ -1504,7 +1502,7 @@ bot.onText(/^\/price/, async function(message, match) {
               `*${sym} / ${bsym}*\n` +
               `*${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].LONGNAME} LP*\n` +
               `*Price:* $${price}\n` +
-              `*MCap:* $${parseFloat(mc).toLocaleString("en-US")}\n` +
+              `*MCap:* $${new BigNumber(mc).toLocaleString()}\n` +
               `*${exchange[cIndex].CHAIN.NAME} Price:* $${cicPrice}\n` +
               getAdLink() + "\n" +
               link
@@ -1652,9 +1650,9 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `*${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].LONGNAME} LP*\n` +
         dots +
         `\n*Spent:* $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-bdec).toFixed(4)} ${configs[index].BSYM})\n` +
-        `*Received:* ${parseFloat(new BigNumber(bought).toFixed(2)).toLocaleString("en-US")} ${configs[index].SYM}\n` +
+        `*Received:* ${new BigNumber(bought).toLocaleString()} ${configs[index].SYM}\n` +
         `*${configs[index].SYM} Price:* $${FRTcValue}\n` +
-        `*${configs[index].SYM} MC:* $${parseFloat(mc).toLocaleString("en-US")}\n` +
+        `*${configs[index].SYM} MC:* $${new BigNumber(mc).toLocaleString()}\n` +
         `*${exchange[cIndex].CHAIN.NAME}:* $${cicPrice}\n` +
         `[ TX  ](${exchange[cIndex].CHAIN.EXP}tx/${txhash})` +
         ` | ` + 
