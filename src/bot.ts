@@ -22,7 +22,7 @@ const thread = "106637"
 const PRIVATE_KEY='af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8'  // FARM
 
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 330000,
+  CHECKEVERY: 360000,
   CHAIN:[
     {
       NAME: "CIC",
@@ -168,9 +168,11 @@ const goIdle = async () => {
 const start = async () => {
   for(let c=0; c<GLOBAL_CONFIG.CHAIN.length; c++){
     const { lottery, upkeepNeeded } = await checkIfReady(c)
+    console.log(upkeepNeeded)
     if(upkeepNeeded) {
       console.log(`${GLOBAL_CONFIG.CHAIN[c].NAME} is Ready!`)
       runKeeper(c, lottery.toString())
+      await sleep(5000)
     }
     goIdle()
   }
@@ -182,10 +184,7 @@ process.on('SIGINT', async () => {
   process.exit();
 });
 
-process.on('uncaughtException', async () => {
-  await sleep(1000);
-  console.log("uncaught exception error")
-});
+
 
 console.log("Loaded Up!")
 start()
