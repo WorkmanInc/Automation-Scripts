@@ -192,12 +192,18 @@ const start = async () => {
 
 ['SIGINT', 'SIGTERM', 'SIGQUIT']
   .forEach(signal => process.on(signal, async() => {
+    sendNotificationToChannel("Lottery Keeper Died")
+    await sleep(1000);
+    start()
+    sendNotificationToChannel("Lottery Keeper Restarted")
+
+  }));
+
+  process.on('SIGINT', async () => {
     sendNotificationToChannel("Lottery Keeper Turned Off!")
     await sleep(1000);
     process.exit();
-  }));
-
-
+  });
 
 
 console.log("Loaded Up!")
