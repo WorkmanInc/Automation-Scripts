@@ -1698,11 +1698,20 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
   }
 }
 
+['SIGTERM', 'SIGQUIT']
+  .forEach(signal => process.on(signal, async() => {
+    const cid = "-1001435750887"
+    const thread = "0"
+    sendNotificationToChannel("BuyBot Died!", cid, thread)
+    await sleep(1000);
+    init()
+    sendNotificationToChannel("Restarted", cid, thread)
+  }));
 
 process.on('SIGINT', async () => {
   const cid = "-1001435750887"
   const thread = "0"
-  sendNotificationToChannel("BuyBot Died!", cid, thread)
+  sendNotificationToChannel("BuyBot Turned Off", cid, thread)
   await sleep(1000);
   process.exit();
 });
