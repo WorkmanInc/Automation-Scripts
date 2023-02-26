@@ -1368,17 +1368,28 @@ const getBCInfo = async (pair) => {
   const apiUrl = `https://api.bitcointry.com/api/v1/ticker?symbol=${pair}USDT`
   let info
   try {
-    const res = await fetch(apiUrl);
+    let res = await fetch(apiUrl);
     if (res.status >= 400) {
       console.log(res.status)
       throw new Error("Bad response from server");
     }
     info = await res.json();
+    if(!info.status) {
+      const apiUrl2 = `https://api.bitcointry.com/api/v1/ticker?symbol=${pair}TRY`
+      res = await fetch(apiUrl2);
+      if (res.status >= 400) {
+        console.log(res.status)
+        throw new Error("Bad response from server");
+      }
+      info = await res.json()
+    }
+    
     } catch (err) {
     console.error("Unable to connect to Bitcointry API", err);
    }
   return  info
 };
+
 
 
 
