@@ -112,9 +112,16 @@ const getTokenContract = (index: number, address: string) => {
 
 const checkIfReady = async (index: number) => {
     const keeperContract = await getKeeperContract(index)
-
-    const {lottery, upkeepNeeded } = await keeperContract.upKeepDue();
-    return { lottery, upkeepNeeded }
+    let l = "0x0"
+    let u = false
+try {
+    const {lottery, upkeepNeeded } = await keeperContract.upKeepDue()
+    l = lottery
+    u = upkeepNeeded
+} catch { 
+      console.log("Failed to get UpkeepDue")
+}
+    return { l, u }
 }   
 
 const runKeeper = async (index: number, lottery: string) => {
@@ -123,7 +130,13 @@ const runKeeper = async (index: number, lottery: string) => {
     const keeperContract= await getKeeperContract(index)
     
     console.log("performing upkeep")
-    await keeperContract.manualUpkeep();
+    try {
+      await keeperContract.manualUpkeep()
+    }catch{
+      console.log("Failed to perform")
+      return
+    }
+    
     await sleep(10000);
     
     const { step } = await keeperContract.lotteries(lottery)
@@ -154,8 +167,8 @@ const runKeeper = async (index: number, lottery: string) => {
       sendNotificationToChannel(msg)
 
     }
-  } catch (error) {
-    console.log("Maybe Wait Longer??");
+  } catch {
+    console.log("Error sending info");
   }
 }
 
@@ -167,22 +180,23 @@ const goIdle = async () => {
 
 const start = async () => {
   for(let c=0; c<GLOBAL_CONFIG.CHAIN.length; c++){
-    const { lottery, upkeepNeeded } = await checkIfReady(c)
-    console.log(upkeepNeeded)
-    if(upkeepNeeded) {
+    const { l, u } = await checkIfReady(c)
+    if(u) {
       console.log(`${GLOBAL_CONFIG.CHAIN[c].NAME} is Ready!`)
-      runKeeper(c, lottery.toString())
+      runKeeper(c, l.toString())
       await sleep(5000)
     }
     goIdle()
   }
 }
 
-process.on('SIGINT', async () => {
-  sendNotificationToChannel("Lottery Keeper Died!")
-  await sleep(1000);
-  process.exit();
-});
+['SIGINT', 'SIGTERM', 'SIGQUIT']
+  .forEach(signal => process.on(signal, async() => {
+    sendNotificationToChannel("Lottery Keeper Turned Off!")
+    await sleep(1000);
+    process.exit();
+  }));
+
 
 
 
