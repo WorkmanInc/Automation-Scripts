@@ -11,8 +11,8 @@ const keeper = require("./abis/keeper.json")
 const lotteryabi = require("./abis/lottery.json")
 const tokenabi = require("./abis/token.json")
 
-const cid = "-1001435750887"
-const thread = "106637"
+const cid = -1001435750887
+const thread = 106637
 const token = process.env.BOT_TOKEN  // testing
 const bot = new telegramBot(token)
 
