@@ -171,8 +171,7 @@ const start = async () => {
 }
 
 const testing = () => {
-  sendNotificationToChannel("test")
-  /*
+  
       const test = "TESTING"
       const lotteryInfo = {
         countWinnersPerBracket: [1,2,3,4,5,6]
@@ -190,7 +189,7 @@ const testing = () => {
       `\n*Tickets Sold*: ${ticketsSold}` +
       `\n*Drawn Numbers*: ${finalNumber}`
     sendNotificationToChannel(msg)
-    */
+    
 }
 
 
