@@ -14,7 +14,7 @@ const {
   exchange,
   ads
 } = require("./config/chainConfig");
-const { start } = require("./lottery.js")
+const { start } = require("./Lottery.js")
 
 const result = dotenv.config();
 if (result.error) {
