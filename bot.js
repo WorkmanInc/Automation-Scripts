@@ -1,6 +1,5 @@
 
 const dotenv = require("dotenv");
-// const axios = require('axios');
 const fs = require("fs");
 const fetch = require("cross-fetch");
 const sleep = require("util").promisify(setTimeout);
@@ -20,7 +19,7 @@ const result = dotenv.config();
 if (result.error) {
 }
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 1,
+  CHECKEVERY: 360,
 };
 
 const token = process.env.BOT_TOKEN  // testing
