@@ -1297,14 +1297,13 @@ bcbot.onText(/^\/price/, async function(message, match) {
   const volume = new BigNumber(info.quoteVolume).toFixed(2)
 
   let reply_markup = {"inline_keyboard": [[{"text": `BUY ${sym}` , "url": `https://bitcointry.com/en/exchange/${symRaw}`}]]}
-
   let msg = 
     `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
-    `*${sym} Price:* $${new BigNumber(lastPrice).toLocaleString()}\n` +
+    `*${sym} Price:* $${new BigNumber(lastPrice).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
     "\n" +
-    `*24hr Volume:* $${new BigNumber(volume).toLocaleString()}\n` +
-    `*24hr Low:* $${new BigNumber(low).toLocaleString()}\n` +
-    `*24hr High:* $${new BigNumber(high).toLocaleString()}\n` +
+    `*24hr Volume:* $${new BigNumber(volume).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
+    `*24hr Low:* $${new BigNumber(low).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
+    `*24hr High:* $${new BigNumber(high).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
     `*24hr Change:* ${change}%\n` +
     getAdLink()
   
@@ -1343,11 +1342,11 @@ bot.onText(/^\/bcprice/, async function(message, match) {
   let reply_markup = {"inline_keyboard": [[{"text": `BUY ${sym}` , "url": `https://bitcointry.com/en/exchange/${symRaw}`}]]}
   let msg =
     `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
-    `*${sym} Price:* $${new BigNumber(lastPrice).toLocaleString()}\n` +
+    `*${sym} Price:* $${new BigNumber(lastPrice).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
     "\n" +
-    `*24hr Volume:* $${new BigNumber(volume).toLocaleString()}\n` +
-    `*24hr Low:* $${new BigNumber(low).toLocaleString()}\n` +
-    `*24hr High:* $${new BigNumber(high).toLocaleString()}\n` +
+    `*24hr Volume:* $${new BigNumber(volume).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
+    `*24hr Low:* $${new BigNumber(low).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
+    `*24hr High:* $${new BigNumber(high).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
     `*24hr Change:* ${change}%\n` +
     getAdLink() +
    "\n" + getLink(1)
@@ -1507,7 +1506,7 @@ bot.onText(/^\/price/, async function(message, match) {
               `*${sym} / ${bsym}*\n` +
               `*${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].LONGNAME} LP*\n` +
               `*Price:* $${price}\n` +
-              `*MCap:* $${new BigNumber(mc).toLocaleString()}\n` +
+              `*MCap:* $${new BigNumber(mc).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
               `*${exchange[cIndex].CHAIN.NAME} Price:* $${cicPrice}\n` +
               getAdLink() + "\n" +
               link
@@ -1655,9 +1654,9 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `*${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].LONGNAME} LP*\n` +
         dots +
         `\n*Spent:* $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-bdec).toFixed(4)} ${configs[index].BSYM})\n` +
-        `*Received:* ${new BigNumber(bought).toLocaleString()} ${configs[index].SYM}\n` +
+        `*Received:* ${new BigNumber(bought).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})} ${configs[index].SYM}\n` +
         `*${configs[index].SYM} Price:* $${FRTcValue}\n` +
-        `*${configs[index].SYM} MC:* $${new BigNumber(mc).toLocaleString()}\n` +
+        `*${configs[index].SYM} MC:* $${new BigNumber(mc).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
         `*${exchange[cIndex].CHAIN.NAME}:* $${cicPrice}\n` +
         `[ TX  ](${exchange[cIndex].CHAIN.EXP}tx/${txhash})` +
         ` | ` + 
