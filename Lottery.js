@@ -11,8 +11,13 @@ const keeper = require("./abis/keeper.json")
 const lotteryabi = require("./abis/lottery.json")
 const tokenabi = require("./abis/token.json")
 
-const cid = -1001435750887
-const thread = 106637
+const result = dotenv.config();
+if (result.error) {
+  // throw result.error;
+}
+
+const cid = "-1001435750887"
+const thread = "106637"
 const token = process.env.BOT_TOKEN  // testing
 const bot = new telegramBot(token)
 
@@ -39,12 +44,6 @@ const sendNotificationToChannel = async (message) => {
   bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread}).catch(() => {
     console.log(`Error Sending Lottery Info to ${cid}, ${thread}`)
   });
-}
-
-// not sure what this does, but IT IS REQUIRED to do stuff.
-const result = dotenv.config();
-if (result.error) {
-  // throw result.error;
 }
 
 const getKeeperContract = (index) => {
