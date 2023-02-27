@@ -776,14 +776,14 @@ bot.onText(/^\/allowprice/, async function(message, match) {
 
 const sendNotificationToChannel = async (message, cid, thread) => {
   bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread}).catch(() => {
-    console.log(`Error Sending to Channel ${cid}, ${thread}`)
+    console.log(`Error Sending BB to Channel ${cid}, ${thread}`)
   });
 }
 
 const sendNotificationToChannelPrice = async (message, cid, thread) => {
   if(checkIfAllowed(cid, thread)) {
     bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread}).catch(() => {
-      console.log(`Error Sending to Channel ${cid}, ${thread}`)
+      console.log(`Error Sending Price to Channel ${cid}, ${thread}`)
     });
   }  
 }
