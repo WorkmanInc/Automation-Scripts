@@ -11,8 +11,6 @@ const lotteryabi = require("./abis/lottery.json")
 const tokenabi = require("./abis/token.json")
 
 
-// const token = "6131657839:AAHwkVz6Oy8OJL0sa3KuvERVCZZdRBgbMiY"   // PRODUCTION
-// const token = "5721237869:AAE2ChqcZnjo8e18JaL7XmsvrbbSpFh8H04"   // testing
 const channel = "-1001435750887"
 const thread = "106637"
 const token = process.env.BOT_TOKEN  // testing
@@ -48,13 +46,6 @@ const result = dotenv.config();
 if (result.error) {
   // throw result.error;
 }
-/*
-const w = new Web3(CIC_RPC);
-
-w.eth.defaultAccount = w.eth.accounts.privateKeyToAccount(
-  PRIVATE_KEY
-).address;
-*/
 
 const getKeeperContract = (index) => {
   const RPC = GLOBAL_CONFIG.CHAIN[index].RPC
@@ -134,7 +125,7 @@ const runKeeper = async (index, lottery) => {
       return
     }
     
-    await sleep(4000);
+    await sleep(6000);
     
     const { step } = await keeperContract.lotteries(lottery)
     if(new BigNumber(step.toString()).eq(3)){
@@ -169,21 +160,14 @@ const runKeeper = async (index, lottery) => {
   }
 }
 
-const goIdle = async () => {
-  await sleep(GLOBAL_CONFIG.CHECKEVERY)
-  start()
-}
-
-
 const start = async () => {
   for(let c=0; c<GLOBAL_CONFIG.CHAIN.length; c++){
     const { l, u } = await checkIfReady(c)
     if(u) {
       console.log(`${GLOBAL_CONFIG.CHAIN[c].NAME} is Ready!`)
       runKeeper(c, l.toString())
-      // await sleep(5000)
     }
-    // goIdle()
+   
   }
 }
 

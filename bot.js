@@ -20,7 +20,7 @@ const result = dotenv.config();
 if (result.error) {
 }
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 30,
+  CHECKEVERY: 360,
 };
 
 const token = process.env.BOT_TOKEN  // testing
@@ -1721,4 +1721,4 @@ const init = async () => {
 
 
 init()
-setInterval(() => { start() }, GLOBAL_CONFIG.LOG_TIME*1000);
+setInterval(() => { start() }, GLOBAL_CONFIG.CHECKEVERY*1000);
