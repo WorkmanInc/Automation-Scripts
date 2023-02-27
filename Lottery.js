@@ -41,33 +41,6 @@ const sendNotificationToChannel = async (message) => {
   });
 }
 
-bot.onText(/^\/testing/, function(message, match) {
-  bot.getChatMember(message.chat.id, message.from.id).then(async function(data) {
-
-    if((data.status == "creator") || (data.status == "administrator")) {
-      const test = "TESTING"
-      const lotteryInfo = {
-        countWinnersPerBracket: [1,2,3,4,5,6]
-      }
-      const ticketsSold = 999
-      const finalNumber = 123456
-      const msg = `*${test}* Lottery Drawn!` + "\n" +
-      `\n*1 Matched*: ${lotteryInfo.countWinnersPerBracket[0].toString()} Winners` +
-      `\n*2 Matched*: ${lotteryInfo.countWinnersPerBracket[1].toString()} Winners` +
-      `\n*3 Matched*: ${lotteryInfo.countWinnersPerBracket[2].toString()} Winners` + 
-      `\n*4 Matched*: ${lotteryInfo.countWinnersPerBracket[3].toString()} Winners` + 
-      `\n*5 Matched*: ${lotteryInfo.countWinnersPerBracket[4].toString()} Winners` + 
-      `\n*6 Matched*: ${lotteryInfo.countWinnersPerBracket[5].toString()} Winners` + 
-      "\n" +
-      `\n*Tickets Sold*: ${ticketsSold}` +
-      `\n*Drawn Numbers*: ${finalNumber}`
-    sendNotificationToChannel(msg)
-    } else {
-      sendNotificationToChannel("not Admin")
-    }
-  })
-})
-
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
 if (result.error) {
@@ -194,8 +167,28 @@ const start = async () => {
       console.log(`${GLOBAL_CONFIG.CHAIN[c].NAME} is Ready!`)
       runKeeper(c, l.toString())
     }
-   
+   testing()
   }
+}
+
+const testing = () => {
+      const test = "TESTING"
+      const lotteryInfo = {
+        countWinnersPerBracket: [1,2,3,4,5,6]
+      }
+      const ticketsSold = 999
+      const finalNumber = 123456
+      const msg = `*${test}* Lottery Drawn!` + "\n" +
+      `\n*1 Matched*: ${lotteryInfo.countWinnersPerBracket[0].toString()} Winners` +
+      `\n*2 Matched*: ${lotteryInfo.countWinnersPerBracket[1].toString()} Winners` +
+      `\n*3 Matched*: ${lotteryInfo.countWinnersPerBracket[2].toString()} Winners` + 
+      `\n*4 Matched*: ${lotteryInfo.countWinnersPerBracket[3].toString()} Winners` + 
+      `\n*5 Matched*: ${lotteryInfo.countWinnersPerBracket[4].toString()} Winners` + 
+      `\n*6 Matched*: ${lotteryInfo.countWinnersPerBracket[5].toString()} Winners` + 
+      "\n" +
+      `\n*Tickets Sold*: ${ticketsSold}` +
+      `\n*Drawn Numbers*: ${finalNumber}`
+    sendNotificationToChannel(msg)
 }
 
 
