@@ -1719,6 +1719,6 @@ const init = async () => {
   }
 }
 
-
+console.log("Loading up!")
 init()
 setInterval(() => { start() }, GLOBAL_CONFIG.CHECKEVERY*1000);
