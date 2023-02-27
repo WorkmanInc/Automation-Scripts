@@ -14,10 +14,14 @@ const {
   exchange,
   ads
 } = require("./config/chainConfig");
+const { start } = require("./lottery.js")
 
 const result = dotenv.config();
 if (result.error) {
 }
+const GLOBAL_CONFIG = {
+  CHECKEVERY: 30,
+};
 
 const token = process.env.BOT_TOKEN  // testing
 const bot = new telegramBot(token, {polling: true})
@@ -692,15 +696,6 @@ const removeToken = async (LPAddress, ChatId, thread) => {
     sendNotificationToChannel("Error Checking Values", ChatId, thread)
  }
 }
-
-const init = async () => {
-  await loadConfig()
-  for(let i=0; i<configs.length;i++){
-    if(configs[i].CHANNEL.length >0) startListener(i)
-  }
-}
-
-
 
  const checkIfAllowed = (cid, thread) => {
     for(let b=0; b<blocked.length; b++){
@@ -1717,5 +1712,13 @@ process.on('SIGINT', async () => {
 });
 
 
-init()
+const init = async () => {
+  await loadConfig()
+  for(let i=0; i<configs.length;i++){
+    if(configs[i].CHANNEL.length >0) startListener(i)
+  }
+}
 
+
+init()
+setInterval(() => { start() }, GLOBAL_CONFIG.LOG_TIME*1000);
