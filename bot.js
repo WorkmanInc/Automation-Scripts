@@ -20,7 +20,7 @@ const result = dotenv.config();
 if (result.error) {
 }
 const GLOBAL_CONFIG = {
-  CHECKEVERY: 360,
+  CHECKEVERY: 1,
 };
 
 const token = process.env.BOT_TOKEN  // testing
