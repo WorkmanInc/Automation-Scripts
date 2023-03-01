@@ -114,7 +114,7 @@ const runKeeper = async (index, lottery) => {
   try {
     
     const keeperContract= await getKeeperContract(index)
-    
+    const { step } = await keeperContract.lotteries(lottery)
     console.log("performing upkeep")
     try {
       await keeperContract.manualUpkeep()
@@ -123,10 +123,10 @@ const runKeeper = async (index, lottery) => {
       return
     }
     
-    await sleep(6000);
+    await sleep(8000);
     
-    const { step } = await keeperContract.lotteries(lottery)
-    if(new BigNumber(step.toString()).eq(3)){
+    
+    if(new BigNumber(step.toString()).eq(2)){
       // get Token Name 
       const lotteryContract = await getLotteryContract(index, lottery.toString())
       const token = await lotteryContract.cakeToken()
