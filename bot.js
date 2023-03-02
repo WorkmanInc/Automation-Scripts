@@ -13,7 +13,7 @@ const {
   exchange,
   ads
 } = require("./config/chainConfig");
-const { start } = require("./Lottery.js")
+const { start, bot } = require("./Lottery.js")
 
 const result = dotenv.config();
 if (result.error) {
@@ -22,8 +22,8 @@ const GLOBAL_CONFIG = {
   CHECKEVERY: 360,
 };
 
-const token = process.env.BOT_TOKEN  // testing
-const bot = new telegramBot(token, {polling: true})
+// const token = process.env.BOT_TOKEN  // testing
+// const bot = new telegramBot(token, {polling: true})
 
 const bcToken = process.env.BC_TOKEN // testing
 const bcbot = new telegramBot(bcToken, {polling: true})
@@ -775,7 +775,7 @@ bot.onText(/^\/allowprice/, async function(message, match) {
 
 const sendNotificationToChannel = async (message, cid, thread) => {
   bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread}).catch(() => {
-    console.log(`Error Sending BB to Channel ${cid}, ${thread}`)
+    console.log(`Error Sending Msg to Channel ${cid}, ${thread}`)
   });
 }
 
