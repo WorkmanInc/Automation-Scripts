@@ -659,17 +659,7 @@ const removeToken = async (LPAddress, ChatId, thread) => {
           if(configs[i].CHANNEL[c].CHATID === ChatId) {
             for(let t =0; t <configs[i].CHANNEL[c].THREAD.length; t++){
               if(configs[i].CHANNEL[c].THREAD[t] === thread){
-                /*
-                if(configs[i].CHANNEL[c].THREAD.length === 1 && configs[i].CHANNEL.length === 1 ){
-                  await stopListener(LPAddress, i)
-                  await stopListener(configs[configs.length-1].LPADDRESS, configs.length-1)
-                  configs[i] = configs[configs.length-1]
-                  configs.pop()
-                  if(i !== configs.length) await startListener(i)
-                  sendNotificationToChannel("Removed Token", ChatId, thread)
-                  didntExist = false
-                  saveNewConfig(); return
-                } else*/ if(configs[i].CHANNEL[c].THREAD.length === 1){
+                if(configs[i].CHANNEL[c].THREAD.length === 1){
                   configs[i].CHANNEL[c] = configs[i].CHANNEL[configs[i].CHANNEL.length-1]
                   configs[i].CHANNEL.pop()
                   sendNotificationToChannel("Removed From Channel", ChatId, thread)
@@ -1560,6 +1550,16 @@ const loadConfig = async () => {
   } catch (err) {
     console.error(err);
   }
+
+  for(let i=configs.length-1; i>=0; i--) {
+    if(configs[i].CHANNEL.length === 0) {
+      configs[i] = configs[configs.length-1]
+      configs.pop()
+    }
+  }
+  saveNewConfig()
+
+
 };
 
 const calculate = async (cicP, Ain, Aout, index) => {
@@ -1584,17 +1584,6 @@ const sym = (cicSpent, cIndex, channel) => {
   return dots
 }
 
-const stopListener = async (lp, index) => {
-  const signer = getSigner(configs[index].EXCHANGE)
-  let lpcontract = new Contract(
-    lp,
-    lpabi,
-    signer
-  );
-
-  lpcontract.off("Swap", null)
-}
-
 const startListener = async (index) => {
   const signer = getSigner(configs[index].EXCHANGE)
   const baseIs0 = configs[index].BASE0
@@ -1607,13 +1596,13 @@ const startListener = async (index) => {
   );
 
   lpcontract.on("Swap", async( sender, amount0In, amount1In, amount0Out, amount1Out, to, event) => {
+    
     let rawPrice
     try {
      const  { cicPrice } = await getBNBPrice(configs[index].EXCHANGE)
      rawPrice = cicPrice
     } catch{
-      lpcontract.off('Swap')
-      return
+      return console.log("failed to get price")
     }
 
     const txhash = event.transactionHash.toString()
@@ -1697,7 +1686,6 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
     const thread = "0"
     sendNotificationToChannel("BuyBot Died!", cid, thread)
     await sleep(1000);
-    init()
     sendNotificationToChannel("Restarted", cid, thread)
   }));
 
@@ -1716,6 +1704,7 @@ const init = async () => {
     if(configs[i].CHANNEL.length >0) startListener(i)
   }
 }
+
 
 
 
