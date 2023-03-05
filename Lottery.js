@@ -111,26 +111,20 @@ const checkIfReady = async (index) => {
     return { l, u }
 }   
 
-const runKeeper = async (index, l) => {
+const runKeeper = async (index) => {
     const keeperContract= await getKeeperContract(index)
     console.log("performing upkeep")
-    const { step, fcurrentLotteryId } = keeperContract.lotteries(l)
-    let success = false
-    try {
-      await keeperContract.manualUpkeep()
-      success = true
-    } catch {
+    await keeperContract.manualUpkeep().catch(() =>{
       console.log("Failed to perform")
-    }
-    if(success && step === 2) sendInfo(index, l, fcurrentLotteryId)
+    })  
 }
 
-const sendInfo = async (index, lottery, id) => {
+const sendInfo = async (lottery) => {
   try {
    // get Token Name 
    const lotteryContract = await getLotteryContract(index, lottery.toString())
    const token = await lotteryContract.cakeToken()
-   // const id = await lotteryContract.currentLotteryId()
+   const id = await lotteryContract.currentLotteryId()
    const lastID = (id).toString()
    const tokenContract = await getTokenContract(index, token.toString())
    // get tickets sold and winner count
@@ -158,10 +152,10 @@ const sendInfo = async (index, lottery, id) => {
 
 const start = async () => {
   for(let c=0; c<GLOBAL_CONFIG.CHAIN.length; c++){
-    const { u, l } = await checkIfReady(c)
+    const { u } = await checkIfReady(c)
     if(u) {
       console.log(`${GLOBAL_CONFIG.CHAIN[c].NAME} is Ready!`)
-      runKeeper(c, l)
+      runKeeper(c)
     }
   }
 }
