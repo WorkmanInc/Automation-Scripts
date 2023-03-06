@@ -1,0 +1,36 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "inAmount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "lpToken",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "bnbPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "checkForProfit",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "profit",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "pairCount",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]

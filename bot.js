@@ -1,6 +1,6 @@
 
 const dotenv = require("dotenv");
-const axios = require('axios');
+// const axios = require('axios');
 const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
@@ -10,6 +10,11 @@ const BigNumber = require("BigNumber.js");
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 const abi = require("./abi.json");
+const fabi = require("./factory.json");
+const cabi = require("./checker.json");
+const checkerAddress = "0x63A1875D5C951433f3de633D319b61bce0A7ecd2";
+BSC_RPC="https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6"
+const spendingAmount="3000000000000000000"
 
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
@@ -18,86 +23,107 @@ if (result.error) {
   // throw result.error;
 }
 
-
 const signer = new Wallet(
   PRIVATE_KEY,
-  new JsonRpcProvider(process.env.CIC_RPC)
+  new JsonRpcProvider(BSC_RPC)
 );
 
-
-let contract = new Contract(
-  process.env.LP_ADDRESS,
-  abi,
+let checker = new Contract(
+  checkerAddress,
+  cabi,
   signer
 );
 
 
-// Global Config  MAX for BSC is apparantly 33 / Second. --- 10,000 per 5 min.
-const GLOBAL_CONFIG = {
-  MINBUY: 0,
-  TOKEN0: "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA", //CIC
-  TOKEN1: "0x9a37bF232466a55B99428479dF22c049cD43c20E", //FRTc
-  CHATID: "-1001435750887",
-  PERDOT: 5 // $ value per DOT
-};      
+const factories = [
+        "0x04D6b20f805e2bd537DDe84482983AabF59536FF", // donk
+        "0x0841BD0B734E4F5853f0dD8d7Ea041c241fb0Da6", // ape
+        "0xe759Dd4B9f99392Be64f1050a6A8018f73B53a13", // autoshark
+        "0x858E3312ed3A876947EA49d572A7C42DE08af7EE", // biswap
+        "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73", // pancake
+        "0x86407bEa2078ea5f5EB5A52B2caA963bC1F889Da", // baby
+        "0x632F04bd6c9516246c2df373032ABb14159537cd", // corgi
+       
+];
 
+    
 
+/*
 const sendNotification = async (message) => {
   var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${GLOBAL_CONFIG.CHATID}&text=${message}`
   axios.get(url);
 }
+*/
 
 const getBNBPrice = async () => {
-  const apiUrl = "https://backend.newscan.cicscan.com/coin_price";
+  const apiUrl = "https://min-api.cryptocompare.com/data/price?fsym=BNB&tsyms=USD"
   try {
     const res = await fetch(apiUrl);
     if (res.status >= 400) {
       throw new Error("Bad response from server");
     }
     const price = await res.json();
-    return parseFloat(price.price);
+    return parseFloat(price.USD);
     
   } catch (err) {
     console.error("Unable to connect to Binance API", err);
   }
 };
 
-const calculate = async (cicP, Ain, Aout) => {
- 
-  const bought = await new BigNumber(Aout.toString())
-  const FRTcValue = await  new BigNumber(Ain.toString()).dividedBy(Aout.toString()).multipliedBy(cicP).toFixed(5)
- 
-  return { bought, FRTcValue }
-}
 
-const sym = (cicSpent) => {
-  const howMany = new BigNumber(cicSpent).toNumber()
-  let dots = "\xF0\x9F\x92\xB2"
-  if(howMany > 1){
-    for(let i=1; i<howMany; i++){
-      dots = dots + "\xF0\x9F\x92\xB2"
-    }
-  }
-  return dots
-}
+
+
 
 console.log("Loaded Up!")
 
-contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
-  const cicPrice = await getBNBPrice()
-  const {bought, FRTcValue} = await calculate(cicPrice, amount0In, amount1Out)
-  const spent = new BigNumber(amount0In.toString()).shiftedBy(-18).multipliedBy(cicPrice).toFixed(2)
-  const dots = sym(new BigNumber(spent).dividedBy(GLOBAL_CONFIG.PERDOT).toFixed(0))
-  if( bought.gt(0) ) {
-    var message = 
-    "FRTc - Purchased!\n" +
-    dots +
-    `\nSpent: $${spent} - (${new BigNumber(amount0In.toString()).shiftedBy(-18).toFixed(2)} CIC)\n` +
-    `Received ${bought.shiftedBy(-18).toFixed(2)} FRTc\n` +
-    `FRTc Price: $${FRTcValue}\n` +
-    `CIC: $${cicPrice}\n`
-    
-    sendNotification(message);
-  }
+const init = async () => {
+  for(let i=0; i<factories.length-1; i++){
+    let factory = new Contract(
+      factories[i],
+      fabi,
+      signer
+    );
+    const lpsCount = await factory.allPairsLength()
 
-});
+    for(let l=lpsCount-1; l>=0; l--){
+      const newPair = await factory.allPairs(l)
+      const bnbPriceRaw = await getBNBPrice();
+      const bnbPrice = bnbPriceRaw.toFixed(0)
+      const initCheck = await checker.checkForProfit(spendingAmount, newPair, bnbPrice).catch((err) => {
+        console.log(err)
+      });
+      if(new BigNumber(initCheck.pairCount.toString()).gt(0)) {
+        startListener(newPair)
+        console.log(newPair.toString())
+      }
+      if(new BigNumber(initCheck.profit.toString()).gt(0)) console.log(initCheck)
+    }
+    console.log("Loaded entire Factory")
+  }
+}
+
+const startListener = async(pair) => {
+
+    let contract = new Contract(
+      pair,
+      abi,
+      signer
+    );
+
+    contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
+      try {
+        const bnbPriceRaw = getBNBPrice();
+        const bnbPrice = bnbPriceRaw.toFixed(0)
+        const profit = await checker.checkForProfit(spendingAmount, pair, bnbPrice).catch((err) => {
+          console.log(err)
+        });
+      
+        if(new BigNumber(profit.toString()).gt(0)) console.log(profit.toString());
+      } catch {
+        console.log("Failed check")
+      }
+    });
+
+}
+
+init()
