@@ -117,7 +117,7 @@ const startListener = async(pair) => {
         const profit = await checker.checkForProfit(spendingAmount, pair, bnbPrice).catch((err) => {
           console.log(err)
         });
-      
+        console.log("check")
         if(new BigNumber(profit.toString()).gt(0)) console.log(profit.toString());
       } catch {
         console.log("Failed check")
