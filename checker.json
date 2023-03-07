@@ -32,5 +32,29 @@
 		],
 		"stateMutability": "view",
 		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "lpToken",
+				"type": "address"
+			}
+		],
+		"name": "getPairs",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "pairs",
+				"type": "address[]"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_length",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
 	}
 ]

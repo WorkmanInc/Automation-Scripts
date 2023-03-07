@@ -1,20 +1,24 @@
 
 const dotenv = require("dotenv");
 // const axios = require('axios');
+const fs = require("fs");
 const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
 const BigNumber = require("BigNumber.js");
 
+let lpList = []
+let last = []
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 const abi = require("./abi.json");
 const fabi = require("./factory.json");
 const cabi = require("./checker.json");
-const checkerAddress = "0x63A1875D5C951433f3de633D319b61bce0A7ecd2";
+const checkerAddress = "0xFFf555Df6b57185D8150a849B960cC4892ae9491";
 BSC_RPC="https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6"
-const spendingAmount="3000000000000000000"
+TEST_RPC="https://bsc-dataseed1.defibit.io"
+const dollarRisk=100
 
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
@@ -25,7 +29,7 @@ if (result.error) {
 
 const signer = new Wallet(
   PRIVATE_KEY,
-  new JsonRpcProvider(BSC_RPC)
+  new JsonRpcProvider(TEST_RPC)
 );
 
 let checker = new Contract(
@@ -34,6 +38,13 @@ let checker = new Contract(
   signer
 );
 
+const bases = [
+  "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", //bnb
+  "0x524bC91Dc82d6b90EF29F76A3ECAaBAffFD490Bc", // usdt -- 6 decimals
+  "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56", // busd
+  "0xB04906e95AB5D797aDA81508115611fee694c2b3", // usdc
+  "0xE68b79e51bf826534Ff37AA9CeE71a3842ee9c70" // czusd
+];
 
 const factories = [
         "0x04D6b20f805e2bd537DDe84482983AabF59536FF", // donk
@@ -42,8 +53,7 @@ const factories = [
         "0x858E3312ed3A876947EA49d572A7C42DE08af7EE", // biswap
         "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73", // pancake
         "0x86407bEa2078ea5f5EB5A52B2caA963bC1F889Da", // baby
-        "0x632F04bd6c9516246c2df373032ABb14159537cd", // corgi
-       
+        "0x632F04bd6c9516246c2df373032ABb14159537cd", // corgi 
 ];
 
     
@@ -72,34 +82,90 @@ const getBNBPrice = async () => {
 
 
 
+const init = async() => {
+  await loadConfig()
+  for(let i=0; i<lpList.length; i++){
+    startListener(lpList[i])
+  }
+  findNew()
+}
 
 
-console.log("Loaded Up!")
 
-const init = async () => {
-  for(let i=0; i<factories.length-1; i++){
+const findNew = async () => {
+  console.log("Loaded Up!")
+
+  for(let i=last[0]; i<factories.length; i++){
     let factory = new Contract(
       factories[i],
       fabi,
       signer
     );
     const lpsCount = await factory.allPairsLength()
-
-    for(let l=lpsCount-1; l>=0; l--){
+    const start = last[1] === null ? lpsCount -1 : last[1]
+    for(let l=start; l>=0; l--){
+      last = [i,l]
+      let path2 = `./last.json`
+      fs.writeFileSync(path2, JSON.stringify(last, null, 2))
+      
       const newPair = await factory.allPairs(l)
-      const bnbPriceRaw = await getBNBPrice();
-      const bnbPrice = bnbPriceRaw.toFixed(0)
-      const initCheck = await checker.checkForProfit(spendingAmount, newPair, bnbPrice).catch((err) => {
+      
+
+      const { pairs } = await checker.getPairs(newPair.toString())
+
+  for(let l=0; l<pairs.length; l++){
+      const checkPair = pairs[l].toString()
+      const {spendAmount, bnbPrice} = await getbetAmount(checkPair)
+      const initCheck = await checker.checkForProfit(spendAmount, checkPair, bnbPrice).catch((err) => {
         console.log(err)
       });
-      if(new BigNumber(initCheck.pairCount.toString()).gt(0)) {
-        startListener(newPair)
-        console.log(newPair.toString())
+      
+      if(new BigNumber(initCheck.pairCount.toString()).gt(0) && spendAmount > 0) {
+        let alreadyAdded = false
+        for(let j=0; j<lpList.length; j++){
+          if(lpList[j] === checkPair.toString()) alreadyAdded = true
+        }
+        if(!alreadyAdded){
+          lpList.push(checkPair.toString())
+          console.log(checkPair.toString())
+          saveNewConfig()
+          startListener(checkPair.toString())
+        }
       }
       if(new BigNumber(initCheck.profit.toString()).gt(0)) console.log(initCheck)
     }
-    console.log("Loaded entire Factory")
   }
+    console.log("Loaded entire Factory")
+    last[1] = null
+  }
+  let path2 = `./last.json`
+  fs.writeFileSync(path2, JSON.stringify(last, null, 2))
+}
+
+const getbetAmount = async(pair) => {
+  let contract = new Contract(
+    pair,
+    abi,
+    signer
+  );
+  const t0Raw = await contract.token0()
+  const t1Raw = await contract.token1()
+  const t0 = t0Raw.toString()
+  const t1 = t1Raw.toString()
+  let spendAmount = 0
+  
+  const bnbPriceRaw = await getBNBPrice();
+  const bnbPrice = bnbPriceRaw.toFixed(0)
+  for(let f=0; f<bases.length; f++) {
+    if(bases[f] === t0 && f === 0) spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPriceRaw).shiftedBy(18).toFixed(0)
+    if(bases[f] === t0 && f === 1) spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0)
+    if(bases[f] === t0) spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0)
+
+    if(bases[f] === t1 && f === 0) spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPriceRaw).shiftedBy(18).toFixed(0)
+    if(bases[f] === t1 && f === 1) spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0)
+    if(bases[f] === t1) spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0)      
+  }
+  return { spendAmount, bnbPrice }
 }
 
 const startListener = async(pair) => {
@@ -112,18 +178,65 @@ const startListener = async(pair) => {
 
     contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
       try {
-        const bnbPriceRaw = getBNBPrice();
-        const bnbPrice = bnbPriceRaw.toFixed(0)
-        const profit = await checker.checkForProfit(spendingAmount, pair, bnbPrice).catch((err) => {
-          console.log(err)
-        });
-        console.log("check")
-        if(new BigNumber(profit.toString()).gt(0)) console.log(profit.toString());
+        const pairs = checker.getPairs(pair)
+        for(let i=0; i<pairs.length; i++){
+          const checkPair = pairs[i].toString()
+          const { spendAmount, bnbPrice } = getbetAmount(checkPair)
+          const profit = await checker.checkForProfit(spendAmount, checkPair, bnbPrice).catch((err) => {
+            console.log(err)
+          });
+          console.log("check")
+          if(new BigNumber(profit.toString()).gt(0)) console.log(profit.toString());
+        }
       } catch {
         console.log("Failed check")
       }
     });
-
 }
+
+const saveNewConfig = async () => {
+  let path = `./list.json`
+  fs.writeFileSync(path, JSON.stringify(lpList, null, 2))
+  
+};
+
+const loadConfig = async () => {
+  let path = `./list.json`
+  try {
+    if (fs.existsSync(path)) {
+      let history, historyParsed;
+      try {
+        history = fs.readFileSync(path);
+        historyParsed = JSON.parse(history);
+      } catch (e) {
+        console.log("Error reading history:", e);
+        return;
+      }
+      lpList =  historyParsed
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  
+  let path2 = `./last.json`
+  try {
+    if (fs.existsSync(path2)) {
+      let history, historyParsed;
+      try {
+        history = fs.readFileSync(path2);
+        historyParsed = JSON.parse(history);
+      } catch (e) {
+        console.log("Error reading history:", e);
+        return;
+      }
+      if(historyParsed[0] === undefined || historyParsed[1] === undefined) historyParsed = [0,null]
+      last =  historyParsed
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  
+};
+
 
 init()
