@@ -21,7 +21,7 @@ const checkerAddress = "0xF4EB1f41968d1164e17592d948B4648F557D2D5D";
 BSC_RPC="https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6"
 TEST_RPC="https://bsc-dataseed1.defibit.io"
 TEST2_RPC="https://bsc.nodereal.io"
-const dollarRisk=100
+const dollarRisk=1000
 const swapAt=200000
 
 
