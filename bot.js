@@ -211,6 +211,7 @@ const startListener2 = async(pair) => {
             const spendAmount = await spendCheck(token0)
             if(factories[f] !== factory1 && token1.toString() !== bases[b]){
               const outAmounts = await checker.getAmountsOut(factory1.toString(), factories[f], spendAmount, path)
+              console.log(outAmounts)
               const profit = checkProfit(outAmounts, token0.toString(), bases[b])
               console.log(profit.toString())
 
