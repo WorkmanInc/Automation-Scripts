@@ -173,10 +173,10 @@ const startListener = async(pair) => {
     contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
        try {
         
-        const { pairs } = await checker.getPairs(pair)
+        const { pairs } = await checker.getPairs(pair).catch(() => console.log("failed getPairs"))
         for(let i=0; i<pairs.length; i++){
           const checkPair = pairs[i].toString()
-          const spendAmount = await getbetAmount(checkPair)
+          const spendAmount = await getbetAmount(checkPair).catch(() => console.log("Failedd getBetAmount"))
           const { profit, factorys, route } = await checker.checkForProfit(spendAmount, checkPair, bnbPrice).catch(() => console.log("checkProfitError",spendAmount, bnbPrice, checkPair.toString()))
           if(new BigNumber(profit.toString()).gt(0)) {
             console.log(profit.toString(), factorys, route, checkPair, spendAmount)
