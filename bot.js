@@ -97,6 +97,8 @@ const init = async() => {
 
 
 const findNew = async () => {
+  const count = 0
+  console.log("starting")
 try {
   for(let i=last[0]; i<factories.length; i++){
     let factory = new Contract(
@@ -130,6 +132,11 @@ try {
       
     }
     last = [i,l]
+    count++
+    if(count >= 10) {
+      console.log("halting") 
+      return
+    }
   }
 
     console.log("Loaded entire Factory")
