@@ -333,4 +333,4 @@ const loadConfig = async () => {
 getBNBPrice()
 init()
 setInterval(() => { getBNBPrice() }, 60*1000);
-setInterval(() => { if(!running) getBNBPrice() }, 1800*1000);
+setInterval(() => { if(!running) getBNBPrice() }, 300*1000);
