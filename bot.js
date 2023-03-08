@@ -264,6 +264,7 @@ const checkProfit = (outAmounts, t0, t1) => {
     else if(bases[f] == t1 && f === 1) finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-6).toFixed(0);
     else finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-18).toFixed(0);
   }
+  console.log(finalAmount.toString(), spendAmount.toString())
  return new BigNumber(finalAmount).minus(spendAmount).toFixed(2)
 }
 
