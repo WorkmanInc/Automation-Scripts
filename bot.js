@@ -99,6 +99,7 @@ const init = async() => {
 const findNew = async () => {
   let count = 0
   console.log("starting")
+  if(running) return
 try {
   for(let i=last[0]; i<factories.length; i++){
     let factory = new Contract(
@@ -134,7 +135,8 @@ try {
     last = [i,l]
     count++
     if(count >= 10) {
-      console.log("halting") 
+      console.log("halting")
+      running = false
       return
     }
   }
@@ -333,4 +335,4 @@ const loadConfig = async () => {
 getBNBPrice()
 init()
 setInterval(() => { getBNBPrice() }, 60*1000);
-setInterval(() => { if(!running) findNew() }, 60*1000);
+setInterval(() => { findNew() }, 60*1000);
