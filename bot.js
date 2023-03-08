@@ -290,9 +290,7 @@ const startListener2 = async(pair) => {
       }
       
       } catch {
-      console.log("Failed check, Waiting 5 minutes")
-      await sleep(300*1000)
-      sleep
+      console.log("Failed check")
       }
   });
 }
