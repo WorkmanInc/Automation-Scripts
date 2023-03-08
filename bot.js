@@ -216,7 +216,7 @@ const startListener2 = async(pair) => {
 
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
-                sendNotification(`Profit Found: ${profit.toString()}`)
+                // sendNotification(`Profit Found: ${profit.toString()}`)
               }
             }
           }
@@ -234,7 +234,7 @@ const startListener2 = async(pair) => {
 
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
-                sendNotification(`Profit Found: ${profit.toString()}`)
+                // sendNotification(`Profit Found: ${profit.toString()}`)
               }
             }
           }
