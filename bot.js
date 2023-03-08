@@ -17,7 +17,7 @@ const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb55
 const abi = require("./abi.json");
 const fabi = require("./factory.json");
 const cabi = require("./checker.json");
-const checkerAddress = "0xA52fFcc80C1a207b9a2aE44F92c9f9eE409a9a22";
+const checkerAddress = "0xF4EB1f41968d1164e17592d948B4648F557D2D5D";
 BSC_RPC="https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6"
 TEST_RPC="https://bsc-dataseed1.defibit.io"
 TEST2_RPC="https://bsc.nodereal.io"
@@ -44,7 +44,7 @@ let checker = new Contract(
 
 const bases = [
   "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", //bnb
-  "0x524bC91Dc82d6b90EF29F76A3ECAaBAffFD490Bc", // usdt -- 6 decimals
+  "0x55d398326f99059ff775485246999027b3197955", // usdt -- 6 decimals
   "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56", // busd
   "0xB04906e95AB5D797aDA81508115611fee694c2b3", // usdc
   "0xE68b79e51bf826534Ff37AA9CeE71a3842ee9c70" // czusd
@@ -89,7 +89,7 @@ const getBNBPrice = async () => {
 const init = async() => {
   await loadConfig()
   for(let i=0; i<lpList.length; i++){
-    startListener(lpList[i])
+    startListener2(lpList[i])
   }
   findNew()
 }
@@ -173,10 +173,10 @@ const startListener = async(pair) => {
     contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
        try {
         
-        const { pairs } = await checker.getPairs(pair).catch(() => console.log("failed getPairs"))
+        const { pairs } = await checker.getPairs(pair).catch(() => console.log("failed getPairs", pair.toString()))
         for(let i=0; i<pairs.length; i++){
           const checkPair = pairs[i].toString()
-          const spendAmount = await getbetAmount(checkPair).catch(() => console.log("Failedd getBetAmount"))
+          const spendAmount = await getbetAmount(checkPair).catch(() => console.log("Failedd getBetAmount", checkPair.toString()))
           const { profit, factorys, route } = await checker.checkForProfit(spendAmount, checkPair, bnbPrice).catch(() => console.log("checkProfitError",spendAmount, bnbPrice, checkPair.toString()))
           if(new BigNumber(profit.toString()).gt(0)) {
             console.log(profit.toString(), factorys, route, checkPair, spendAmount)
@@ -187,6 +187,96 @@ const startListener = async(pair) => {
         console.log("Failed check")
        }
     });
+}
+
+const startListener2 = async(pair) => {
+
+  let contract = new Contract(
+    pair,
+    abi,
+    signer
+  );
+  
+  contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
+     // try {
+      const factory1 = await contract.factory()
+      const token0 = await contract.token0()
+      const token1 = await contract.token1()
+
+      
+      if(isBase(token0.toString())) {
+        for(let f=0; f<factories.length; f++){
+          for(let b=0; b<bases.length; b++) {
+            const path = [token0.toString(), token1.toString(), bases[b]]
+            const spendAmount = await spendCheck(token0)
+            if(factories[f] !== factory1 && token1.toString() !== bases[b]){
+              const outAmounts = await checker.getAmountsOut(factory1.toString(), factories[f], spendAmount, path)
+              const profit = checkProfit(outAmounts, token0.toString(), bases[b])
+              console.log(profit.toString())
+
+              if(new BigNumber(profit.toString()).gt(0)) {
+                console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
+                sendNotification(`Profit Found: ${profit.toString()}`)
+              }
+            }
+          }
+        }
+      }
+      
+      if(isBase(token1.toString())) {
+        for(let f=0; f<factories.length; f++){
+          for(let b=0; b<bases.length; b++) {
+            const path = [token1.toString(), token0.toString(), bases[b]]
+            const spendAmount = await spendCheck(token0.toString())
+            if(factories[f] !== factory1 && token1.toString() !== bases[b]){
+              const outAmounts = await checker.getAmountsOut(factory1.toString(), factories[f], spendAmount, path)
+              const profit = checkProfit(outAmounts, token1.toString(), bases[b])
+              console.log(profit.toString())
+
+              if(new BigNumber(profit.toString()).gt(0)) {
+                console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
+                sendNotification(`Profit Found: ${profit.toString()}`)
+              }
+            }
+          }
+        }
+      }
+      
+     // } catch {
+     // console.log("Failed check")
+     // }
+  });
+}
+
+const isBase = (token) => {
+  for(let i=0; i<bases.length; i++) {
+    if(token === bases[i]) return true
+  }
+}
+
+const checkProfit = (outAmounts, t0, t1) => {
+  for(let f=0; f<bases.length; f++) {
+    if(bases[f] === t0 && f === 0) spendAmount =  new BigNumber(outAmounts[0]).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(0);
+    if(bases[f] === t0 && f === 1) spendAmount =  new BigNumber(outAmounts[0]).shiftedBy(-6).toFixed(0);
+    if(bases[f] === t0) spendAmount =  new BigNumber(outAmounts[0]).shiftedBy(-18).toFixed(0);
+    
+
+    if(bases[f] === t1 && f === 0) finalAmount =  new BigNumber(outAmounts[2]).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(0);
+    if(bases[f] === t1 && f === 1) finalAmount =  new BigNumber(outAmounts[2]).shiftedBy(-6).toFixed(0);
+    if(bases[f] === t1) finalAmount =  new BigNumber(outAmounts[2]).shiftedBy(-18).toFixed(0);
+  }
+  console.log(finalAmount.toString(), spendAmount.toString())
+ return new BigNumber(finalAmount).minus(spendAmount).toFixed(2)
+}
+
+const spendCheck = (t0) => {
+  for(let f=0; f<bases.length; f++) {
+    if(bases[f] === t0 && f === 0) { spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPrice).shiftedBy(18).toFixed(0); break}
+    if(bases[f] === t0 && f === 1) { spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0); break}
+    if(bases[f] === t0) { spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0); break}
+
+  }
+  return spendAmount 
 }
 
 
