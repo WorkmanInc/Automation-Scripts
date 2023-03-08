@@ -256,15 +256,16 @@ const isBase = (token) => {
 }
 
 const checkProfit = (outAmounts, t0, t1) => {
+  console.log(outAmounts[0], outAmounts[1])
   for(let f=0; f<bases.length; f++) {
-    if(bases[f] === t0 && f === 0) spendAmount =  new BigNumber(outAmounts[0]).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(0);
-    if(bases[f] === t0 && f === 1) spendAmount =  new BigNumber(outAmounts[0]).shiftedBy(-6).toFixed(0);
-    if(bases[f] === t0) spendAmount =  new BigNumber(outAmounts[0]).shiftedBy(-18).toFixed(0);
+    if(bases[f] === t0 && f === 0) spendAmount =  new BigNumber(outAmounts[0].toString()).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(0);
+    if(bases[f] === t0 && f === 1) spendAmount =  new BigNumber(outAmounts[0].toString()).shiftedBy(-6).toFixed(0);
+    if(bases[f] === t0) spendAmount =  new BigNumber(outAmounts[0].toString()).shiftedBy(-18).toFixed(0);
     
 
-    if(bases[f] === t1 && f === 0) finalAmount =  new BigNumber(outAmounts[2]).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(0);
-    if(bases[f] === t1 && f === 1) finalAmount =  new BigNumber(outAmounts[2]).shiftedBy(-6).toFixed(0);
-    if(bases[f] === t1) finalAmount =  new BigNumber(outAmounts[2]).shiftedBy(-18).toFixed(0);
+    if(bases[f] === t1 && f === 0) finalAmount =  new BigNumber(outAmounts[2].toString()).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(0);
+    if(bases[f] === t1 && f === 1) finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-6).toFixed(0);
+    if(bases[f] === t1) finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-18).toFixed(0);
   }
   console.log(finalAmount.toString(), spendAmount.toString())
  return new BigNumber(finalAmount).minus(spendAmount).toFixed(2)
