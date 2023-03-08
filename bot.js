@@ -1,6 +1,6 @@
 
 const dotenv = require("dotenv");
-// const axios = require('axios');
+const axios = require('axios');
 const fs = require("fs");
 const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
@@ -10,15 +10,19 @@ const BigNumber = require("BigNumber.js");
 
 let lpList = []
 let last = []
+let bnbPrice
 
+BOT_TOKEN="6213624319:AAHJTY7IGktO6kNcy_c-g6_7xWCi6Wfpik0"
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 const abi = require("./abi.json");
 const fabi = require("./factory.json");
 const cabi = require("./checker.json");
-const checkerAddress = "0xFFf555Df6b57185D8150a849B960cC4892ae9491";
+const checkerAddress = "0xA52fFcc80C1a207b9a2aE44F92c9f9eE409a9a22";
 BSC_RPC="https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6"
 TEST_RPC="https://bsc-dataseed1.defibit.io"
+TEST2_RPC="https://bsc.nodereal.io"
 const dollarRisk=100
+const swapAt=200000
 
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
@@ -29,7 +33,7 @@ if (result.error) {
 
 const signer = new Wallet(
   PRIVATE_KEY,
-  new JsonRpcProvider(TEST_RPC)
+  new JsonRpcProvider(BSC_RPC)
 );
 
 let checker = new Contract(
@@ -58,12 +62,12 @@ const factories = [
 
     
 
-/*
+
 const sendNotification = async (message) => {
-  var url = `https://api.telegram.org/bot${process.env.BOT_TOKEN2}/sendMessage?chat_id=${GLOBAL_CONFIG.CHATID}&text=${message}`
+  var url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=-1001794956683&text=${message}`
   axios.get(url);
 }
-*/
+
 
 const getBNBPrice = async () => {
   const apiUrl = "https://min-api.cryptocompare.com/data/price?fsym=BNB&tsyms=USD"
@@ -73,8 +77,8 @@ const getBNBPrice = async () => {
       throw new Error("Bad response from server");
     }
     const price = await res.json();
-    return parseFloat(price.USD);
-    
+    bnbPriceRaw =  parseFloat(price.USD);
+    bnbPrice = bnbPriceRaw.toFixed(0)
   } catch (err) {
     console.error("Unable to connect to Binance API", err);
   }
@@ -109,30 +113,22 @@ const findNew = async () => {
       fs.writeFileSync(path2, JSON.stringify(last, null, 2))
       
       const newPair = await factory.allPairs(l)
-      
 
       const { pairs } = await checker.getPairs(newPair.toString())
 
   for(let l=0; l<pairs.length; l++){
       const checkPair = pairs[l].toString()
-      const {spendAmount, bnbPrice} = await getbetAmount(checkPair)
-      const initCheck = await checker.checkForProfit(spendAmount, checkPair, bnbPrice).catch((err) => {
-        console.log(err)
-      });
       
-      if(new BigNumber(initCheck.pairCount.toString()).gt(0) && spendAmount > 0) {
         let alreadyAdded = false
         for(let j=0; j<lpList.length; j++){
           if(lpList[j] === checkPair.toString()) alreadyAdded = true
         }
         if(!alreadyAdded){
           lpList.push(checkPair.toString())
-          console.log(checkPair.toString())
           saveNewConfig()
           startListener(checkPair.toString())
         }
-      }
-      if(new BigNumber(initCheck.profit.toString()).gt(0)) console.log(initCheck)
+      
     }
   }
     console.log("Loaded entire Factory")
@@ -154,18 +150,16 @@ const getbetAmount = async(pair) => {
   const t1 = t1Raw.toString()
   let spendAmount = 0
   
-  const bnbPriceRaw = await getBNBPrice();
-  const bnbPrice = bnbPriceRaw.toFixed(0)
   for(let f=0; f<bases.length; f++) {
-    if(bases[f] === t0 && f === 0) spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPriceRaw).shiftedBy(18).toFixed(0)
-    if(bases[f] === t0 && f === 1) spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0)
-    if(bases[f] === t0) spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0)
+    if(bases[f] === t0 && f === 0) { spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPrice).shiftedBy(18).toFixed(0); break}
+    if(bases[f] === t0 && f === 1) { spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0); break}
+    if(bases[f] === t0) { spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0); break}
 
-    if(bases[f] === t1 && f === 0) spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPriceRaw).shiftedBy(18).toFixed(0)
-    if(bases[f] === t1 && f === 1) spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0)
-    if(bases[f] === t1) spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0)      
+    if(bases[f] === t1 && f === 0) { spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPrice).shiftedBy(18).toFixed(0); break}
+    if(bases[f] === t1 && f === 1) { spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0); break}
+    if(bases[f] === t1) { spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0); break}
   }
-  return { spendAmount, bnbPrice }
+  return spendAmount 
 }
 
 const startListener = async(pair) => {
@@ -175,24 +169,26 @@ const startListener = async(pair) => {
       abi,
       signer
     );
-
+    
     contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
-      try {
-        const pairs = checker.getPairs(pair)
+       try {
+        
+        const { pairs } = await checker.getPairs(pair)
         for(let i=0; i<pairs.length; i++){
           const checkPair = pairs[i].toString()
-          const { spendAmount, bnbPrice } = getbetAmount(checkPair)
-          const profit = await checker.checkForProfit(spendAmount, checkPair, bnbPrice).catch((err) => {
-            console.log(err)
-          });
-          console.log("check")
-          if(new BigNumber(profit.toString()).gt(0)) console.log(profit.toString());
+          const spendAmount = await getbetAmount(checkPair)
+          const { profit, factorys, route } = await checker.checkForProfit(spendAmount, checkPair, bnbPrice).catch(() => console.log("checkProfitError",spendAmount, bnbPrice, checkPair.toString()))
+          if(new BigNumber(profit.toString()).gt(0)) {
+            console.log(profit.toString(), factorys, route, checkPair, spendAmount)
+            sendNotification(`Profit Found: ${new BigNumber(profit.toString()).shiftedBy(-6).toString()}`)
+          }
         }
-      } catch {
+       } catch {
         console.log("Failed check")
-      }
+       }
     });
 }
+
 
 const saveNewConfig = async () => {
   let path = `./list.json`
@@ -238,5 +234,6 @@ const loadConfig = async () => {
   
 };
 
-
+getBNBPrice()
 init()
+setInterval(() => { getBNBPrice() }, 60*1000);

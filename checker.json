@@ -25,9 +25,14 @@
 				"type": "uint256"
 			},
 			{
-				"internalType": "uint256",
-				"name": "pairCount",
-				"type": "uint256"
+				"internalType": "address[]",
+				"name": "factorys",
+				"type": "address[]"
+			},
+			{
+				"internalType": "address[]",
+				"name": "route",
+				"type": "address[]"
 			}
 		],
 		"stateMutability": "view",
