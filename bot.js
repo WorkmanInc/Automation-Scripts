@@ -152,11 +152,9 @@ const getbetAmount = async(pair) => {
   
   for(let f=0; f<bases.length; f++) {
     if(bases[f] === t0 && f === 0) { spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPrice).shiftedBy(18).toFixed(0); break}
-    if(bases[f] === t0 && f === 1) { spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0); break}
     if(bases[f] === t0) { spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0); break}
 
     if(bases[f] === t1 && f === 0) { spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPrice).shiftedBy(18).toFixed(0); break}
-    if(bases[f] === t1 && f === 1) { spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0); break}
     if(bases[f] === t1) { spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0); break}
   }
   return spendAmount 
@@ -258,13 +256,11 @@ const checkProfit = (outAmounts, t0, t1) => {
   for(let f=0; f<bases.length; f++) {
     console.log(bases[f] === t0, bases[f] === t1)
     if(bases[f] === t0 && f === 0) spendAmount =  new BigNumber(outAmounts[0].toString()).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(6);
-    if(bases[f] === t0 && f === 1) spendAmount =  new BigNumber(outAmounts[0].toString()).shiftedBy(-6).toFixed(6);
-    if(bases[f] === t0 && f > 1) spendAmount =  new BigNumber(outAmounts[0].toString()).shiftedBy(-18).toFixed(6);
+    if(bases[f] === t0 && f > 0) spendAmount =  new BigNumber(outAmounts[0].toString()).shiftedBy(-18).toFixed(6);
     
 
     if(bases[f] === t1 && f === 0) finalAmount =  new BigNumber(outAmounts[2].toString()).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(6);
-    if(bases[f] === t1 && f === 1) finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-6).toFixed(6);
-    if(bases[f] === t1 && f > 1) finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-18).toFixed(6);
+    if(bases[f] === t1 && f > 0) finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-18).toFixed(6);
   }
   console.log(finalAmount.toString(), spendAmount.toString(), bnbPrice)
  return new BigNumber(finalAmount).minus(spendAmount).toFixed(2)
@@ -273,7 +269,6 @@ const checkProfit = (outAmounts, t0, t1) => {
 const spendCheck = (t0) => {
   for(let f=0; f<bases.length; f++) {
     if(bases[f] === t0 && f === 0) { spendAmount =  new BigNumber(dollarRisk).dividedBy(bnbPrice).shiftedBy(18).toFixed(0); break}
-    if(bases[f] === t0 && f === 1) { spendAmount = new BigNumber(dollarRisk).shiftedBy(6).toFixed(0); break}
     if(bases[f] === t0) { spendAmount = new BigNumber(dollarRisk).shiftedBy(18).toFixed(0); break}
 
   }
