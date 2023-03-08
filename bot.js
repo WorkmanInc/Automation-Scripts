@@ -84,7 +84,7 @@ const getBNBPrice = async () => {
   }
 };
 
-
+const running = true
 
 const init = async() => {
   await loadConfig()
@@ -136,10 +136,12 @@ try {
     last[1] = null
   }
 } catch {
+  running = false
   console.log("Failed to Get New Pair")
 }
   let path2 = `./last.json`
   fs.writeFileSync(path2, JSON.stringify(last, null, 2))
+  running = false
 }
 
 const getbetAmount = async(pair) => {
@@ -324,3 +326,4 @@ const loadConfig = async () => {
 getBNBPrice()
 init()
 setInterval(() => { getBNBPrice() }, 60*1000);
+setInterval(() => { if(!running) getBNBPrice() }, 1800*1000);
