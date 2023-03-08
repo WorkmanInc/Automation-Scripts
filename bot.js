@@ -6,7 +6,7 @@ const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
-const BigNumber = require("BigNumber.js");
+const BigNumber = require("bignumber.js");
 
 let lpList = []
 let last = []
