@@ -196,7 +196,7 @@ const startListener2 = async(pair) => {
   );
   
   contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
-     // try {
+      try {
       const factory1 = await contract.factory()
       const token0 = await contract.token0()
       const token1 = await contract.token1()
@@ -209,12 +209,11 @@ const startListener2 = async(pair) => {
             const spendAmount = await spendCheck(token0)
             if(factories[f] !== factory1 && token1.toString() !== bases[b]){
               const outAmounts = await checker.getAmountsOut(factory1.toString(), factories[f], spendAmount, path)
-              console.log(outAmounts)
               const profit = checkProfit(outAmounts, token0.toString(), bases[b])
 
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
-                // sendNotification(`Profit Found: ${profit.toString()}`)
+                sendNotification(`Profit Found: ${profit.toString()}`)
               }
             }
           }
@@ -232,16 +231,16 @@ const startListener2 = async(pair) => {
 
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
-                // sendNotification(`Profit Found: ${profit.toString()}`)
+                sendNotification(`Profit Found: ${profit.toString()}`)
               }
             }
           }
         }
       }
       
-     // } catch {
-     // console.log("Failed check")
-     // }
+      } catch {
+     console.log("Failed check")
+      }
   });
 }
 
@@ -254,7 +253,6 @@ const isBase = (token) => {
 const checkProfit = (outAmounts, t0, t1) => {
  
   for(let f=0; f<bases.length; f++) {
-    console.log(bases[f] === t0, bases[f] === t1)
     if(bases[f] === t0 && f === 0) spendAmount =  new BigNumber(outAmounts[0].toString()).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(6);
     if(bases[f] === t0 && f > 0) spendAmount =  new BigNumber(outAmounts[0].toString()).shiftedBy(-18).toFixed(6);
     
@@ -262,7 +260,6 @@ const checkProfit = (outAmounts, t0, t1) => {
     if(bases[f] === t1 && f === 0) finalAmount =  new BigNumber(outAmounts[2].toString()).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(6);
     if(bases[f] === t1 && f > 0) finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-18).toFixed(6);
   }
-  console.log(finalAmount.toString(), spendAmount.toString(), bnbPrice)
  return new BigNumber(finalAmount).minus(spendAmount).toFixed(2)
 }
 
