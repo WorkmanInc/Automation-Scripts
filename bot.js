@@ -228,8 +228,8 @@ const startListener2 = async(pair) => {
         for(let f=0; f<factories.length; f++){
           for(let b=0; b<bases.length; b++) {
             const path = [token1.toString(), token0.toString(), bases[b]]
-            const spendAmount = await spendCheck(token0.toString())
-            if(factories[f] !== factory1 && token1.toString() !== bases[b]){
+            const spendAmount = await spendCheck(token1.toString())
+            if(factories[f] !== factory1 && token0.toString() !== bases[b]){
               const outAmounts = await checker.getAmountsOut(factory1.toString(), factories[f], spendAmount, path)
               const profit = checkProfit(outAmounts, token1.toString(), bases[b])
               console.log(profit.toString())
