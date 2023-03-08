@@ -97,8 +97,7 @@ const init = async() => {
 
 
 const findNew = async () => {
-  console.log("Loaded Up!")
-
+try {
   for(let i=last[0]; i<factories.length; i++){
     let factory = new Contract(
       factories[i],
@@ -108,7 +107,7 @@ const findNew = async () => {
     const lpsCount = await factory.allPairsLength()
     const start = last[1] === null ? lpsCount -1 : last[1]
     for(let l=start; l>=0; l--){
-      last = [i,l]
+      
       let path2 = `./last.json`
       fs.writeFileSync(path2, JSON.stringify(last, null, 2))
       
@@ -130,10 +129,15 @@ const findNew = async () => {
         }
       
     }
+    last = [i,l]
   }
+
     console.log("Loaded entire Factory")
     last[1] = null
   }
+} catch {
+  console.log("Failed to Get New Pair")
+}
   let path2 = `./last.json`
   fs.writeFileSync(path2, JSON.stringify(last, null, 2))
 }
