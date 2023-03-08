@@ -209,7 +209,7 @@ const startListener2 = async(pair) => {
   );
   
   contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
-      try {
+      // try {
       const factory1 = await contract.factory()
       const token0 = await contract.token0()
       const token1 = await contract.token1()
@@ -251,9 +251,9 @@ const startListener2 = async(pair) => {
         }
       }
       
-      } catch {
-     console.log("Failed check")
-      }
+     // } catch {
+     // console.log("Failed check")
+     // }
   });
 }
 
