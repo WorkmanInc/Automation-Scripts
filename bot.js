@@ -254,6 +254,7 @@ const isBase = (token) => {
 }
 
 const checkProfit = (outAmounts, t0, t1) => {
+  console.log(t0,t1)
   for(let f=0; f<bases.length; f++) {
     if(bases[f] == t0 && f === 0) spendAmount =  new BigNumber(outAmounts[0].toString()).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(6);
     else if(bases[f] == t0 && f === 1) spendAmount =  new BigNumber(outAmounts[0].toString()).shiftedBy(-6).toFixed(6);
