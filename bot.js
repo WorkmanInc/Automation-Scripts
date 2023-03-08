@@ -2,6 +2,7 @@
 const dotenv = require("dotenv");
 const axios = require('axios');
 const fs = require("fs");
+const sleep = require("util").promisify(setTimeout);
 const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
@@ -210,7 +211,7 @@ const startListener2 = async(pair) => {
   );
   
   contract.on("Swap", async (sender, amount0In, amount1In, amount0Out, amount1Out, to) => {
-      // try {
+     try {
       const factory1 = await contract.factory()
       const token0 = await contract.token0()
       const token1 = await contract.token1()
@@ -251,10 +252,48 @@ const startListener2 = async(pair) => {
           }
         }
       }
+
+      if(isBase(token0.toString())) {
+        for(let f=0; f<factories.length; f++){
+          for(let b=0; b<bases.length; b++) {
+            const path = [bases[b], token1.toString(), token0.toString()]
+            const spendAmount = await spendCheck(bases[b])
+            if(factories[f] !== factory1 && token1.toString() !== bases[b]){
+              const outAmounts = await checker.getAmountsOut( factories[f], factory1.toString(), spendAmount, path)
+              const profit = checkProfit(outAmounts, bases[b], token0.toString())
+
+              if(new BigNumber(profit.toString()).gt(0)) {
+                console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
+                sendNotification(`Profit Found: ${profit.toString()}`)
+              }
+            }
+          }
+        }
+      }
       
-     // } catch {
-     // console.log("Failed check")
-     // }
+      if(isBase(token1.toString())) {
+        for(let f=0; f<factories.length; f++){
+          for(let b=0; b<bases.length; b++) {
+            const path = [bases[b], token0.toString(), token1.toString(),]
+            const spendAmount = await spendCheck(bases[b])
+            if(factories[f] !== factory1 && token0.toString() !== bases[b]){
+              const outAmounts = await checker.getAmountsOut( factories[f], factory1.toString(), spendAmount, path)
+              const profit = checkProfit(outAmounts, bases[b], token1.toString())
+
+              if(new BigNumber(profit.toString()).gt(0)) {
+                console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
+                sendNotification(`Profit Found: ${profit.toString()}`)
+              }
+            }
+          }
+        }
+      }
+      
+      } catch {
+      console.log("Failed check, Waiting 5 minutes")
+      await sleep(300*1000)
+      sleep
+      }
   });
 }
 
