@@ -84,7 +84,7 @@ const getBNBPrice = async () => {
   }
 };
 
-const running = true
+let running = true
 
 const init = async() => {
   await loadConfig()
@@ -97,7 +97,7 @@ const init = async() => {
 
 
 const findNew = async () => {
-  const count = 0
+  let count = 0
   console.log("starting")
 try {
   for(let i=last[0]; i<factories.length; i++){
