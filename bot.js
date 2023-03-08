@@ -225,7 +225,7 @@ const startListener2 = async(pair) => {
             if(factories[f] !== factory1 && token1.toString() !== bases[b]){
               const outAmounts = await checker.getAmountsOut(factory1.toString(), factories[f], spendAmount, path)
               const profit = checkProfit(outAmounts, token0.toString(), bases[b])
-
+              console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
                 sendNotification(`Profit Found: ${profit.toString()}`)
@@ -243,7 +243,7 @@ const startListener2 = async(pair) => {
             if(factories[f] !== factory1 && token0.toString() !== bases[b]){
               const outAmounts = await checker.getAmountsOut(factory1.toString(), factories[f], spendAmount, path)
               const profit = checkProfit(outAmounts, token1.toString(), bases[b])
-
+              console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
                 sendNotification(`Profit Found: ${profit.toString()}`)
@@ -261,7 +261,7 @@ const startListener2 = async(pair) => {
             if(factories[f] !== factory1 && token1.toString() !== bases[b]){
               const outAmounts = await checker.getAmountsOut( factories[f], factory1.toString(), spendAmount, path)
               const profit = checkProfit(outAmounts, bases[b], token0.toString())
-
+              console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
                 sendNotification(`Profit Found: ${profit.toString()}`)
@@ -279,7 +279,7 @@ const startListener2 = async(pair) => {
             if(factories[f] !== factory1 && token0.toString() !== bases[b]){
               const outAmounts = await checker.getAmountsOut( factories[f], factory1.toString(), spendAmount, path)
               const profit = checkProfit(outAmounts, bases[b], token1.toString())
-
+              console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
                 sendNotification(`Profit Found: ${profit.toString()}`)
