@@ -213,7 +213,6 @@ const startListener2 = async(pair) => {
               const outAmounts = await checker.getAmountsOut(factory1.toString(), factories[f], spendAmount, path)
               console.log(outAmounts)
               const profit = checkProfit(outAmounts, token0.toString(), bases[b])
-              console.log(profit.toString())
 
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
@@ -232,7 +231,6 @@ const startListener2 = async(pair) => {
             if(factories[f] !== factory1 && token0.toString() !== bases[b]){
               const outAmounts = await checker.getAmountsOut(factory1.toString(), factories[f], spendAmount, path)
               const profit = checkProfit(outAmounts, token1.toString(), bases[b])
-              console.log(profit.toString())
 
               if(new BigNumber(profit.toString()).gt(0)) {
                 console.log(profit.toString(), factory1.toString(), factories[f], spendAmount, path)
@@ -256,7 +254,6 @@ const isBase = (token) => {
 }
 
 const checkProfit = (outAmounts, t0, t1) => {
-  console.log(outAmounts[0], outAmounts[1])
   for(let f=0; f<bases.length; f++) {
     if(bases[f] === t0 && f === 0) spendAmount =  new BigNumber(outAmounts[0].toString()).multipliedBy(bnbPrice).shiftedBy(-18).toFixed(0);
     if(bases[f] === t0 && f === 1) spendAmount =  new BigNumber(outAmounts[0].toString()).shiftedBy(-6).toFixed(0);
@@ -267,7 +264,6 @@ const checkProfit = (outAmounts, t0, t1) => {
     if(bases[f] === t1 && f === 1) finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-6).toFixed(0);
     if(bases[f] === t1) finalAmount =  new BigNumber(outAmounts[2].toString()).shiftedBy(-18).toFixed(0);
   }
-  console.log(finalAmount.toString(), spendAmount.toString())
  return new BigNumber(finalAmount).minus(spendAmount).toFixed(2)
 }
 
