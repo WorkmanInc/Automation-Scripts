@@ -232,7 +232,7 @@ const loadConfig = async () => {
   
 };
 
-getBNBPrice()
+await getBNBPrice()
 init()
 setInterval(() => { getBNBPrice() }, 60*1000);
 setInterval(() => { if(!running) findNew() }, 300*1000);
