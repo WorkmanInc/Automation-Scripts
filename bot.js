@@ -226,11 +226,11 @@ const loadConfig = async () => {
 
 const init = async() => {
   await loadConfig()
-  /*
+  
   for(let i=0; i<lpList.length; i++){
     startListener(lpList[i])
   }
-  */
+  
   findNew()
 }
 
