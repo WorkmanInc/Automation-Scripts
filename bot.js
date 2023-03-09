@@ -79,16 +79,6 @@ const getBNBPrice = async () => {
 
 let running = true
 
-const init = async() => {
-  await loadConfig()
-  for(let i=0; i<lpList.length; i++){
-    startListener(lpList[i])
-  }
-  findNew()
-}
-
-
-
 const findNew = async () => {
   let count = 0
   console.log("starting")
@@ -233,6 +223,16 @@ const loadConfig = async () => {
   
 };
 
+
+const init = async() => {
+  await loadConfig()
+  /*
+  for(let i=0; i<lpList.length; i++){
+    startListener(lpList[i])
+  }
+  */
+  findNew()
+}
 
 init()
 setInterval(() => { getBNBPrice() }, 60*1000);
