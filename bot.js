@@ -176,7 +176,7 @@ const startListener = async(pair) => {
         let best = new BigNumber(0);
         let info;
         for(let i=0; i<factories.length; i++){
-          const { profit, factorys, route } = await checker.checkForProfit(dollarRisk, pair, factories[i], bnbPrice).catch(() => console.log("checkProfitError",dollarRisk, bnbPrice, pair))
+          const { profit, factorys, route } = await checker.checkForProfit(dollarRisk, pair, factories[i], bnbPrice).catch((err) => console.log(err,dollarRisk, bnbPrice, pair))
   
           if(new BigNumber(profit.toString()).gt(best)) {
             info = [profit, factorys, route];
@@ -189,8 +189,9 @@ const startListener = async(pair) => {
           }
           
         }
-       } catch {
-        console.log("Failed check")
+        console.log(info, best.toString())
+       } catch (err){
+        console.log(err)
        }
     });
 }
