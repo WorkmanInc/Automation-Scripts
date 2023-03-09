@@ -43,20 +43,12 @@ let checker = new Contract(
   signer
 );
 
-const bases = [
-  "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", //bnb
-  "0x55d398326f99059ff775485246999027b3197955", // usdt -- 6 decimals
-  "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56", // busd
-  "0xB04906e95AB5D797aDA81508115611fee694c2b3", // usdc
-  "0xE68b79e51bf826534Ff37AA9CeE71a3842ee9c70" // czusd
-];
-
 const factories = [
         "0x04D6b20f805e2bd537DDe84482983AabF59536FF", // donk
+        "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73", // pancake
         "0x0841BD0B734E4F5853f0dD8d7Ea041c241fb0Da6", // ape
         "0xe759Dd4B9f99392Be64f1050a6A8018f73B53a13", // autoshark
         "0x858E3312ed3A876947EA49d572A7C42DE08af7EE", // biswap
-        "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73", // pancake
         "0x86407bEa2078ea5f5EB5A52B2caA963bC1F889Da", // baby
         "0x632F04bd6c9516246c2df373032ABb14159537cd", // corgi 
 ];
