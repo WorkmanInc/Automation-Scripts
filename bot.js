@@ -2,7 +2,6 @@
 const dotenv = require("dotenv");
 const axios = require('axios');
 const fs = require("fs");
-const sleep = require("util").promisify(setTimeout);
 const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
@@ -20,8 +19,7 @@ const fabi = require("./factory.json");
 const cabi = require("./checker.json");
 const checkerAddress = "0xcBe551E8bA268d558bD227B41C7a0A5675EFaee2";
 BSC_RPC="https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6"
-TEST_RPC="https://bsc-dataseed1.defibit.io"
-TEST2_RPC="https://bsc.nodereal.io"
+LOGGER_RPC="https://bsc.nodereal.io"
 
 const dollarRisk="1000000000000000000000"
 
@@ -32,7 +30,12 @@ if (result.error) {
   // throw result.error;
 }
 
-const signer = new Wallet(
+const logger = new Wallet(
+  PRIVATE_KEY,
+  new JsonRpcProvider(LOGGER_RPC)
+);
+
+const watcher = new Wallet(
   PRIVATE_KEY,
   new JsonRpcProvider(BSC_RPC)
 );
@@ -40,7 +43,7 @@ const signer = new Wallet(
 let checker = new Contract(
   checkerAddress,
   cabi,
-  signer
+  logger
 );
 
 const factories = [
@@ -87,7 +90,7 @@ try {
     let factory = new Contract(
       factories[i],
       fabi,
-      signer
+      logger
     );
     const lpsCount = await factory.allPairsLength()
     const start = last[1] === null ? lpsCount -1 : last[1]
@@ -96,7 +99,7 @@ try {
       let lp = new Contract(
         newPair,
         abi,
-        signer
+        logger
       );
       const token0Raw = await lp.token0();
       const token1Raw = await lp.token1();
@@ -124,7 +127,7 @@ try {
     let path2 = `./last.json`
     fs.writeFileSync(path2, JSON.stringify(last, null, 2))
     count++
-    if(count >= 10) {
+    if(count >= 50) {
       console.log("halting")
       running = false
       return
@@ -149,7 +152,7 @@ const startListener = async(pair) => {
     let contract = new Contract(
       pair,
       abi,
-      signer
+      watcher
     );
     
     contract.on("Swap", async () => {
@@ -158,7 +161,7 @@ const startListener = async(pair) => {
         let best = new BigNumber(0);
         let info;
         for(let i=0; i<factories.length; i++){
-          const { profit, factorys, route } = await checker.checkForProfit(dollarRisk, pair, factories[i], bnbPrice).catch((err) => { console.log(err,dollarRisk, bnbPrice, pair); return })
+          const { profit, factorys, route } = await checker.checkForProfit(dollarRisk, pair, factories[i], bnbPrice)
   
           if(new BigNumber(profit.toString()).gt(best)) {
             info = [profit, factorys, route];
