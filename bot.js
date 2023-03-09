@@ -134,7 +134,7 @@ try {
     let path2 = `./last.json`
     fs.writeFileSync(path2, JSON.stringify(last, null, 2))
     count++
-    if(count >= 10) {
+    if(count >= 50) {
       console.log("halting")
       running = false
       return
@@ -181,7 +181,6 @@ const startListener = async(pair) => {
           }
           
         }
-        console.log(info, best.toString())
        } catch (err){
         console.log(err)
        }
@@ -236,4 +235,5 @@ const loadConfig = async () => {
 getBNBPrice()
 init()
 setInterval(() => { getBNBPrice() }, 60*1000);
-setInterval(() => { if(!running) findNew() }, 660*1000);
+setInterval(() => { if(!running) findNew() }, 300*1000);
+setInterval(() => { console.log("Still Running", last) }, 60*1000);
