@@ -162,17 +162,14 @@ const startListener = async(pair) => {
         let info;
         for(let i=0; i<factories.length; i++){
           const { profit, factorys, route } = await checker.checkForProfit(dollarRisk, pair, factories[i], bnbPrice)
-  
           if(new BigNumber(profit.toString()).gt(best)) {
             info = [profit, factorys, route];
             best = new BigNumber(profit.toString())
           }
-
-          if(new BigNumber(best).gt(0)) {
-            console.log(info, pair, spendAmount)
-            sendNotification(`Profit Found: ${new BigNumber(info.profit.toString()).shiftedBy(-18).toString()}, Pair: ${pair}`)
-          }
-          
+        }
+        if(best.gt(0)) {
+          console.log(info, pair, spendAmount)
+          sendNotification(`Profit Found: ${new BigNumber(info.profit.toString()).shiftedBy(-18).toString()}, Pair: ${pair}`)
         }
        } catch (err){
         console.log(err)
