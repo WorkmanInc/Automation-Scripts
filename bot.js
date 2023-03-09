@@ -134,7 +134,7 @@ try {
     let path2 = `./last.json`
     fs.writeFileSync(path2, JSON.stringify(last, null, 2))
     count++
-    if(count >= 50) {
+    if(count >= 10) {
       console.log("halting")
       running = false
       return
@@ -168,7 +168,7 @@ const startListener = async(pair) => {
         let best = new BigNumber(0);
         let info;
         for(let i=0; i<factories.length; i++){
-          const { profit, factorys, route } = await checker.checkForProfit(dollarRisk, pair, factories[i], bnbPrice).catch((err) => console.log(err,dollarRisk, bnbPrice, pair))
+          const { profit, factorys, route } = await checker.checkForProfit(dollarRisk, pair, factories[i], bnbPrice).catch((err) => { console.log(err,dollarRisk, bnbPrice, pair); return })
   
           if(new BigNumber(profit.toString()).gt(best)) {
             info = [profit, factorys, route];
