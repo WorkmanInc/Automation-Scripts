@@ -195,6 +195,7 @@ const saveNewConfig = async () => {
 };
 
 const loadConfig = async () => {
+  await getBNBPrice()
   let path = `./list.json`
   try {
     if (fs.existsSync(path)) {
@@ -232,7 +233,7 @@ const loadConfig = async () => {
   
 };
 
-await getBNBPrice()
+
 init()
 setInterval(() => { getBNBPrice() }, 60*1000);
 setInterval(() => { if(!running) findNew() }, 300*1000);
