@@ -238,3 +238,4 @@ init()
 setInterval(() => { getBNBPrice() }, 60*1000);
 setInterval(() => { if(!running) findNew() }, 60*1000);
 setInterval(() => { console.log("Still Running", last) }, 60*1000);
+setInterval(() => { sendNotification("Still Alive") }, 3600*1000);
