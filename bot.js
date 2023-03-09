@@ -239,5 +239,5 @@ const init = async() => {
 
 init()
 setInterval(() => { getBNBPrice() }, 60*1000);
-setInterval(() => { if(!running) findNew() }, 300*1000);
+setInterval(() => { if(!running) findNew() }, 60*1000);
 setInterval(() => { console.log("Still Running", last) }, 60*1000);
