@@ -106,8 +106,8 @@ try {
         const tokenToCheck = t === 0 ? token0 : token1
         const { pairs } = await checker.getPairs(tokenToCheck)
 
-        for(let l=0; l<pairs.length; l++){
-          const checkPair = pairs[l].toString()
+        for(let m=0; m<pairs.length; m++){
+          const checkPair = pairs[m].toString()
           let alreadyAdded = false
           for(let j=0; j<lpList.length; j++){
             if(lpList[j] === checkPair.toString()) { alreadyAdded = true; break }
