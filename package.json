@@ -1,7 +1,7 @@
 {
-  "name": "pcs-prediction",
+  "name": "air-dropper",
   "version": "1.0",
-  "description": "The bot that uses signals from TradingView to predict the price of BNB for Up or Down in PancakeSwap.",
+  "description": "Collect holder List and Airdrop",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",

@@ -1,28 +1,32 @@
 
 const dotenv = require("dotenv");
-const axios = require('axios');
 const fs = require("fs");
-const fetch = require("cross-fetch");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
 const BigNumber = require("bignumber.js");
 
-let lpList = []
-let last = []
-let bnbPrice
+const abi = require("./token.json");
+const aabi = require("./airdropper.json");
 
-BOT_TOKEN="6213624319:AAHJTY7IGktO6kNcy_c-g6_7xWCi6Wfpik0"
-const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
-const abi = require("./abi.json");
-const fabi = require("./factory.json");
-const cabi = require("./checker.json");
-const checkerAddress = "0xcBe551E8bA268d558bD227B41C7a0A5675EFaee2";
-BSC_RPC="https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6"
-LOGGER_RPC="https://bsc.nodereal.io"
+const GLOBALS = {
+  PRIVATE_KEY: 'c28f23b2314268d2a472adea952573c64778190bc5cb0bf24135632f8cb4580f',  // Random wallet for makingn calls
+  airDropperAddress: "0x3Fd9B1cb22ae7649041e8f1Fd16d0e4b2692C736",
+  holderTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",
+  airdropTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",
+  LOGGER_RPC: "https://xapi.cicscan.com",
+  howManyToSendTo: 200,
+  howManyToCheck: 400
+}
 
-const dollarRisk="1000000000000000000000"
+const excludedList = [
+  "0xf7C562aE3063305fE40077ad78319ccDE4724582", // Owner / dev wallet
+  "0x0000000000000000000000000000000000000000",
+  "0x000000000000000000000000000000000000dEaD"
+]
 
+let airdropList = []
+let last
 
 // not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
@@ -30,164 +34,121 @@ if (result.error) {
   // throw result.error;
 }
 
-const logger = new Wallet(
-  PRIVATE_KEY,
-  new JsonRpcProvider(LOGGER_RPC)
-);
 
 const watcher = new Wallet(
-  PRIVATE_KEY,
-  new JsonRpcProvider(BSC_RPC)
+  GLOBALS.PRIVATE_KEY,
+  new JsonRpcProvider(GLOBALS.LOGGER_RPC)
 );
 
-let checker = new Contract(
-  checkerAddress,
-  cabi,
-  logger
+let HolderContract = new Contract(
+  GLOBALS.holderTokenAddress,
+  abi,
+  watcher
 );
 
-const factories = [
-        "0x04D6b20f805e2bd537DDe84482983AabF59536FF", // donk
-        "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73", // pancake
-        "0x0841BD0B734E4F5853f0dD8d7Ea041c241fb0Da6", // ape
-        "0xe759Dd4B9f99392Be64f1050a6A8018f73B53a13", // autoshark
-        "0x858E3312ed3A876947EA49d572A7C42DE08af7EE", // biswap
-        "0x86407bEa2078ea5f5EB5A52B2caA963bC1F889Da", // baby
-        "0x632F04bd6c9516246c2df373032ABb14159537cd", // corgi 
-];
-
-    
+let AirDropper = new Contract(
+  GLOBALS.airDropperAddress,
+  aabi,
+  watcher
+);
 
 
-const sendNotification = async (message) => {
-  var url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=-1001794956683&text=${message}`
-  axios.get(url);
-}
 
+const getEvents = async () => {
+  let holderList = []
 
-const getBNBPrice = async () => {
-  const apiUrl = "https://min-api.cryptocompare.com/data/price?fsym=BNB&tsyms=USD"
-  try {
-    const res = await fetch(apiUrl);
-    if (res.status >= 400) {
-      throw new Error("Bad response from server");
-    }
-    const price = await res.json();
-    bnbPriceRaw =  parseFloat(price.USD);
-    bnbPrice = bnbPriceRaw.toFixed(0)
-  } catch (err) {
-    console.error("Unable to connect to Binance API", err);
-  }
-};
-
-let running = true
-
-const findNew = async () => {
-  let count = 0
-  console.log("starting")
-try {
-  for(let i=last[0]; i<factories.length; i++){
-    let factory = new Contract(
-      factories[i],
-      fabi,
-      logger
-    );
-    const lpsCount = await factory.allPairsLength()
-    const start = last[1] === null ? lpsCount -1 : last[1]
-    for(let l=start; l>=0; l--){
-      const newPair = await factory.allPairs(l)
-      let lp = new Contract(
-        newPair,
-        abi,
-        logger
-      );
-      const token0Raw = await lp.token0();
-      const token1Raw = await lp.token1();
-      const token0 = token0Raw.toString()
-      const token1 = token1Raw.toString()
-      for(let t=0; t<2; t++){
-        const tokenToCheck = t === 0 ? token0 : token1
-        const { pairs } = await checker.getPairs(tokenToCheck)
-
-      if(pairs.length > 1) {
-        for(let m=0; m<pairs.length; m++){
-          const checkPair = pairs[m].toString()
-          let alreadyAdded = false
-          for(let j=0; j<lpList.length; j++){
-            if(lpList[j] === checkPair.toString()) { alreadyAdded = true; break }
-          }
-          if(!alreadyAdded){
-            lpList.push(checkPair.toString())
-            saveNewConfig()
-            startListener(checkPair.toString())
-          }
-        }
-}
+  let eventFilter = HolderContract.filters.Transfer()
+  let events = await HolderContract.queryFilter(eventFilter)
+  for(let a=0; a<2; a++){  
+    for(let i=0; i<events.length; i++){
+      const holder = a === 0 ? events[i].args.to : events[i].args.from
+      let newHolder = true
+      for(let b=0; b<excludedList.length; b++){
+        if(holder === excludedList[b]) newHolder = false
       }
-
-    last = [i,l]
-    let path2 = `./last.json`
-    fs.writeFileSync(path2, JSON.stringify(last, null, 2))
-    count++
-    if(count >= 50) {
-      console.log("halting")
-      running = false
-      return
+      for(let c=0; c<holderList.length; c++){
+        if(holder === holderList[c]) newHolder = false
+      }
+      if(newHolder){
+        holderList.push(holder.toString())
+      }
     }
   }
 
-    console.log("Loaded entire Factory")
-    last[1] = null
+  console.log(holderList.length)
+
+  const runs2 = holderList.length / GLOBALS.howManyToCheck
+  let start = 0
+  let end = start + GLOBALS.howManyToCheck
+  end = end > holderList.length ? holderList.length : end
+
+  for(let m=0; m<runs2; m++ ){
+    const checkList = []
+    for(z=start; z<end; z++){
+      checkList.push(holderList[z])
+    }
+    console.log("collecting balances")
+    const data1 = await Promise.all(
+      checkList.map(async (g) => {
+          const t = HolderContract.balanceOf(g)
+          return t
+      })
+    )
+  
+    for(let d=data1.length-1; d>=0;d--){
+      if(new BigNumber(data1[d].toString()).gt(0)) {
+        airdropList.push([holderList[d], data1[d].toString()])
+      }
+    }
+
+    start = start + GLOBALS.howManyToCheck
+    end = end + GLOBALS.howManyToCheck
+    end = end > holderList.length ? holderList.length : end
   }
- } catch {
-  running = false
-  console.log("Failed to Get New Pair")
- }
-  let path2 = `./last.json`
-  fs.writeFileSync(path2, JSON.stringify(last, null, 2))
-  running = false
+  
+
+  console.log(airdropList.length)
+  saveNewConfig()
 }
 
-
-const startListener = async(pair) => {
-
-    let contract = new Contract(
-      pair,
-      abi,
-      watcher
-    );
-    
-    contract.on("Swap", async () => {
-       try {
-        
-        let best = new BigNumber(0);
-        let info;
-        for(let i=0; i<factories.length; i++){
-          const { profit, factorys, route } = await checker.checkForProfit(dollarRisk, pair, factories[i], bnbPrice)
-          if(new BigNumber(profit.toString()).gt(best)) {
-            info = [profit, factorys, route];
-            best = new BigNumber(profit.toString())
-          }
-        }
-        if(best.gt(0)) {
-          console.log(info, pair, spendAmount)
-          sendNotification(`Profit Found: ${new BigNumber(info.profit.toString()).shiftedBy(-18).toString()}, Pair: ${pair}`)
-        }
-       } catch (err){
-        console.log(err)
-       }
-    });
+const sendTokens = async() => {
+  const final = airdropList.length
+  const leftToSend = final - last
+  let start = last
+  let end = last + GLOBALS.howManyToSendTo
+  end = end > final ? final : end
+  const runs = leftToSend / GLOBALS.howManyToSendTo
+  for(let a=0; a<runs; a++){
+    let holdersToSendTo = []
+    let amountsToSend = []
+    for(let i=start; i<end; i++){
+      holdersToSendTo.push(airdropList[i][0])
+      amountsToSend.push(airdropList[i][1])
+    }
+    // await AirDropper.sendAirDrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend)
+    last = end
+    saveLastSent()
+    start = start + GLOBALS.howManyToSendTo
+    end = end + GLOBALS.howManyToSendTo
+    end = end > final ? final : end
+  }
+  last = 0
+  saveLastSent()
+  fs.renameSync(`./list.json`, `./${GLOBALS.airdropTokenAddress}-Dropped.json`)
+  console.log("Sent To All Addresses")
 }
 
 
 const saveNewConfig = async () => {
   let path = `./list.json`
-  fs.writeFileSync(path, JSON.stringify(lpList, null, 2))
-  
+  fs.writeFileSync(path, JSON.stringify(airdropList, null, 2))
+};
+const saveLastSent = async () => {
+  let path = `./last.json`
+  fs.writeFileSync(path, JSON.stringify(last, null, 2))
 };
 
 const loadConfig = async () => {
-  await getBNBPrice()
   let path = `./list.json`
   try {
     if (fs.existsSync(path)) {
@@ -199,12 +160,14 @@ const loadConfig = async () => {
         console.log("Error reading history:", e);
         return;
       }
-      lpList =  historyParsed
+      airdropList = historyParsed
     }
   } catch (err) {
     console.error(err);
   }
+}
   
+const loadLast = async () => {
   let path2 = `./last.json`
   try {
     if (fs.existsSync(path2)) {
@@ -216,8 +179,10 @@ const loadConfig = async () => {
         console.log("Error reading history:", e);
         return;
       }
-      if(historyParsed[0] === undefined || historyParsed[1] === undefined) historyParsed = [0,null]
       last =  historyParsed
+    } else {
+      last = 0
+      saveLastSent()
     }
   } catch (err) {
     console.error(err);
@@ -225,19 +190,30 @@ const loadConfig = async () => {
   
 };
 
+const getTotalToSend = async() => {
+  let total = new BigNumber(0)
+  for(let i=0; i<airdropList.length; i++){
+    total = total.plus(new BigNumber(airdropList[i][1]))
+  }
+  return total.toString()
+}
+
+const doesFileExist = () => {
+  let path = `./list.json`
+  if (fs.existsSync(path)) return true
+  return false
+}
 
 const init = async() => {
-  await loadConfig()
+  if(!doesFileExist()) await  getEvents()
+  else await loadConfig()
+
+  await loadLast()
+
+  await sendTokens()
+
+  console.log(new BigNumber(await getTotalToSend()).shiftedBy(-18).toFixed(4))
   
-  for(let i=0; i<lpList.length; i++){
-    startListener(lpList[i])
-  }
-  
-  findNew()
 }
 
 init()
-setInterval(() => { getBNBPrice() }, 60*1000);
-setInterval(() => { if(!running) findNew() }, 60*1000);
-setInterval(() => { console.log("Still Running", last) }, 60*1000);
-setInterval(() => { sendNotification("Still Alive") }, 3600*1000);
