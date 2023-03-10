@@ -109,6 +109,7 @@ try {
         const tokenToCheck = t === 0 ? token0 : token1
         const { pairs } = await checker.getPairs(tokenToCheck)
 
+      if(pairs.length > 1) {
         for(let m=0; m<pairs.length; m++){
           const checkPair = pairs[m].toString()
           let alreadyAdded = false
@@ -121,6 +122,7 @@ try {
             startListener(checkPair.toString())
           }
         }
+}
       }
 
     last = [i,l]
