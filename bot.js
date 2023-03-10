@@ -9,16 +9,19 @@ const BigNumber = require("bignumber.js");
 const abi = require("./token.json");
 const aabi = require("./airdropper.json");
 
+// CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  PRIVATE_KEY: 'c28f23b2314268d2a472adea952573c64778190bc5cb0bf24135632f8cb4580f',  // Random wallet for makingn calls
-  airDropperAddress: "0x3Fd9B1cb22ae7649041e8f1Fd16d0e4b2692C736",
-  holderTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",
-  airdropTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",
+  PRIVATE_KEY: 'c28c24b23f4268d2aa52addaa52571c64798190bc5cb0bf2513563cf8cb5580c',  // Wallet private key for sending the tokens.
+  holderTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",                 // token to get holder list from
+  airdropTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",                // token to be airdropped
+
   LOGGER_RPC: "https://xapi.cicscan.com",
   howManyToSendTo: 200,
-  howManyToCheck: 400
+  howManyToCheck: 400,
+  airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF"
 }
 
+// add any other addresses that should be removed from the airdropping.
 const excludedList = [
   "0xf7C562aE3063305fE40077ad78319ccDE4724582", // Owner / dev wallet
   "0x0000000000000000000000000000000000000000",
@@ -28,7 +31,6 @@ const excludedList = [
 let airdropList = []
 let last
 
-// not sure what this does, but IT IS REQUIRED to do stuff.
 const result = dotenv.config();
 if (result.error) {
   // throw result.error;
@@ -42,6 +44,12 @@ const watcher = new Wallet(
 
 let HolderContract = new Contract(
   GLOBALS.holderTokenAddress,
+  abi,
+  watcher
+);
+
+let dropTokenContract = new Contract(
+  GLOBALS.airdropTokenAddress,
   abi,
   watcher
 );
@@ -112,6 +120,8 @@ const getEvents = async () => {
 }
 
 const sendTokens = async() => {
+  await dropTokenContract.approve(GLOBALS.airDropperAddress ,"0xf00000000000000000000000000000000000000000")
+  console.log("approved")
   const final = airdropList.length
   const leftToSend = final - last
   let start = last
@@ -125,7 +135,10 @@ const sendTokens = async() => {
       holdersToSendTo.push(airdropList[i][0])
       amountsToSend.push(airdropList[i][1])
     }
-    // await AirDropper.sendAirDrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend)
+    
+    await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend)
+    console.log("sent Batch")
+
     last = end
     saveLastSent()
     start = start + GLOBALS.howManyToSendTo
@@ -208,11 +221,12 @@ const init = async() => {
   if(!doesFileExist()) await  getEvents()
   else await loadConfig()
 
-  await loadLast()
+  console.log(new BigNumber(await getTotalToSend()).shiftedBy(-18).toFixed(4))
 
+  await loadLast()
+  
   await sendTokens()
 
-  console.log(new BigNumber(await getTotalToSend()).shiftedBy(-18).toFixed(4))
   
 }
 
