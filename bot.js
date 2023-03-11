@@ -17,7 +17,7 @@ const GLOBALS = {
   airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",                // token to be airdropped
 
   LOGGER_RPC: "https://xapi.cicscan.com",
-  howManyToSendTo: 200,
+  howManyToSendTo: 50,
   howManyToCheck: 400,
   airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF"
 }
@@ -107,7 +107,7 @@ const getEvents = async () => {
   
     for(let d=data1.length-1; d>=0;d--){
       if(new BigNumber(data1[d].toString()).gt(0)) {
-        airdropList.push([holderList[d], data1[d].toString()])
+        airdropList.push([checkList[d], data1[d].toString()])
       }
     }
 
@@ -122,8 +122,9 @@ const getEvents = async () => {
 }
 
 const sendTokens = async() => {
-  await dropTokenContract.approve(GLOBALS.airDropperAddress ,"0xf00000000000000000000000000000000000000000")
-  console.log("approved")
+  // await dropTokenContract.approve(GLOBALS.airDropperAddress ,"999999999999999999999999999999999999999")
+  // console.log("approved")
+  let totalGas = new BigNumber(0)
   const final = airdropList.length
   const leftToSend = final - last
   let start = last
@@ -139,11 +140,13 @@ const sendTokens = async() => {
     }
     
     // for actually sending
-    // await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend)
-    
+    // await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend, {gasPrice: 3})
+    // console.log("Sent Batch")
+
     // for gas estimating
-    const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend)
+    const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend, { gasPrice: 3})
     console.log("estimate:", estimation.toString())
+    totalGas = totalGas.plus(new BigNumber(estimation.toString()))
 
     last = end
     saveLastSent()
@@ -153,8 +156,9 @@ const sendTokens = async() => {
   }
   last = 0
   saveLastSent()
-  fs.renameSync(`./list.json`, `./${GLOBALS.airdropTokenAddress}-Dropped.json`)
+  // fs.renameSync(`./list.json`, `./${GLOBALS.airdropTokenAddress}-Dropped.json`)
   console.log("Sent To All Addresses")
+  console.log(new BigNumber(totalGas.toString()).shiftedBy(-9).toFixed(10))
 }
 
 
