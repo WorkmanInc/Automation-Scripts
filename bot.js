@@ -26,6 +26,7 @@ const GLOBALS = {
 const excludedList = [
   "0xf7C562aE3063305fE40077ad78319ccDE4724582", // Owner / dev wallet
   "0x1bace27Eac668840c9B347990D971260CC221Af8", // old token itself
+  "0x9725802F4Bc039267C15938fD6DfEF437B45A6aF", // LP TOKEN
   "0x0000000000000000000000000000000000000000",
   "0x000000000000000000000000000000000000dEaD"
 ]
@@ -144,7 +145,7 @@ const sendTokens = async() => {
     // console.log("Sent Batch")
 
     // for gas estimating
-    const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend, { gasPrice: 3})
+    const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend, { gasPrice: 2})
     console.log("estimate:", estimation.toString())
     totalGas = totalGas.plus(new BigNumber(estimation.toString()))
 
