@@ -11,9 +11,10 @@ const aabi = require("./airdropper.json");
 
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  PRIVATE_KEY: 'c28c24b23f4268d2aa52addaa52571c64798190bc5cb0bf2513563cf8cb5580c',  // Wallet private key for sending the tokens.
+  PRIVATE_KEY: '1ff4a78ea7460e706cdff2389c24b76d9c66dffe4d6fc60375134ccc25981a68',  // Wallet private key for sending the tokens.
+  // PRIVATE_KEY: '1ff4a78ea7460e706cdff2389c24b76d9c66dffe4d6fc60375134cac25981a64',
   holderTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",                 // token to get holder list from
-  airdropTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",                // token to be airdropped
+  airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",                // token to be airdropped
 
   LOGGER_RPC: "https://xapi.cicscan.com",
   howManyToSendTo: 200,
@@ -24,6 +25,7 @@ const GLOBALS = {
 // add any other addresses that should be removed from the airdropping.
 const excludedList = [
   "0xf7C562aE3063305fE40077ad78319ccDE4724582", // Owner / dev wallet
+  "0x1bace27Eac668840c9B347990D971260CC221Af8", // old token itself
   "0x0000000000000000000000000000000000000000",
   "0x000000000000000000000000000000000000dEaD"
 ]
@@ -136,8 +138,12 @@ const sendTokens = async() => {
       amountsToSend.push(airdropList[i][1])
     }
     
-    await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend)
-    console.log("sent Batch")
+    // for actually sending
+    // await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend)
+    
+    // for gas estimating
+    const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend)
+    console.log("estimate:", estimation.toString())
 
     last = end
     saveLastSent()
