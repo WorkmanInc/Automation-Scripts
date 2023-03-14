@@ -1,6 +1,7 @@
 
 const dotenv = require("dotenv");
 const fs = require("fs");
+// const sleep = require("util").promisify(setTimeout);
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
@@ -9,17 +10,34 @@ const BigNumber = require("bignumber.js");
 const abi = require("./token.json");
 const aabi = require("./airdropper.json");
 
+const Web3 = require("web3");
+
+
+
+
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
+  howManyToSendTo: 250,
+  howManyToCheck: 400,
+  // CIC CHAIN STUFF
   PRIVATE_KEY: '1ff4a78ea7460e706cdff2389c24b76d9c66dffe4d6fc60375134ccc25981a68',  // Wallet private key for sending the tokens.
-  // PRIVATE_KEY: '1ff4a78ea7460e706cdff2389c24b76d9c66dffe4d6fc60375134cac25981a64',  // faker
   holderTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",                 // token to get holder list from
   airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",                // token to be airdropped
+  // LOGGER_RPC: "https://xapi.cicscan.com",
+  LOGGER_RPC: "http://95.217.153.149:22000",
+  airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF",
 
-  LOGGER_RPC: "https://xapi.cicscan.com",
-  howManyToSendTo: 50,
-  howManyToCheck: 400,
-  airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF"
+  // ENTERCOIN STUFF
+  // LOGGER_RPC: "https://tapi.entercoin.net",
+  // PRIVATE_KEY: 'af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8', // farm
+  // airDropperAddress: "0xb7E6C8EDBdbFACEAe1cC162bd92d595BB29ad90A",
+  // holderTokenAddress: "0x281291c6C9E0Cd3d1fdeA76070Cbd4C892087864",
+  // airdropTokenAddress: "0xe59dD025Ac02ba5Af07f91362024F7933FE14641",
+
+  // BSC
+  // PRIVATE_KEY: 'af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8',  // farm
+  // airDropperAddress: "0x0e6130BD48fc621370A48c10A5a129c0680f1cF0",
+ // LOGGER_RPC: "https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6",
 }
 
 // add any other addresses that should be removed from the airdropping.
@@ -31,6 +49,11 @@ const excludedList = [
   "0x000000000000000000000000000000000000dEaD"
 ]
 
+const w = new Web3(GLOBALS.LOGGER_RPC);
+const senderAddress = w.eth.accounts.privateKeyToAccount(
+  GLOBALS.PRIVATE_KEY
+).address;
+
 let airdropList = []
 let last
 
@@ -39,10 +62,17 @@ if (result.error) {
   // throw result.error;
 }
 
+const provider =  new JsonRpcProvider(GLOBALS.LOGGER_RPC)
+const bscProvider = new JsonRpcProvider(GLOBALS.LOGGER_RPC)
 
 const watcher = new Wallet(
   GLOBALS.PRIVATE_KEY,
-  new JsonRpcProvider(GLOBALS.LOGGER_RPC)
+  provider
+);
+
+const bscsigner = new Wallet(
+  GLOBALS.PRIVATE_KEY,
+  bscProvider
 );
 
 let HolderContract = new Contract(
@@ -60,7 +90,7 @@ let dropTokenContract = new Contract(
 let AirDropper = new Contract(
   GLOBALS.airDropperAddress,
   aabi,
-  watcher
+  bscsigner
 );
 
 
@@ -122,9 +152,24 @@ const getEvents = async () => {
   saveNewConfig()
 }
 
+const setAllowanceTo = "999999999999999999999999999999999999999999999999"
+
 const sendTokens = async() => {
-  // await dropTokenContract.approve(GLOBALS.airDropperAddress ,"999999999999999999999999999999999999999")
-  // console.log("approved")
+  const allow = await dropTokenContract.allowance(senderAddress, GLOBALS.airDropperAddress).catch((err) => {
+    console.log( err, "failed to get allowance")
+    process.exit()
+  })
+  const allowed = new BigNumber(allow.toString()).gte(new BigNumber(setAllowanceTo))
+  if(!allowed) {
+    await dropTokenContract.approve(GLOBALS.airDropperAddress ,setAllowanceTo).catch(() => {
+      console.log("failed approval"); 
+      process.exit()
+    })
+    console.log("approved")
+  } else {
+    console.log("approval Good", allowed)
+  }
+
   let totalGas = new BigNumber(0)
   const final = airdropList.length
   const leftToSend = final - last
@@ -137,29 +182,47 @@ const sendTokens = async() => {
     let amountsToSend = []
     for(let i=start; i<end; i++){
       holdersToSendTo.push(airdropList[i][0])
-      amountsToSend.push(airdropList[i][1])
+      // amountsToSend.push(airdropList[i][1])
+      amountsToSend.push(new BigNumber(airdropList[i][1]).dividedBy(100000).toFixed(0))
     }
-    
-    // for actually sending
-    // await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend, {gasPrice: 3})
-    // console.log("Sent Batch")
 
+    
     // for gas estimating
-    const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend, { gasPrice: 2})
+    const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch(() => {
+      console.log("Failed to Estimate gas")
+      process.exit()
+    })
     console.log("estimate:", estimation.toString())
     totalGas = totalGas.plus(new BigNumber(estimation.toString()))
+    
+    /*
+    const gas = await provider.getGasPrice()
+    const gasCost =new BigNumber(gas.toString()).multipliedBy(1.01).toFixed(0)
+    const limit = new BigNumber(estimation.toString()).multipliedBy(1.25).toFixed(0)
+    */
 
-    last = end
-    saveLastSent()
-    start = start + GLOBALS.howManyToSendTo
-    end = end + GLOBALS.howManyToSendTo
-    end = end > final ? final : end
+    // to Send out!
+
+      const tx = await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch(() => {
+        console.log("Failed to use AirDropper")
+        process.exit()
+      })
+      const receipt = await tx.wait()
+      if (receipt.status) {
+        console.log('Transaction Success', receipt.status)
+      }
+    
+     last = end
+     saveLastSent()
+     start = start + GLOBALS.howManyToSendTo
+     end = end + GLOBALS.howManyToSendTo
+     end = end > final ? final : end
   }
   last = 0
   saveLastSent()
   // fs.renameSync(`./list.json`, `./${GLOBALS.airdropTokenAddress}-Dropped.json`)
   console.log("Sent To All Addresses")
-  console.log(new BigNumber(totalGas.toString()).shiftedBy(-9).toFixed(10))
+  console.log(new BigNumber(totalGas.toString()).shiftedBy(-9).toFixed(5))
 }
 
 
