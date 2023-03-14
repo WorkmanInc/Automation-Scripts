@@ -17,14 +17,14 @@ const Web3 = require("web3");
 
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  howManyToSendTo: 250,
+  howManyToSendTo: 50,
   howManyToCheck: 400,
   // CIC CHAIN STUFF
   PRIVATE_KEY: '1ff4a78ea7460e706cdff2389c24b76d9c66dffe4d6fc60375134ccc25981a68',  // Wallet private key for sending the tokens.
   holderTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",                 // token to get holder list from
   airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",                // token to be airdropped
-  // LOGGER_RPC: "https://xapi.cicscan.com",
-  LOGGER_RPC: "http://95.217.153.149:22000",
+  LOGGER_RPC: "https://xapi.cicscan.com",
+  LOGGER_RPC: "http://49.12.187.86:22000/",
   airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF",
 
   // ENTERCOIN STUFF
@@ -156,7 +156,7 @@ const setAllowanceTo = "999999999999999999999999999999999999999999999999"
 
 const sendTokens = async() => {
   const allow = await dropTokenContract.allowance(senderAddress, GLOBALS.airDropperAddress).catch((err) => {
-    console.log( err, "failed to get allowance")
+    console.log(err, "failed to get allowance")
     process.exit()
   })
   const allowed = new BigNumber(allow.toString()).gte(new BigNumber(setAllowanceTo))
@@ -188,8 +188,8 @@ const sendTokens = async() => {
 
     
     // for gas estimating
-    const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch(() => {
-      console.log("Failed to Estimate gas")
+    const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
+      console.log(err, "Failed to Estimate gas")
       process.exit()
     })
     console.log("estimate:", estimation.toString())
@@ -203,8 +203,8 @@ const sendTokens = async() => {
 
     // to Send out!
 
-      const tx = await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch(() => {
-        console.log("Failed to use AirDropper")
+      const tx = await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
+        console.log(err, "Failed to use AirDropper")
         process.exit()
       })
       const receipt = await tx.wait()
