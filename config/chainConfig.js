@@ -2,7 +2,7 @@ let chain = [
     {
       LONGNAME: "Crazy Internet Coin",
       NAME: "CIC",
-      API: "https://backend.newscan.cicscan.com/coin_price",
+      API: " https://backend.ex2.cicscan.com/coin_price",
       RPC: "https://xapi.cicscan.com/",
       EXP: "https://cicscan.com/",
       NATIVE: "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA",
