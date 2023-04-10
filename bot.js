@@ -1540,12 +1540,10 @@ const getFarmCIC = async () => {
  
  
   let cicprice
-    const pool_balance = await lpcontract.slot0();
-    const sqrtPriceX96 = pool_balance.sqrtPriceX96;
-    const bd = new BigNumber(1).shiftedBy(bDecimals.toNumber()).toNumber()
-    const td = new BigNumber(1).shiftedBy(tDecimals.toNumber()).toNumber()
-    const number_1 = new BigNumber(sqrtPriceX96 * sqrtPriceX96 * (bd)/(td)).dividedBy(new BigNumber(2) ** (new BigNumber(192)));
-    cicprice = number_1.multipliedBy(cicPrice).toFixed(14)
+    const {_reserve0, _reserve1 } = await lpcontract.getReserves()
+    const cicR = new BigNumber(baseIs0 ? _reserve0.toString() : _reserve1.toString())
+    const tR = new BigNumber(baseIs0 ? _reserve1.toString() : _reserve0.toString())
+    cicprice = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
   
   const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
 
