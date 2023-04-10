@@ -1545,7 +1545,7 @@ const getFarmCIC = async () => {
     const tR = new BigNumber(baseIs0 ? _reserve1.toString() : _reserve0.toString())
     cicprice = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
   
-  const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
+  const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(cicprice).toFixed(2)
 
   return { cicprice, mc }
 }
