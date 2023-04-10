@@ -6,7 +6,10 @@ let chain = [
       RPC: "https://xapi.cicscan.com/",
       EXP: "https://cicscan.com/",
       NATIVE: "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA",
-      BASES: ["0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA"]
+      BASES: [
+          "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA", // WCIC
+          "0xa058C1e4813cf433B0A0c7736f71bD7A73FFA513" // CUSD
+      ]
     },
     {
       LONGNAME: "Binance",
