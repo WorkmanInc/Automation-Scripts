@@ -1168,6 +1168,7 @@ bot.onText(/^\/cic/, async function(message, match) {
  sendNotificationToChannelPrice(
   `*CIC Price:* $${cicPrice}\n` +
   `*CIC MC:* $${mc}\n` +
+   "\n" +
   "*FarmSwap: CIC Price:*\n" +
   `$${price}\n` +
   getAdLink() +
@@ -1185,6 +1186,7 @@ bot.onText(/^\/CIC/, async function(message, match) {
   sendNotificationToChannelPrice(
     `*CIC Price:* $${cicPrice}\n` +
     `*CIC MC:* $${mc}\n` +
+    "\n" +
     "*FarmSwap: CIC Price:*\n" +
     `$${price}\n` +
     getAdLink() +
