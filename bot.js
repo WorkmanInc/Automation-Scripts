@@ -1147,7 +1147,7 @@ bot.onText(/^\/farmcic/, async function(message, match) {
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
-  const { cicprice, mc } = await getFarmCIC()
+  const { cicPrice, mc } = await getFarmCIC()
 
  sendNotificationToChannelPrice(
   `*CIC Price:* $${cicPrice}\n` +
@@ -1539,15 +1539,15 @@ const getFarmCIC = async () => {
   const burned = new BigNumber(bRaw.toString())
  
  
-  let cicprice
+  let cicPrice
     const {_reserve0, _reserve1 } = await lpcontract.getReserves()
     const cicR = new BigNumber(baseIs0 ? _reserve0.toString() : _reserve1.toString())
     const tR = new BigNumber(baseIs0 ? _reserve1.toString() : _reserve0.toString())
     cicprice = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
   
-  const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(cicprice).toFixed(2)
+  const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(cicPrice).toFixed(2)
 
-  return { cicprice, mc }
+  return { cicPrice, mc }
 }
 
   const getPrices = async(cid, thread, address, index, gotOne) =>{
