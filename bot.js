@@ -1504,6 +1504,7 @@ const getFarmCIC = async () => {
 
     token0 = await lpcontract.token0();
     token1 = await lpcontract.token1();
+  console.log(token0.toString(), token1.toString())
     baseIs0 = false
     baseToken = token1.toString()
    
@@ -1546,7 +1547,7 @@ const getFarmCIC = async () => {
     cicprice = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
   
   const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(cicPrice).toFixed(2)
-
+console.log(cicPrice, mc)
   return { cicPrice, mc }
 }
 
