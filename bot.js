@@ -1143,15 +1143,15 @@ const getMC = async(tokenAddress, price, cIndex) => {
   return mc
 }
 
-bot.onText(/^\/farmcic/, async function(message, match) {   
+bot.onText(/^\/fcic/, async function(message, match) {   
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getFarmCIC()
 
  sendNotificationToChannelPrice(
-   "*FarmSwap*" +
-  `*CIC Price:* $${cicPrice}\n` +
+  "*FarmSwap: CIC Price:*\n" +
+  `$${cicPrice}\n` +
   getAdLink() +
  "\n" + getLink(0)
  , cid, thread)
