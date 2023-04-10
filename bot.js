@@ -1539,15 +1539,13 @@ const getFarmCIC = async () => {
   const totalSupply = new BigNumber(tsRaw.toString())
   const burned = new BigNumber(bRaw.toString())
  
- console.log(lpcontract, dec, basePrice, token0, token1 )
   let cicPrice
     const {_reserve0, _reserve1 } = await lpcontract.getReserves()
     const cicR = new BigNumber(baseIs0 ? _reserve0.toString() : _reserve1.toString())
     const tR = new BigNumber(baseIs0 ? _reserve1.toString() : _reserve0.toString())
-    cicprice = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
+    cicPrice = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
   
   const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(cicPrice).toFixed(2)
-console.log(cicPrice, mc)
   return { cicPrice, mc }
 }
 
