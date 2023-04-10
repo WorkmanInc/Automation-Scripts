@@ -1147,11 +1147,11 @@ bot.onText(/^\/fcic/, async function(message, match) {
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getFarmCIC()
+  const { price } = await getFarmCIC()
 
  sendNotificationToChannelPrice(
   "*FarmSwap: CIC Price:*\n" +
-  `$${cicPrice}\n` +
+  `$${price}\n` +
   getAdLink() +
  "\n" + getLink(0)
  , cid, thread)
@@ -1163,10 +1163,13 @@ bot.onText(/^\/cic/, async function(message, match) {
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
   const { cicPrice, mc } = await getBNBPrice(0)
+  const { price } = await getFarmCIC()
 
  sendNotificationToChannelPrice(
   `*CIC Price:* $${cicPrice}\n` +
   `*CIC MC:* $${mc}\n` +
+  "*FarmSwap: CIC Price:*\n" +
+  `$${price}\n` +
   getAdLink() +
  "\n" + getLink(0)
  , cid, thread)
@@ -1177,10 +1180,13 @@ bot.onText(/^\/CIC/, async function(message, match) {
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
   const { cicPrice, mc } = await getBNBPrice(0)
+   const { price } = await getFarmCIC()
 
   sendNotificationToChannelPrice(
     `*CIC Price:* $${cicPrice}\n` +
     `*CIC MC:* $${mc}\n` +
+    "*FarmSwap: CIC Price:*\n" +
+    `$${price}\n` +
     getAdLink() +
    "\n" + getLink(0)
    , cid, thread)
@@ -1533,13 +1539,13 @@ const getFarmCIC = async () => {
   const baseIsNative = false
   const basePrice = 1
 
-  let cicPrice
+  let price
     const {_reserve0, _reserve1 } = await lpcontract.getReserves()
     const cicR = new BigNumber(baseIs0 ? _reserve0.toString() : _reserve1.toString())
     const tR = new BigNumber(baseIs0 ? _reserve1.toString() : _reserve0.toString())
-    cicPrice = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
+    price = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
   
-  return { cicPrice }
+  return { price }
 }
 
   const getPrices = async(cid, thread, address, index, gotOne) =>{
