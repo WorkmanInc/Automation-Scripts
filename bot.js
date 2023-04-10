@@ -1147,11 +1147,11 @@ bot.onText(/^\/farmcic/, async function(message, match) {
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
-  const { cicPrice, mc } = await getFarmCIC()
+  const { cicPrice } = await getFarmCIC()
 
  sendNotificationToChannelPrice(
+   "*FarmSwap*" +
   `*CIC Price:* $${cicPrice}\n` +
-  `*CIC MC:* $${mc}\n` +
   getAdLink() +
  "\n" + getLink(0)
  , cid, thread)
@@ -1513,7 +1513,6 @@ const getFarmCIC = async () => {
         baseToken = token0.toString()
       }
     
-
     tContract = new Contract(
       baseIs0 ? token1.toString() : token0.toString(),
       lpabi,
@@ -1534,19 +1533,13 @@ const getFarmCIC = async () => {
   const baseIsNative = false
   const basePrice = 1
 
-  const tsRaw = await tContract.totalSupply()
-  const bRaw = await tContract.balanceOf("0x000000000000000000000000000000000000dEaD")
-  const totalSupply = new BigNumber(tsRaw.toString())
-  const burned = new BigNumber(bRaw.toString())
- 
   let cicPrice
     const {_reserve0, _reserve1 } = await lpcontract.getReserves()
     const cicR = new BigNumber(baseIs0 ? _reserve0.toString() : _reserve1.toString())
     const tR = new BigNumber(baseIs0 ? _reserve1.toString() : _reserve0.toString())
     cicPrice = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
   
-  const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(cicPrice).toFixed(2)
-  return { cicPrice, mc }
+  return { cicPrice }
 }
 
   const getPrices = async(cid, thread, address, index, gotOne) =>{
