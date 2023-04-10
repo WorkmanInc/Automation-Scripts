@@ -1504,7 +1504,7 @@ const getFarmCIC = async () => {
 
     token0 = await lpcontract.token0();
     token1 = await lpcontract.token1();
-  console.log(token0.toString(), token1.toString())
+
     baseIs0 = false
     baseToken = token1.toString()
    
@@ -1539,7 +1539,7 @@ const getFarmCIC = async () => {
   const totalSupply = new BigNumber(tsRaw.toString())
   const burned = new BigNumber(bRaw.toString())
  
- 
+ console.log(lpcontract, dec, basePrice, token0, token1 )
   let cicPrice
     const {_reserve0, _reserve1 } = await lpcontract.getReserves()
     const cicR = new BigNumber(baseIs0 ? _reserve0.toString() : _reserve1.toString())
