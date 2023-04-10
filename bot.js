@@ -1143,6 +1143,20 @@ const getMC = async(tokenAddress, price, cIndex) => {
   return mc
 }
 
+bot.onText(/^\/farmcic/, async function(message, match) {   
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
+  const { cicprice, mc } = await getFarmCIC()
+
+ sendNotificationToChannelPrice(
+  `*CIC Price:* $${cicPrice}\n` +
+  `*CIC MC:* $${mc}\n` +
+  getAdLink() +
+ "\n" + getLink(0)
+ , cid, thread)
+
+})
 bot.onText(/^\/cic/, async function(message, match) {   
     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
@@ -1468,6 +1482,75 @@ bot.onText(/^\/price/, async function(message, match) {
     }
     
   })
+
+const getFarmCIC = async () => {
+  
+  const signer = getSigner(0)
+  let lpcontract = new Contract(
+    "0xc6a5057cb53a6fd0bf02c988aa9f466aa0765025",
+    lpabi,
+    signer
+  );
+
+  let token0
+  let token1
+  let baseIs0
+  let baseToken
+
+  let tDecimals
+  let bDecimals
+
+  let tContract
+
+    token0 = await lpcontract.token0();
+    token1 = await lpcontract.token1();
+    baseIs0 = false
+    baseToken = token1.toString()
+   
+      if(token0 === "0xa058C1e4813cf433B0A0c7736f71bD7A73FFA513") {
+        baseIs0 = true
+        baseToken = token0.toString()
+      }
+    
+
+    tContract = new Contract(
+      baseIs0 ? token1.toString() : token0.toString(),
+      lpabi,
+      signer
+    );
+    let bContract = new Contract(
+      baseIs0 ? token0.toString() : token1.toString(),
+      lpabi,
+      signer
+    );
+    const tdRaw = await tContract.decimals()
+    const bdRaw = await bContract.decimals()
+        
+    tDecimals = new BigNumber(tdRaw.toString())
+    bDecimals = new BigNumber(bdRaw.toString())
+    
+  const dec = new BigNumber(bDecimals - tDecimals)
+  const baseIsNative = false
+  const basePrice = 1
+
+  const tsRaw = await tContract.totalSupply()
+  const bRaw = await tContract.balanceOf("0x000000000000000000000000000000000000dEaD")
+  const totalSupply = new BigNumber(tsRaw.toString())
+  const burned = new BigNumber(bRaw.toString())
+ 
+ 
+  let cicprice
+    const pool_balance = await lpcontract.slot0();
+    const sqrtPriceX96 = pool_balance.sqrtPriceX96;
+    const bd = new BigNumber(1).shiftedBy(bDecimals.toNumber()).toNumber()
+    const td = new BigNumber(1).shiftedBy(tDecimals.toNumber()).toNumber()
+    const number_1 = new BigNumber(sqrtPriceX96 * sqrtPriceX96 * (bd)/(td)).dividedBy(new BigNumber(2) ** (new BigNumber(192)));
+    cicprice = number_1.multipliedBy(cicPrice).toFixed(14)
+  
+  const mc = totalSupply.minus(burned).shiftedBy(-tDecimals).multipliedBy(price).toFixed(2)
+
+  return { cicprice, mc }
+}
 
   const getPrices = async(cid, thread, address, index, gotOne) =>{
     let cIndex 
