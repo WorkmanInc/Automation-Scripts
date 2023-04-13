@@ -13,7 +13,7 @@ const {
   exchange,
   ads
 } = require("./config/chainConfig");
-const { start, bot } = require("./Lottery.js")
+const { bot } = require("./Lottery.js")
 
 const result = dotenv.config();
 if (result.error) {
@@ -1791,4 +1791,3 @@ const init = async () => {
 
 console.log("Loading up!")
 init()
-setInterval(() => { start() }, GLOBAL_CONFIG.CHECKEVERY*1000);
