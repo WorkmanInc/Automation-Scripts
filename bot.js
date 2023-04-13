@@ -13,17 +13,14 @@ const {
   exchange,
   ads
 } = require("./config/chainConfig");
-const { bot } = require("./Lottery.js")
+// const { bot } = require("./Lottery.js")
 
 const result = dotenv.config();
 if (result.error) {
 }
-const GLOBAL_CONFIG = {
-  CHECKEVERY: 360,
-};
 
-// const token = process.env.BOT_TOKEN  // testing
-// const bot = new telegramBot(token, {polling: true})
+const token = process.env.BOT_TOKEN  // testing
+const bot = new telegramBot(token, {polling: true})
 
 const bcToken = process.env.BC_TOKEN // testing
 const bcbot = new telegramBot(bcToken, {polling: true})
