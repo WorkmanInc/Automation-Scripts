@@ -13,7 +13,6 @@ const {
   exchange,
   ads
 } = require("./config/chainConfig");
-// const { bot } = require("./Lottery.js")
 
 const result = dotenv.config();
 if (result.error) {
@@ -21,9 +20,6 @@ if (result.error) {
 
 const token = process.env.BOT_TOKEN  // testing
 const bot = new telegramBot(token, {polling: true})
-
-const bcToken = process.env.BC_TOKEN // testing
-const bcbot = new telegramBot(bcToken, {polling: true})
 
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 
@@ -286,9 +282,6 @@ bot.onText(/^\/fgbot/, async function(message, match) {
        "*/price* <token Symbol>\n" +
        "Checks price of Token by Symbol\n" +
        "*IF ERROR USE FIRST METHOD*\n" +
-       "\n" +
-       `*/bcprice* <ticker>\n` +
-       "Bitcointry Market Info for Ticker\n" +
        "\n" +
        "*Channel Commands*\n" +
        "*/blockprice* Block Price Commands\n" +
@@ -1280,121 +1273,17 @@ bot.onText(/^\/DXT/, async function(message, match) {
    "\n" + getLink(1)
    , cid, thread)
 })
-
-bcbot.onText(/^\/price/, async function(message, match) {    
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  const pairRaw =  message.text.substring(7)
-  const pair = pairRaw.toUpperCase()
-  let sym
-  const info = await getBCInfo(pair)
-  if(info === undefined || !info.status) {
-    sendNotificationToChannel("Error, Check Spelling", cid, thread)
-    return
-  }
-  const symRaw = info.pairs
-  // find _ in pair name
-  let index
-  for(let i=0; i<symRaw.length; i++){
-    if(symRaw[i] === "_"){ index = i; break}
-  }
-  sym = symRaw.substring(0,index)
-  const lastPrice = info.lastPrice
-  const change = info.percentChange
-  const high = info.high24hr
-  const low = info.low24hr
-  const volume = new BigNumber(info.quoteVolume).toFixed(2)
-
-  let reply_markup = {"inline_keyboard": [[{"text": `BUY ${sym}` , "url": `https://bitcointry.com/en/exchange/${symRaw}`}]]}
-  let msg = 
-    `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
-    `*${sym} Price:* $${new BigNumber(lastPrice).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
-    "\n" +
-    `*24hr Volume:* $${new BigNumber(volume).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
-    `*24hr Low:* $${new BigNumber(low).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
-    `*24hr High:* $${new BigNumber(high).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
-    `*24hr Change:* ${change}%\n` +
-    getAdLink()
-  
-   bcbot.sendMessage(cid, msg, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown', reply_markup: reply_markup}).catch(() => {
-    console.log("BC - Main Bot Price - Error Sending to Channel")
-  });
-   
-})
-
-
-bot.onText(/^\/bcprice/, async function(message, match) {    
+bot.onText(/^\/BONE/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
-  const pairRaw =  message.text.substring(9)
-  const pair = pairRaw.toUpperCase()
-  let sym
-  const info = await getBCInfo(pair)
-  if(info ===  undefined || !info.status) {
-    sendNotificationToChannel("Error, Check Spelling", cid, thread)
-    return
-  }
-  const symRaw = info.pairs
-  // find _ in pair name
-  let index
-  for(let i=0; i<symRaw.length; i++){
-    if(symRaw[i] === "_"){ index = i; break}
-  }
-  sym = symRaw.substring(0,index)
-  const lastPrice = info.lastPrice
-  const change = info.percentChange
-  const high = info.high24hr
-  const low = info.low24hr
-  const volume = new BigNumber(info.quoteVolume).toFixed(2)
-
-  let reply_markup = {"inline_keyboard": [[{"text": `BUY ${sym}` , "url": `https://bitcointry.com/en/exchange/${symRaw}`}]]}
-  let msg =
-    `[Bitcointry](https://bitcointry.com/en/market) Market Info!\n` +
-    `*${sym} Price:* $${new BigNumber(lastPrice).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
-    "\n" +
-    `*24hr Volume:* $${new BigNumber(volume).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
-    `*24hr Low:* $${new BigNumber(low).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
-    `*24hr High:* $${new BigNumber(high).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
-    `*24hr Change:* ${change}%\n` +
+  const { cicPrice } = await getBNBPrice(12)
+  sendNotificationToChannelPrice(
+    `*BONE Price:* $${cicPrice}\n` +
     getAdLink() +
    "\n" + getLink(1)
-
-   bot.sendMessage(cid, msg, {disable_web_page_preview: true, message_thread_id: thread, parse_mode: 'Markdown', reply_markup: reply_markup}).catch(() => {
-    console.log("BCPRICE command - Error Sending to Channel")
-  });
-   
+   , cid, thread)
 })
-
-const getBCInfo = async (pair) => {
-  const apiUrl = `https://api.bitcointry.com/api/v1/ticker?symbol=${pair}USDT`
-  let info
-  try {
-    let res = await fetch(apiUrl);
-    if (res.status >= 400) {
-      console.log(res.status)
-      throw new Error("Bad response from server");
-    }
-    info = await res.json();
-    if(!info.status) {
-      const apiUrl2 = `https://api.bitcointry.com/api/v1/ticker?symbol=${pair}TRY`
-      res = await fetch(apiUrl2);
-      if (res.status >= 400) {
-        console.log(res.status)
-        throw new Error("Bad response from server");
-      }
-      info = await res.json()
-    }
-    
-    } catch (err) {
-    console.error("Unable to connect to Bitcointry API", err);
-   }
-  return  info
-};
-
-
-
-
 
 const getLPToken = async (cIndex, command) => {
   try {
