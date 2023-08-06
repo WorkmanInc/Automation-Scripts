@@ -544,22 +544,13 @@ bot.onText(/^\/changedot/, function(message, match) {
 
 const getSigner = (index) => {
   const rpc = exchange[index].CHAIN.RPC
-  try {
+
   const signer = new Wallet(
     PRIVATE_KEY,
     new JsonRpcProvider(rpc)
   )
   return signer
 
-  } catch {
-    console.log("test")
-    const rpc = exchange[0].CHAIN.RPC
-    const signer = new Wallet(
-      PRIVATE_KEY,
-      new JsonRpcProvider(rpc)
-    )
-    return signer
-  }
 }
 
 const getFactory = async (index) => {
