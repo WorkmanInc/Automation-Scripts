@@ -1386,7 +1386,7 @@ bot.onText(/^\/price/, async function(message, match) {
 
 
 const getLink = (index) => {
-  return  `[Marswap](https://marswap.exchange/) | [Telegram](https://https://t.me/MSWAP_LAUNCHPAD)`
+  return  `[Marswap](https://marswap.exchange/) | [Telegram](https://t.me/MSWAP_LAUNCHPAD)`
 }
 
 const saveNewConfig = async () => {
