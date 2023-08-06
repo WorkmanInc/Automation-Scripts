@@ -1492,7 +1492,7 @@ const startBurnBot = async () => {
     var message =
         `*${Burned}* SHIB Burned!!\n` +
         `*$${burnedDollars}* has been burned!!\n`
-    bot.sendMessage(cid, message, { message_thread_id: thread, disable_web_page_preview: true, parse_mode: 'Markdown' } )
+        sendNotificationToChannel(message, cid, thread)
   });
 }
 
@@ -1602,7 +1602,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
   }));
 
 process.on('SIGINT', async () => {
-  const cid = "--1001971600482"
+  const cid = "-1001971600482"
   const thread = "0"
   sendNotificationToChannel("BuyBot Turned Off", cid, thread)
   await sleep(1000);
