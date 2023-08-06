@@ -53,6 +53,7 @@ let chain = [
         "0x66e428c3f67a68878562e79A0234c1F83c208770"      // usdt
       ]
     },
+    /*
     {
       LONGNAME: "Puppy Net",
       NAME: "BONE",
@@ -64,6 +65,7 @@ let chain = [
           "0x888888888030F38cF1CdA6aD34cCCcB0f83Cd86a" // WBONE
       ]
     },
+    */
   ];
 
   
@@ -147,6 +149,7 @@ let exchange = [
       DOTS: "💶"
       
     },
+    /*
     {
       LONGNAME: "MarSwap",
       NAME: "MSWAP",
@@ -154,7 +157,7 @@ let exchange = [
       CHAIN: chain[4],
       DOTS: "💶"
     },
-    
+    */
     
   ]
 

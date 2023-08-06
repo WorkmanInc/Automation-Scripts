@@ -774,8 +774,9 @@ const sendNotificationToChannelPrice = async (message, cid, thread) => {
 
 
 const getBNBPrice = async (index) => {
-  
-  const apiUrl = exchange[index].CHAIN.API;
+  let apiUrl = ""
+  if(index === 11) apiUrl = "https://min-api.cryptocompare.com/data/price?fsym=BONE&tsyms=USD"
+  else apiUrl = exchange[index].CHAIN.API;
   let cicPrice = 0
   let mc = 0
   try {
@@ -1236,6 +1237,7 @@ bot.onText(/^\/CRO/, async function(message, match) {
    "\n" + getLink(1)
    , cid, thread)
 })
+
 bot.onText(/^\/BONE/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
@@ -1258,6 +1260,7 @@ bot.onText(/^\/bone/, async function(message, match) {
    "\n" + getLink(1)
    , cid, thread)
 })
+
 
 const getLPToken = async (cIndex, command) => {
   try {
