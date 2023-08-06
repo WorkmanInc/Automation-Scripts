@@ -151,7 +151,7 @@ let exchange = [
       LONGNAME: "MarSwap",
       NAME: "MSWAP",
       FACTORY: "0xab36952e4cbaF430A4BbaA85B92832BeF9125866",
-      CHAIN: chain[5],
+      CHAIN: chain[4],
       DOTS: "💶"
     },
     
