@@ -547,7 +547,9 @@ const getSigner = (index) => {
   const signer = new Wallet(
     PRIVATE_KEY,
     new JsonRpcProvider(rpc)
-  );
+  ).catch(() => {
+    console.log(`Error Sending Msg to Channel with ${rpc}}`)
+  })
   return signer
 }
 
