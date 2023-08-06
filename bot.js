@@ -24,6 +24,7 @@ const bot = new telegramBot(token, {polling: true})
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 
 const lpabi = require("./abis/lp.json");
+const tokenabi = require("./abi/token.json")
 const factoryABI = require("./abis/factorcy.json");
 const uniswapABI = require("./abis/uni-Factory.json");
 const uniLPABI = require("./abis/uniLP.json");
@@ -1470,6 +1471,33 @@ const sym = (cicSpent, cIndex, channel) => {
   return dots
 }
 
+
+const startBurnBot = async () => {
+  const signer = getSigner(2)
+  
+  let tokenContract = new Contract(
+    "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6",
+    tokenabi,
+    signer
+  );
+
+  tokenContract.on("transfer", async( from, to, amount, event) => {
+    
+    if(to.toString() === "0x000000000000000000000000000000000000dEaD" || to.toString() === "0x0000000000000000000000000000000000000000") {}
+
+    
+    const burned = new BigNumber(amount.toString()).shiftedBy(-18)
+    const burnedDollars = burned.multipliedBy(basePrice).toFixed(2)
+    const cid = "-1001971600482"
+    const thread = "0"
+    var message =
+        `*${Burned}* SHIB Burned!!\n` +
+        `*$${burnedDollars}* has been burned!!\n`
+    bot.sendMessage(cid, message, { message_thread_id: thread, disable_web_page_preview: true, parse_mode: 'Markdown' } )
+  });
+  console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
+}
+
 const startListener = async (index) => {
   const signer = getSigner(configs[index].EXCHANGE)
   const baseIs0 = configs[index].BASE0
@@ -1590,6 +1618,10 @@ const init = async () => {
     if(configs[i].CHANNEL.length >0) startListener(i)
   }
 }
+
+
+
+
 
 
 
