@@ -579,9 +579,9 @@ const addToken = async (LPAddress, index, ChatId, thread) => {
     lpabi,
     signer
   );
+  console.log("test")
 
   const token0 = await lpcontract.token0();
-  console.log("test")
   const token1 = await lpcontract.token1();
   let baseIs0 = false
   let newtoken = token0.toString()
