@@ -544,10 +544,14 @@ bot.onText(/^\/changedot/, function(message, match) {
 
 const getSigner = (index) => {
   const rpc = exchange[index].CHAIN.RPC
+  try {
   const signer = new Wallet(
     PRIVATE_KEY,
     new JsonRpcProvider(rpc)
   )
+  } catch {
+    console.log("test")
+  }
   return signer
 }
 
@@ -579,7 +583,6 @@ const addToken = async (LPAddress, index, ChatId, thread) => {
     lpabi,
     signer
   );
-  console.log("test")
 
   const token0 = await lpcontract.token0();
   const token1 = await lpcontract.token1();
