@@ -1251,33 +1251,22 @@ bot.onText(/^\/CRO/, async function(message, match) {
    "\n" + getLink(1)
    , cid, thread)
 })
-bot.onText(/^\/dxt/, async function(message, match) {     
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(11)
- sendNotificationToChannelPrice(
-  `*DXT Price:* $${cicPrice}\n` +
-  getAdLink() +
- "\n" + getLink(1)
- , cid, thread)
-})
-bot.onText(/^\/DXT/, async function(message, match) {    
+bot.onText(/^\/BONE/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
   const { cicPrice } = await getBNBPrice(11)
   sendNotificationToChannelPrice(
-    `*DXT Price:* $${cicPrice}\n` +
+    `*BONE Price:* $${cicPrice}\n` +
     getAdLink() +
    "\n" + getLink(1)
    , cid, thread)
 })
-bot.onText(/^\/BONE/, async function(message, match) {    
+bot.onText(/^\/bone/, async function(message, match) {    
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(12)
+  const { cicPrice } = await getBNBPrice(11)
   sendNotificationToChannelPrice(
     `*BONE Price:* $${cicPrice}\n` +
     getAdLink() +

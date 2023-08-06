@@ -54,18 +54,6 @@ let chain = [
       ]
     },
     {
-      LONGNAME: "DEXIT",
-      NAME: "DXT",
-      API: "https://min-api.cryptocompare.com/data/price?fsym=DXT&tsyms=USD",
-      RPC: "https://dxt.dexit.network",
-      EXP: "https://dxtscan.com/",
-      NATIVE: "0x414b8BAf9950C87804cf7E23BB43a58AE7e1E202",
-      BASES: [
-        "0x414b8BAf9950C87804cf7E23BB43a58AE7e1E202",   // dxt
-       "0xE3F5a90F9cb311505cd691a46596599aA1A0AD7D"    // usdt
-      ]
-    },
-    {
       LONGNAME: "Puppy Net",
       NAME: "BONE",
       API: "https://min-api.cryptocompare.com/data/price?fsym=BONE&tsyms=USD",
@@ -80,13 +68,6 @@ let chain = [
 
   
 let exchange = [
-    {
-      LONGNAME: "Farmageddon",
-      NAME: "FARM",
-      FACTORY: "0xfD35F3f178353572E4357983AD2831fAcd652cC5",
-      CHAIN: chain[0],
-      DOTS: "🚜"  // tractor
-    },
     {
         LONGNAME: "WendDex",
         NAME: "WEN",
@@ -160,13 +141,6 @@ let exchange = [
       
     },
     {
-      LONGNAME: "Dexit Network",
-      NAME: "DXT",
-      FACTORY: "0xed7e00862c73eF3a53f33d785c62d312Cc8827d2",
-      CHAIN: chain[4],
-      DOTS: "💶"
-    },
-    {
       LONGNAME: "MarSwap",
       NAME: "MSWAP",
       FACTORY: "0xab36952e4cbaF430A4BbaA85B92832BeF9125866",
@@ -179,12 +153,12 @@ let exchange = [
   const ads = 
   [
     {
-      NAME: "Apocalypse",
-      TGLINK: "https://t.me/ApocalypseP2E"
+      NAME: "MarSwap",
+      TGLINK: "https://t.me/MSWAP_LAUNCHPAD"
     },
     {
-      NAME: "Donkey King Casino",
-      TGLINK: "https://t.me/donkeykingegofficial"
+      NAME: "Crolon Mars",
+      TGLINK: "https://t.me/crolon_mars"
     }
   ]
 
