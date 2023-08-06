@@ -250,30 +250,31 @@ bot.onText(/^\/grouplist/, async function(message, match) {
   })
 })
 
-bot.onText(/^\/fgbot/, async function(message, match) {   
+bot.onText(/^\/info/, async function(message, match) {   
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
       bot.deleteMessage(cid, message.message_id);
      
       sendNotificationToChannel(
-       "*FG Bot Commands*\n" +
+       "*MarsBot Commands*\n" +
        "*/addtoken* <tokenAddress>\n"+
        "Adds Token to BuyBot List\n" +
         "\n" +
         "*/setup*: To Modify Listed Tokens\n"+
-        "\n" +
-       "*/removetoken* <tokenAddress>\n" +
-       "Removes Token from BuyBot list\n" +
-       "\n" +
-       "*/minbuy* <tokenAddress> <amount>\n" + 
-       "Set Min $ Buy for Token\n" +
-       "\n" +
-       "*/perdot* <tokenAddress > <amount>\n" + 
-       "Set $ Per Dot for Token\n" +
-       "\n" +
-       "*/changedot* <emoji>\n" + 
-       "Change the Emoji!\n" +
-       "\n" +
+        "\n" + 
+         
+       // "*/removetoken* <tokenAddress>\n" +
+       // "Removes Token from BuyBot list\n" +
+       // "\n" +
+       // "*/minbuy* <tokenAddress> <amount>\n" + 
+       // "Set Min $ Buy for Token\n" +
+       // "\n" +
+       // "*/perdot* <tokenAddress > <amount>\n" + 
+       // "Set $ Per Dot for Token\n" +
+       // "\n" +
+       // "*/changedot* <emoji>\n" + 
+       // "Change the Emoji!\n" +
+       // "\n" + */
        "*/<Coin Symbol>* Checks price of Coin\n" +
        "\n" +
        "*/price* <tokenAddress> <dex>\n" +
@@ -1462,8 +1463,7 @@ const getFarmCIC = async () => {
 
 
 const getLink = (index) => {
-  if(exchange[index].CHAIN.NAME === "CIC") return  `[Farmageddon](https://cic.farmageddon.farm/) | [Telegram](https://t.me/FARMAGEDDON_TOKEN)`
-  return  `[Farmageddon](https://farmageddon.farm/) | [Telegram](https://t.me/FARMAGEDDON_TOKEN)`
+  return  `[Marswap](https://marswap.exchange/) | [Telegram](https://https://t.me/MSWAP_LAUNCHPAD)`
 }
 
 const saveNewConfig = async () => {

@@ -161,10 +161,6 @@ let exchange = [
   const ads = 
   [
     {
-      NAME: "MarSwap",
-      TGLINK: "https://t.me/MSWAP_LAUNCHPAD"
-    },
-    {
       NAME: "Crolon Mars",
       TGLINK: "https://t.me/crolon_mars"
     }
