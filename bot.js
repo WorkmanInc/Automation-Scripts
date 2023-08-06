@@ -24,7 +24,7 @@ const bot = new telegramBot(token, {polling: true})
 const PRIVATE_KEY='f28c24b23f4268d2aaa2addaa52573c64798190bc5cb0bf25135632f8cb5580c'  // Random wallet for makingn calls
 
 const lpabi = require("./abis/lp.json");
-const tokenabi = require("./abi/token.json")
+const tokenabi = require("./abis/token.json")
 const factoryABI = require("./abis/factorcy.json");
 const uniswapABI = require("./abis/uni-Factory.json");
 const uniLPABI = require("./abis/uniLP.json");
@@ -1485,7 +1485,6 @@ const startBurnBot = async () => {
     
     if(to.toString() === "0x000000000000000000000000000000000000dEaD" || to.toString() === "0x0000000000000000000000000000000000000000") {}
 
-    
     const burned = new BigNumber(amount.toString()).shiftedBy(-18)
     const burnedDollars = burned.multipliedBy(basePrice).toFixed(2)
     const cid = "-1001971600482"
@@ -1617,6 +1616,7 @@ const init = async () => {
   for(let i=0; i<configs.length;i++){
     if(configs[i].CHANNEL.length >0) startListener(i)
   }
+  startBurnBot()
 }
 
 
@@ -1628,3 +1628,4 @@ const init = async () => {
 
 console.log("Loading up!")
 init()
+
