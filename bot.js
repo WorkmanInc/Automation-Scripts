@@ -554,9 +554,7 @@ const getSigner = (index) => {
 const getFactory = async (index) => {
   const factory = exchange[index].FACTORY
   const abi = exchange[index].NAME === "UNIV3" ? uniswapABI : factoryABI
-  const signer = await getSigner(index).catch(() => {
-    console.log(`Error Sending Msg to Channel with ${rpc}}`)
-  })
+  const signer = await getSigner(index)
   const factoryContract = new Contract(
     factory,
     abi,
@@ -569,12 +567,12 @@ let configs = []
 let blocked = []
 
 const addToken = async (LPAddress, index, ChatId, thread) => {
-const signer = await getSigner(index).catch(() => {
-  console.log(`Error Sending Msg to Channel with ${rpc}}`)
-})
-const minBuy = 0
-const perDot = 5
-try {
+  try {
+
+  const signer = await getSigner(index)
+  const minBuy = 0
+  const perDot = 5
+
 
   let lpcontract = new Contract(
     LPAddress,
