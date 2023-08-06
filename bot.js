@@ -1134,34 +1134,17 @@ const getMC = async(tokenAddress, price, cIndex) => {
   return mc
 }
 
-bot.onText(/^\/fcic/, async function(message, match) {   
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { price } = await getFarmCIC()
-
- sendNotificationToChannelPrice(
-  "*FarmSwap: CIC Price:*\n" +
-  `$${price}\n` +
-  getAdLink() +
- "\n" + getLink(0)
- , cid, thread)
-
-})
 bot.onText(/^\/cic/, async function(message, match) {   
     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
   const { cicPrice, mc } = await getBNBPrice(0)
-  const { price } = await getFarmCIC()
 
  sendNotificationToChannelPrice(
   `*CIC Price:* $${cicPrice}\n` +
   `*CIC MC:* $${mc}\n` +
    "\n" +
-  "*FarmSwap: CIC Price:*\n" +
-  `$${price}\n` +
   getAdLink() +
  "\n" + getLink(0)
  , cid, thread)
@@ -1172,14 +1155,11 @@ bot.onText(/^\/CIC/, async function(message, match) {
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
   const { cicPrice, mc } = await getBNBPrice(0)
-   const { price } = await getFarmCIC()
 
   sendNotificationToChannelPrice(
     `*CIC Price:* $${cicPrice}\n` +
     `*CIC MC:* $${mc}\n` +
     "\n" +
-    "*FarmSwap: CIC Price:*\n" +
-    `$${price}\n` +
     getAdLink() +
    "\n" + getLink(0)
    , cid, thread)
@@ -1367,64 +1347,7 @@ bot.onText(/^\/price/, async function(message, match) {
     
   })
 
-const getFarmCIC = async () => {
-  
-  const signer = getSigner(0)
-  let lpcontract = new Contract(
-    "0xc6a5057cb53a6fd0bf02c988aa9f466aa0765025",
-    lpabi,
-    signer
-  );
 
-  let token0
-  let token1
-  let baseIs0
-  let baseToken
-
-  let tDecimals
-  let bDecimals
-
-  let tContract
-
-    token0 = await lpcontract.token0();
-    token1 = await lpcontract.token1();
-
-    baseIs0 = false
-    baseToken = token1.toString()
-   
-      if(token0 === "0xa058C1e4813cf433B0A0c7736f71bD7A73FFA513") {
-        baseIs0 = true
-        baseToken = token0.toString()
-      }
-    
-    tContract = new Contract(
-      baseIs0 ? token1.toString() : token0.toString(),
-      lpabi,
-      signer
-    );
-    let bContract = new Contract(
-      baseIs0 ? token0.toString() : token1.toString(),
-      lpabi,
-      signer
-    );
-    const tdRaw = await tContract.decimals()
-    const bdRaw = await bContract.decimals()
-        
-    tDecimals = new BigNumber(tdRaw.toString())
-    bDecimals = new BigNumber(bdRaw.toString())
-    
-  const dec = new BigNumber(bDecimals - tDecimals)
-  const baseIsNative = false
-  const basePrice = 1
-
-  let price
-    const {_reserve0, _reserve1 } = await lpcontract.getReserves()
-    const cicR = new BigNumber(baseIs0 ? _reserve0.toString() : _reserve1.toString())
-    const tR = new BigNumber(baseIs0 ? _reserve1.toString() : _reserve0.toString())
-    price = cicR.multipliedBy(basePrice).dividedBy(tR).shiftedBy(dec.multipliedBy(-1).toNumber()).toFixed(14)
-  
-  return { price }
-}
 
   const getPrices = async(cid, thread, address, index, gotOne) =>{
     let cIndex 
