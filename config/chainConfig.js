@@ -126,6 +126,13 @@ let exchange = [
       DOTS:  "💶"
     },
     {
+      LONGNAME: "ShibaSwap",
+      NAME: "SHIB",
+      FACTORY: "0x115934131916C8b277DD010Ee02de363c09d037c",
+      CHAIN: chain[2],
+      DOTS: "💶"
+    },
+    {
       LONGNAME: "CRODEX",
       NAME: "CRO",
       FACTORY: "0xe9c29cB475C0ADe80bE0319B74AD112F1e80058F",
@@ -147,6 +154,7 @@ let exchange = [
       CHAIN: chain[5],
       DOTS: "💶"
     },
+    
     
   ]
 
