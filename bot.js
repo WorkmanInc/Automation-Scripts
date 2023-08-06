@@ -1476,14 +1476,16 @@ const startBurnBot = async () => {
   const signer = getSigner(2)
   
   let tokenContract = new Contract(
-    "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6",
+    "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
     tokenabi,
     signer
   );
-
+// 0x4bE2b2C45b432BA362f198c08094017b61E3BDc6
   tokenContract.on("Transfer", async( from, to, amount, event) => {
     
-    if(to.toString() === "0x000000000000000000000000000000000000dEaD" || to.toString() === "0x0000000000000000000000000000000000000000") {}
+    if(to.toString() === "0x000000000000000000000000000000000000dEaD" || to.toString() === "0x0000000000000000000000000000000000000000" &&
+      from.toString() === "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6"
+      ) {
 
     const burned = new BigNumber(amount.toString()).shiftedBy(-18)
     const burnedDollars = burned.multipliedBy(basePrice).toFixed(2)
@@ -1493,6 +1495,7 @@ const startBurnBot = async () => {
         `*${Burned}* SHIB Burned!!\n` +
         `*$${burnedDollars}* has been burned!!\n`
         sendNotificationToChannel(message, cid, thread)
+    }
   });
 }
 
