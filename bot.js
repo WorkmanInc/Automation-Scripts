@@ -1481,7 +1481,7 @@ const startBurnBot = async () => {
     signer
   );
 
-  tokenContract.on("transfer", async( from, to, amount, event) => {
+  tokenContract.on("Transfer", async( from, to, amount, event) => {
     
     if(to.toString() === "0x000000000000000000000000000000000000dEaD" || to.toString() === "0x0000000000000000000000000000000000000000") {}
 
