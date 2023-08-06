@@ -547,16 +547,16 @@ const getSigner = (index) => {
   const signer = new Wallet(
     PRIVATE_KEY,
     new JsonRpcProvider(rpc)
-  ).catch(() => {
-    console.log(`Error Sending Msg to Channel with ${rpc}}`)
-  })
+  )
   return signer
 }
 
 const getFactory = async (index) => {
   const factory = exchange[index].FACTORY
   const abi = exchange[index].NAME === "UNIV3" ? uniswapABI : factoryABI
-  const signer = await getSigner(index)
+  const signer = await getSigner(index).catch(() => {
+    console.log(`Error Sending Msg to Channel with ${rpc}}`)
+  })
   const factoryContract = new Contract(
     factory,
     abi,
@@ -569,7 +569,9 @@ let configs = []
 let blocked = []
 
 const addToken = async (LPAddress, index, ChatId, thread) => {
-const signer = await getSigner(index)
+const signer = await getSigner(index).catch(() => {
+  console.log(`Error Sending Msg to Channel with ${rpc}}`)
+})
 const minBuy = 0
 const perDot = 5
 try {
