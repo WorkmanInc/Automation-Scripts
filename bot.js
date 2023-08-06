@@ -1494,7 +1494,6 @@ const startBurnBot = async () => {
         `*$${burnedDollars}* has been burned!!\n`
     bot.sendMessage(cid, message, { message_thread_id: thread, disable_web_page_preview: true, parse_mode: 'Markdown' } )
   });
-  console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
 }
 
 const startListener = async (index) => {
