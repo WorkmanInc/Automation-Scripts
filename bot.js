@@ -251,7 +251,7 @@ bot.onText(/^\/grouplist/, async function(message, match) {
   })
 })
 
-bot.onText(/^\/info/, async function(message, match) {   
+bot.onText(/^\commands/, async function(message, match) {   
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
       bot.deleteMessage(cid, message.message_id);
@@ -295,7 +295,7 @@ bot.onText(/^\/info/, async function(message, match) {
        "*/dexlist* <chain>: Dex list by Chain\n" +
        "*/chainlist*: List of Chains available\n" +
        getAdLink() +
-       "\n" + getLink(1)
+       "\n" + getLink()
        
         , cid, thread)
 })
@@ -315,7 +315,7 @@ bot.onText(/^\/chainlist/, async function(message, match) {
     "* Chain List *\n" +
     chainsList + "\n" +
     getAdLink() +
-   "\n" + getLink(1)
+   "\n" + getLink()
     
    , cid, thread)
   } else {
@@ -353,7 +353,7 @@ bot.onText(/^\/dexlist/, async function(message, match) {
           `* Dex List ${exchange[cIndex].LONGNAME} *\n` +
           dexList + "\n" +
           getAdLink() +
-         "\n" + getLink(1)
+         "\n" + getLink()
          
           , cid, thread)
       } else {
@@ -364,7 +364,7 @@ bot.onText(/^\/dexlist/, async function(message, match) {
           `* Dex List *\n` +
           dexList + "\n" +
           getAdLink() +
-         "\n" + getLink(1)
+         "\n" + getLink()
           , cid, thread)
       }
     }
@@ -394,7 +394,7 @@ bot.onText(/^\/tokenlist/, async function(message, match) {
         "* Tokens List *\n" +
         tokenlist + "\n" +
         getAdLink() +
-       "\n" + getLink(1) 
+       "\n" + getLink() 
         , cid, thread)
     } else {
       sendNotificationToChannel("not Admin", cid, thread)
@@ -799,6 +799,27 @@ const getBNBPrice = async (index) => {
   return { cicPrice, mc }
 };
 
+const getSymPrice = async (symbol) => {
+  
+  const apiUrl = "https://min-api.cryptocompare.com/data/price?fsym="+symbol+"&tsyms=USD"
+  
+  let symPrice = 0
+  try {
+    const res = await fetch(apiUrl);
+    if (res.status >= 400) {
+      console.log(res.status)
+      throw new Error("Bad response from server");
+    }
+    const price = await res.json();
+    
+    symPrice = parseFloat(price.USD)
+     
+   } catch (err) {
+    console.error("Unable to connect to API", err);
+   }
+  return symPrice
+};
+
 
 const chooseDex = (cid, thread,tokenAddress, isPrice) => {
   let selectedChain
@@ -1140,6 +1161,20 @@ const getMC = async(tokenAddress, price, cIndex) => {
   return mc
 }
 
+bot.onText(/^\?/, async function(message, match) {
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
+  const symbol =  message.text.substring(1)
+  const symPrice = getSymPrice(symbol)
+  sendNotificationToChannelPrice(
+    `*${symbol} Price:* $${symPrice}\n` +
+     "\n" +
+    getAdLink() +
+   "\n" + getLink()
+   , cid, thread)
+})
+
 bot.onText(/^\/cic/, async function(message, match) {   
     
   const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
@@ -1152,7 +1187,7 @@ bot.onText(/^\/cic/, async function(message, match) {
   `*CIC MC:* $${mc}\n` +
    "\n" +
   getAdLink() +
- "\n" + getLink(0)
+ "\n" + getLink()
  , cid, thread)
 
 })
@@ -1167,7 +1202,7 @@ bot.onText(/^\/CIC/, async function(message, match) {
     `*CIC MC:* $${mc}\n` +
     "\n" +
     getAdLink() +
-   "\n" + getLink(0)
+   "\n" + getLink()
    , cid, thread)
 
 })
@@ -1180,7 +1215,7 @@ bot.onText(/^\/bnb/, async function(message, match) {
  sendNotificationToChannelPrice(
   `*BNB Price:* $${cicPrice}\n` +
   getAdLink() +
- "\n" + getLink(1)
+ "\n" + getLink()
  , cid, thread)
 })
 bot.onText(/^\/BNB/, async function(message, match) {    
@@ -1191,7 +1226,7 @@ bot.onText(/^\/BNB/, async function(message, match) {
   sendNotificationToChannelPrice(
     `*BNB Price:* $${cicPrice}\n` +
     getAdLink() +
-   "\n" + getLink(1)
+   "\n" + getLink()
     , cid, thread)
 })
 bot.onText(/^\/eth/, async function(message, match) {     
@@ -1202,7 +1237,7 @@ bot.onText(/^\/eth/, async function(message, match) {
  sendNotificationToChannelPrice(
   `*ETHERUEM Price:* $${cicPrice}\n` +
   getAdLink() +
- "\n" + getLink(1)
+ "\n" + getLink()
  , cid, thread)
 })
 bot.onText(/^\/ETH/, async function(message, match) {    
@@ -1213,7 +1248,7 @@ bot.onText(/^\/ETH/, async function(message, match) {
   sendNotificationToChannelPrice(
     `*ETHEREUM Price:* $${cicPrice}\n` +
     getAdLink() +
-   "\n" + getLink(1)
+   "\n" + getLink()
    , cid, thread)
 })
 bot.onText(/^\/cro/, async function(message, match) {     
@@ -1224,7 +1259,7 @@ bot.onText(/^\/cro/, async function(message, match) {
  sendNotificationToChannelPrice(
   `*CRO Price:* $${cicPrice}\n` +
   getAdLink() +
- "\n" + getLink(1)
+ "\n" + getLink()
  , cid, thread)
 })
 bot.onText(/^\/CRO/, async function(message, match) {    
@@ -1235,7 +1270,7 @@ bot.onText(/^\/CRO/, async function(message, match) {
   sendNotificationToChannelPrice(
     `*CRO Price:* $${cicPrice}\n` +
     getAdLink() +
-   "\n" + getLink(1)
+   "\n" + getLink()
    , cid, thread)
 })
 
@@ -1247,7 +1282,7 @@ bot.onText(/^\/BONE/, async function(message, match) {
   sendNotificationToChannelPrice(
     `*BONE Price:* $${cicPrice}\n` +
     getAdLink() +
-   "\n" + getLink(1)
+   "\n" + getLink()
    , cid, thread)
 })
 bot.onText(/^\/bone/, async function(message, match) {    
@@ -1258,7 +1293,7 @@ bot.onText(/^\/bone/, async function(message, match) {
   sendNotificationToChannelPrice(
     `*BONE Price:* $${cicPrice}\n` +
     getAdLink() +
-   "\n" + getLink(1)
+   "\n" + getLink()
    , cid, thread)
 })
 
@@ -1377,7 +1412,7 @@ bot.onText(/^\/price/, async function(message, match) {
 
             const { cicPrice } = await getBNBPrice(cIndex)
             const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
-            const link = getLink(cIndex)
+            const link = getLink()
 
             sendNotificationToChannelPrice(
               `*${name}: ${sym}*\n` +
@@ -1393,7 +1428,7 @@ bot.onText(/^\/price/, async function(message, match) {
 }
 
 
-const getLink = (index) => {
+const getLink = () => {
   return  `[Marswap](https://marswap.exchange/) | [Telegram](https://t.me/MSWAP_LAUNCHPAD)`
 }
 
@@ -1486,9 +1521,9 @@ const startBurnBot = async () => {
     if(to.toString() === "0x000000000000000000000000000000000000dEaD" || to.toString() === "0x0000000000000000000000000000000000000000" &&
       from.toString() === "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6"
       ) {
-
+        const { cicPrice } = await getBNBPrice(7)
     const burned = new BigNumber(amount.toString()).shiftedBy(-18)
-    const burnedDollars = burned.multipliedBy(basePrice).toFixed(2)
+    const burnedDollars = burned.multipliedBy(cicPrice).toFixed(2)
     const cid = "-1001971600482"
     const thread = "0"
     var message =
@@ -1544,7 +1579,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
   let toDelete = []
   
   const cIndex = configs[index].EXCHANGE
-  const link = getLink(cIndex)
+  const link = getLink()
 
   for(let i=0; i<c.length; i++){
     for(let t=0; t<c[i].THREAD.length; t++){
