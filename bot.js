@@ -1259,7 +1259,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             }
             const coinSym = exchange[cIndex].CHAIN.NAME
             const  cicPrice  = await getSymPrice(coinSym)
-            const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, cIndex)
+            const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
             const link = getLink()
 
             sendNotificationToChannelPrice(
