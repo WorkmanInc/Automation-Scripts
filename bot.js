@@ -1135,20 +1135,6 @@ const getMC = async(tokenAddress, price, cIndex) => {
   return mc
 }
 
-bot.onText(/^\?/, async function(message, match) {
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const symbol =  message.text.substring(1)
-  const symPrice = await getSymPrice(symbol)
-  sendNotificationToChannelPrice(
-    `*${symbol.toLocaleUpperCase()} Price:* $${symPrice}\n` +
-    getAdLink() +
-   "\n" + getLink()
-   , cid, thread)
-})
-
-
 const getLPToken = async (cIndex, command) => {
   try {
     for(let b=0; b<exchange[cIndex].CHAIN.BASES.length;b++){
@@ -1171,17 +1157,31 @@ const getLPToken = async (cIndex, command) => {
   }
   return LP
 }
+/*
+bot.onText(/^\?/, async function(message, match) {
+  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
+  const cid = message.chat.id.toString()
+  bot.deleteMessage(cid, message.message_id);
+  const symbol =  message.text.substring(1)
+  const symPrice = await getSymPrice(symbol)
+  sendNotificationToChannelPrice(
+    `*${symbol.toLocaleUpperCase()} Price:* $${symPrice}\n` +
+    getAdLink() +
+   "\n" + getLink()
+   , cid, thread)
+})
+*/
 
+bot.onText(/^\??/, async function(message, match) { 
 
-
-
-bot.onText(/^\/price/, async function(message, match) { 
+  
       const cid = message.chat.id.toString()
       bot.deleteMessage(cid, message.message_id);
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
 
-      const command = message.text.substring(7,49)
-      const tExchange = message.text.substring(50)
+      const command = message.text.substring(2,44)
+      const tExchange = message.text.substring(45)
+      
 
       let cIndex =  undefined
       let LP = command
@@ -1189,19 +1189,13 @@ bot.onText(/^\/price/, async function(message, match) {
       const cLower = LP.toLowerCase()
       let index
 
-      const test = message.text.substring(6,7)
-
-  if(command.length === 0 || test !== " "){
-    SetupMenu(cid, thread, true)
-  }else{
-
-      
+      console.log(command, tExchange)
+   if(command.length === 0){
+     SetupMenu(cid, thread, true)
+   }else{
         for(let c=0; c<exchange.length; c++){
            if(tExchange.toLowerCase() === exchange[c].NAME.toLowerCase()) cIndex = c
         }
-      
-    
-
     let gotOne = false
         for(let i=0; i<configs.length; i++) {
           
@@ -1236,7 +1230,17 @@ bot.onText(/^\/price/, async function(message, match) {
       } else if(!gotOne && cIndex !== undefined && LP.length === 42){
         getPrices(cid, thread, LP, cIndex, gotOne)
         return
-      } sendNotificationToChannelPrice("Failed", cid, thread)
+      } 
+      // const symbol =  message.text.substring(2)
+      const symPrice = await getSymPrice(command)
+      if(new BigNumber(symPrice).gt(0)){
+        sendNotificationToChannelPrice(
+          `*${command.toLocaleUpperCase()} Price:* $${symPrice}\n` +
+          getAdLink() +
+          "\n" + getLink()
+          , cid, thread
+        )
+      } else sendNotificationToChannelPrice("Failed", cid, thread)
     }
     
   })
@@ -1260,7 +1264,8 @@ bot.onText(/^\/price/, async function(message, match) {
                 return
               }
             }
-            const coinSym = exchange[cIndex].NAME
+            const coinSym = exchange[cIndex].CHAIN.NAME
+            console.log(coinSym)
             const  cicPrice  = await getSymPrice(coinSym)
             const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
             const link = getLink()
@@ -1400,7 +1405,7 @@ const startListener = async (index) => {
     
     let rawPrice
     try {
-     const cicPrice = await getSymPrice(exchange[index].NAME)
+     const cicPrice = await getSymPrice(exchange[index].CHAIN.NAME)
      rawPrice = cicPrice
     } catch{
       return console.log("failed to get price")
@@ -1493,7 +1498,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
 process.on('SIGINT', async () => {
   const cid = "-1001971600482"
   const thread = "0"
-  sendNotificationToChannel("BuyBot Turned Off", cid, thread)
+  // sendNotificationToChannel("BuyBot Turned Off", cid, thread)
   await sleep(1000);
   process.exit();
 });
