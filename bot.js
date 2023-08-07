@@ -251,7 +251,7 @@ bot.onText(/^\/grouplist/, async function(message, match) {
   })
 })
 
-bot.onText(/^\commands/, async function(message, match) {   
+bot.onText(/^\?help/, async function(message, match) {   
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
       const cid = message.chat.id.toString()
       bot.deleteMessage(cid, message.message_id);
