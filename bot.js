@@ -1184,7 +1184,6 @@ bot.onText(/^\??/, async function(message, match) {
       const cLower = LP.toLowerCase()
       let index
 
-      console.log(command, tExchange)
    if(command.length === 0){
      SetupMenu(cid, thread, true)
    }else{
@@ -1260,7 +1259,6 @@ bot.onText(/^\??/, async function(message, match) {
               }
             }
             const coinSym = exchange[cIndex].CHAIN.NAME
-            console.log(coinSym)
             const  cicPrice  = await getSymPrice(coinSym)
             const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
             const link = getLink()
