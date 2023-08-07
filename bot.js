@@ -263,7 +263,6 @@ bot.onText(/^\commands/, async function(message, match) {
         "\n" +
         "*/setup*: To Modify Listed Tokens\n"+
         "\n" + 
-         
        // "*/removetoken* <tokenAddress>\n" +
        // "Removes Token from BuyBot list\n" +
        // "\n" +
@@ -276,14 +275,10 @@ bot.onText(/^\commands/, async function(message, match) {
        // "*/changedot* <emoji>\n" + 
        // "Change the Emoji!\n" +
        // "\n" + */
-       "*/<Coin Symbol>* Checks price of Coin\n" +
+       "*??<symbol>* Checks price of Asset\n" +
        "\n" +
-       "*/price* <tokenAddress> <dex>\n" +
-       "Checks price of Token on DEX\n" +
-       "\n" +
-       "*/price* <token Symbol>\n" +
-       "Checks price of Token by Symbol\n" +
-       "*IF ERROR USE FIRST METHOD*\n" +
+       "*??*<tokenAddress> <dex>\n" +
+       "Checks price of Asset on DEX\n" +
        "\n" +
        "*Channel Commands*\n" +
        "*/blockprice* Block Price Commands\n" +
