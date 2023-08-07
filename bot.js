@@ -773,32 +773,6 @@ const sendNotificationToChannelPrice = async (message, cid, thread) => {
   }  
 }
 
-
-const getBNBPrice = async (index) => {
-  let apiUrl = ""
-  if(index === 11) apiUrl = "https://min-api.cryptocompare.com/data/price?fsym=BONE&tsyms=USD"
-  else apiUrl = exchange[index].CHAIN.API;
-  let cicPrice = 0
-  let mc = 0
-  try {
-    const res = await fetch(apiUrl);
-    if (res.status >= 400) {
-      console.log(res.status)
-      throw new Error("Bad response from server");
-    }
-    const price = await res.json();
-    if(index === 0){ // if CIC
-      cicPrice = parseFloat(price.price);
-      mc = parseFloat(price.market_cap)
-    } else {
-      cicPrice = parseFloat(price.USD)
-    }    
-   } catch (err) {
-    console.error("Unable to connect to Binance API", err);
-   }
-  return { cicPrice, mc }
-};
-
 const getSymPrice = async (symbol) => {
   
   const apiUrl = "https://min-api.cryptocompare.com/data/price?fsym="+symbol+"&tsyms=USD"
@@ -1168,130 +1142,7 @@ bot.onText(/^\?/, async function(message, match) {
   const symbol =  message.text.substring(1)
   const symPrice = await getSymPrice(symbol)
   sendNotificationToChannelPrice(
-    `*${symbol} Price:* $${symPrice}\n` +
-     "\n" +
-    getAdLink() +
-   "\n" + getLink()
-   , cid, thread)
-})
-
-bot.onText(/^\/cic/, async function(message, match) {   
-    
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice, mc } = await getBNBPrice(0)
-
- sendNotificationToChannelPrice(
-  `*CIC Price:* $${cicPrice}\n` +
-  `*CIC MC:* $${mc}\n` +
-   "\n" +
-  getAdLink() +
- "\n" + getLink()
- , cid, thread)
-
-})
-bot.onText(/^\/CIC/, async function(message, match) {    
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice, mc } = await getBNBPrice(0)
-
-  sendNotificationToChannelPrice(
-    `*CIC Price:* $${cicPrice}\n` +
-    `*CIC MC:* $${mc}\n` +
-    "\n" +
-    getAdLink() +
-   "\n" + getLink()
-   , cid, thread)
-
-})
-
-bot.onText(/^\/bnb/, async function(message, match) {     
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(3)
- sendNotificationToChannelPrice(
-  `*BNB Price:* $${cicPrice}\n` +
-  getAdLink() +
- "\n" + getLink()
- , cid, thread)
-})
-bot.onText(/^\/BNB/, async function(message, match) {    
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(3)
-  sendNotificationToChannelPrice(
-    `*BNB Price:* $${cicPrice}\n` +
-    getAdLink() +
-   "\n" + getLink()
-    , cid, thread)
-})
-bot.onText(/^\/eth/, async function(message, match) {     
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(7)
- sendNotificationToChannelPrice(
-  `*ETHERUEM Price:* $${cicPrice}\n` +
-  getAdLink() +
- "\n" + getLink()
- , cid, thread)
-})
-bot.onText(/^\/ETH/, async function(message, match) {    
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(7)
-  sendNotificationToChannelPrice(
-    `*ETHEREUM Price:* $${cicPrice}\n` +
-    getAdLink() +
-   "\n" + getLink()
-   , cid, thread)
-})
-bot.onText(/^\/cro/, async function(message, match) {     
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(10)
- sendNotificationToChannelPrice(
-  `*CRO Price:* $${cicPrice}\n` +
-  getAdLink() +
- "\n" + getLink()
- , cid, thread)
-})
-bot.onText(/^\/CRO/, async function(message, match) {    
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(10)
-  sendNotificationToChannelPrice(
-    `*CRO Price:* $${cicPrice}\n` +
-    getAdLink() +
-   "\n" + getLink()
-   , cid, thread)
-})
-
-bot.onText(/^\/BONE/, async function(message, match) {    
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(11)
-  sendNotificationToChannelPrice(
-    `*BONE Price:* $${cicPrice}\n` +
-    getAdLink() +
-   "\n" + getLink()
-   , cid, thread)
-})
-bot.onText(/^\/bone/, async function(message, match) {    
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const { cicPrice } = await getBNBPrice(11)
-  sendNotificationToChannelPrice(
-    `*BONE Price:* $${cicPrice}\n` +
+    `*${symbol.toLocaleUpperCase()} Price:* $${symPrice}\n` +
     getAdLink() +
    "\n" + getLink()
    , cid, thread)
@@ -1408,9 +1259,9 @@ bot.onText(/^\/price/, async function(message, match) {
                 sendNotificationToChannelPrice("error", cid, thread)
                 return
               }
-        }
-
-            const { cicPrice } = await getBNBPrice(cIndex)
+            }
+            const coinSym = exchange[cIndex].NAME
+            const  cicPrice  = await getSymPrice(coinSym)
             const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
             const link = getLink()
 
@@ -1521,7 +1372,7 @@ const startBurnBot = async () => {
     if(to.toString() === "0x000000000000000000000000000000000000dEaD" || to.toString() === "0x0000000000000000000000000000000000000000" &&
       from.toString() === "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6"
       ) {
-        const { cicPrice } = await getBNBPrice(7)
+    const cicPrice = await getSymPrice("ETH")
     const burned = new BigNumber(amount.toString()).shiftedBy(-18)
     const burnedDollars = burned.multipliedBy(cicPrice).toFixed(2)
     const cid = "-1001971600482"
@@ -1549,7 +1400,7 @@ const startListener = async (index) => {
     
     let rawPrice
     try {
-     const  { cicPrice } = await getBNBPrice(configs[index].EXCHANGE)
+     const cicPrice = await getSymPrice(exchange[index].NAME)
      rawPrice = cicPrice
     } catch{
       return console.log("failed to get price")
