@@ -2,7 +2,6 @@ let chain = [
     {
       LONGNAME: "Crazy Internet Coin",
       NAME: "CIC",
-      API: " https://backend.ex2.cicscan.com/coin_price",
       RPC: "https://xapi.cicscan.com/",
       EXP: "https://cicscan.com/",
       NATIVE: "0x4130A6f00bb48ABBcAA8B7a04D00Ab29504AD9dA",
@@ -14,7 +13,6 @@ let chain = [
     {
       LONGNAME: "Binance",
       NAME: "BNB",
-      API: "https://min-api.cryptocompare.com/data/price?fsym=BNB&tsyms=USD",
       RPC: "https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6/",
       EXP: "https://bscscan.com/",
       NATIVE: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
@@ -29,7 +27,6 @@ let chain = [
     {
       LONGNAME: "Ethereum",
       NAME: "ETH",
-      API: "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD",
       RPC: "https://rpc.ankr.com/eth/a43f07a7be6cc42d81c31ccab2f9a43e71a3713d40c4809cc4a9886839d5cb76/",
       EXP: "https://etherscan.io/",
       NATIVE: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
@@ -43,7 +40,6 @@ let chain = [
     {
       LONGNAME: "Cronos",
       NAME: "CRO",
-      API: "https://min-api.cryptocompare.com/data/price?fsym=CRO&tsyms=USD",
       RPC: "https://evm.cronos.org/",
       EXP: "https://cronoscan.com/",
       NATIVE: "0x5C7F8A570d578ED84E63fdFA7b1eE72dEae1AE23",
@@ -57,7 +53,6 @@ let chain = [
     {
       LONGNAME: "Puppy Net",
       NAME: "BONE",
-      API: "https://min-api.cryptocompare.com/data/price?fsym=BONE&tsyms=USD",
       RPC: "https://puppynet.shibrpc.com",
       EXP: "https://puppyscan.shib.io",
       NATIVE: "0x888888888030F38cF1CdA6aD34cCCcB0f83Cd86a",
