@@ -1259,7 +1259,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             }
             const coinSym = exchange[cIndex].CHAIN.NAME
             const  cicPrice  = await getSymPrice(coinSym)
-            const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
+            const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, cIndex)
             const link = getLink()
 
             sendNotificationToChannelPrice(
@@ -1383,12 +1383,14 @@ const startBurnBot = async () => {
 }
 
 const startListener = async (index) => {
-  const signer = getSigner(configs[index].EXCHANGE)
-  const baseIs0 = configs[index].BASE0
-  const baseIsNative = configs[index].BASEISNATIVE
+  const TConfig = configs[index]
+  const dex = exchange[configs[index].EXCHANGE]
+  const signer = getSigner(dexIndex)
+  const baseIs0 = TConfig.BASE0
+  const baseIsNative = TConfig.BASEISNATIVE
 
   let lpcontract = new Contract(
-    configs[index].LPADDRESS,
+    TConfig.LPADDRESS,
     lpabi,
     signer
   );
@@ -1397,7 +1399,7 @@ const startListener = async (index) => {
     
     let rawPrice
     try {
-     const cicPrice = await getSymPrice(exchange[index].CHAIN.NAME)
+     const cicPrice = await getSymPrice(dex.CHAIN.NAME)
      rawPrice = cicPrice
     } catch{
       return console.log("failed to get price")
@@ -1413,47 +1415,49 @@ const startListener = async (index) => {
     const outAmount = baseIs0 ? amount1Out : amount0Out
 
     const {bought, FRTcValue} = await calculate(basePrice, inAmount, outAmount, index)
-    const spent = new BigNumber(inAmount.toString()).shiftedBy(-configs[index].BDECIMALS).multipliedBy(basePrice).toFixed(2)
-    const mc = await getMC(configs[index].TOKEN, FRTcValue, configs[index].EXCHANGE )
+    const spent = new BigNumber(inAmount.toString()).shiftedBy(-TConfig.BDECIMALS).multipliedBy(basePrice).toFixed(2)
+    const mc = await getMC(TConfig.TOKEN, FRTcValue, TConfig.EXCHANGE )
 
     sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, rawPrice, mc);
   
   });
-  console.log(`Loaded For ${configs[index].TOKEN} | In ${configs[index].CHANNEL.length} Channels`)
+  console.log(`Loaded For ${TConfig.TOKEN} | In ${TConfig.CHANNEL.length} Channels`)
 }
 
 const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice, mc) => {
-  const c = configs[index].CHANNEL
+  const TConfig = config[index]
+  const c = TConfig.CHANNEL
   let toDelete = []
   
-  const cIndex = configs[index].EXCHANGE
+  const cIndex = TConfig.EXCHANGE
+  const dex = exchange[cIndex]
   const link = getLink()
 
   for(let i=0; i<c.length; i++){
     for(let t=0; t<c[i].THREAD.length; t++){
       const thread = c[i].THREAD[t]
-      const bdec = new BigNumber(configs[index].BDECIMALS).toNumber()
+      const bdec = new BigNumber(TConfig.BDECIMALS).toNumber()
 
       
-        const dots = sym(new BigNumber(spent).dividedBy(configs[index].CHANNEL[i].PERDOT).toFixed(0), cIndex, configs[index].CHANNEL[i])
+        const dots = sym(new BigNumber(spent).dividedBy(c[i].PERDOT).toFixed(0), cIndex, c[i])
         var message =
-        `*${configs[index].NAME}* Bought!!\n` +
-        `*${exchange[cIndex].CHAIN.NAME} Chain : ${exchange[cIndex].LONGNAME} LP*\n` +
+        `*${TConfig.NAME}* Bought!!\n` +
+        `*${dex.CHAIN.NAME} Chain : ${dex.LONGNAME} LP*\n` +
         dots +
-        `\n*Spent:* $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-bdec).toFixed(4)} ${configs[index].BSYM})\n` +
-        `*Received:* ${new BigNumber(bought).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})} ${configs[index].SYM}\n` +
-        `*${configs[index].SYM} Price:* $${FRTcValue}\n` +
-        `*${configs[index].SYM} MC:* $${new BigNumber(mc).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
-        `*${exchange[cIndex].CHAIN.NAME}:* $${cicPrice}\n` +
-        `[ TX  ](${exchange[cIndex].CHAIN.EXP}tx/${txhash})` +
+        `\n*Spent:* $${spent} - (${new BigNumber(inAmount.toString()).shiftedBy(-bdec).toFixed(4)} ${TConfig.BSYM})\n` +
+        `*Received:* ${new BigNumber(bought).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})} ${TConfig.SYM}\n` +
+        `*${TConfig.SYM} Price:* $${FRTcValue}\n` +
+        `*${TConfig.SYM} MC:* $${new BigNumber(mc).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
+        `*${dex.CHAIN.NAME}:* $${cicPrice}\n` +
+        `[ TX  ](${dex.CHAIN.EXP}tx/${txhash})` +
         ` | ` + 
-        `[ Buyer ](${exchange[cIndex].CHAIN.EXP}address/${buyer})` + ` | ` +
-        `[ Receiver ](${exchange[cIndex].CHAIN.EXP}address/${receiver})\n` +
+        `[ Buyer ](${dex.CHAIN.EXP}address/${buyer})` + ` | ` +
+        `[ Receiver ](${dex.CHAIN.EXP}address/${receiver})\n` +
          getAdLink() +
         `\n` +
         link
 
-        if( new BigNumber(spent).gt(configs[index].CHANNEL[i].MINBUY) ) {
+        if( new BigNumber(spent).gt(c[i].MINBUY) ) {
        
          bot.sendMessage(c[i].CHATID, message, { message_thread_id: thread, disable_web_page_preview: true, parse_mode: 'Markdown' } )
           
@@ -1463,7 +1467,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
             if(i === toDelete[c]) add = false
           }
           if(add) {
-            toDelete.push([configs[index].LPADDRESS,c[i].CHATID, thread])
+            toDelete.push([TConfig.LPADDRESS,c[i].CHATID, thread])
           }
         })
         
