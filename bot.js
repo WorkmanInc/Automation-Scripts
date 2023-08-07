@@ -1384,8 +1384,8 @@ const startBurnBot = async () => {
 
 const startListener = async (index) => {
   const TConfig = configs[index]
-  const dex = exchange[configs[index].EXCHANGE]
-  const signer = getSigner(dexIndex)
+  const dex = exchange[TConfig.EXCHANGE]
+  const signer = getSigner(TConfig.EXCHANGE)
   const baseIs0 = TConfig.BASE0
   const baseIsNative = TConfig.BASEISNATIVE
 
