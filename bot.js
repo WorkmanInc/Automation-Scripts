@@ -1166,7 +1166,7 @@ bot.onText(/^\?/, async function(message, match) {
   const cid = message.chat.id.toString()
   bot.deleteMessage(cid, message.message_id);
   const symbol =  message.text.substring(1)
-  const symPrice = getSymPrice(symbol)
+  const symPrice = await getSymPrice(symbol)
   sendNotificationToChannelPrice(
     `*${symbol} Price:* $${symPrice}\n` +
      "\n" +
