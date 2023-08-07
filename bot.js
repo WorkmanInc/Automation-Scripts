@@ -1425,7 +1425,7 @@ const startListener = async (index) => {
 }
 
 const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice, mc) => {
-  const TConfig = config[index]
+  const TConfig = configs[index]
   const c = TConfig.CHANNEL
   let toDelete = []
   
