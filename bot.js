@@ -1167,9 +1167,8 @@ bot.onText(/^\?/, async function(message, match) {
 })
 */
 
-bot.onText(/^\??/, async function(message, match) { 
-
-  
+bot.onText(/^\?{2}(.+)/, async function(message, match) { 
+   
       const cid = message.chat.id.toString()
       bot.deleteMessage(cid, message.message_id);
       const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
