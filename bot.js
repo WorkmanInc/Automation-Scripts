@@ -1224,37 +1224,42 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           }
         }
 
-        
+        let sent = false
       if(gotOne){
         getPrices(cid, thread, LP, index, gotOne)
+        sent = true
         return
       } else if(!gotOne && cIndex === undefined && LP.length === 42){
         chooseDex(cid, thread, LP, true)
+        sent = true
         return
       } else if(!gotOne && cIndex !== undefined && LP.length === 42){
         getPrices(cid, thread, LP, cIndex, gotOne)
+        sent = true
         return
       } 
-      // const symbol =  message.text.substring(2)
-      const bitcoinData = await getCMCInfo(command)
+      if(!sent){
+        // const symbol =  message.text.substring(2)
+        const bitcoinData = await getCMCInfo(command)
 
-      const { name, symbol, quote } = bitcoinData;
-      const { USD } = quote;
+        const { name, symbol, quote } = bitcoinData;
+        const { USD } = quote;
 
-      if(new BigNumber(USD.price).gt(0)){
-        sendNotificationToChannelPrice(
-          `*${name}* (${symbol})\n` +
-          `*Price*: $${USD.price} USD\n` +
-          `*1hr Change:* ${USD.percent_change_1h}\n` +
-          `*24hr Change:* ${USD.percent_change_24h}\n` +
-          `*7d Change:* ${USD.percent_change_7d}\n` +
-          `*24hr Volume:* $${USD.volume_24h}\n` +
-          `*FD MC:* $${USD.fully_diluted_market_cap}\n` +
-          getAdLink() +
-          "\n" + getLink()
-          , cid, thread
-        )
-      } else sendNotificationToChannelPrice("Failed", cid, thread)
+        if(new BigNumber(USD.price).gt(0)){
+          sendNotificationToChannelPrice(
+            `*${name}* (${symbol})\n` +
+            `*Price*: $${USD.price} USD\n` +
+            `*1hr Change:* ${USD.percent_change_1h}\n` +
+            `*24hr Change:* ${USD.percent_change_24h}\n` +
+            `*7d Change:* ${USD.percent_change_7d}\n` +
+            `*24hr Volume:* $${USD.volume_24h}\n` +
+            `*FD MC:* $${USD.fully_diluted_market_cap}\n` +
+            getAdLink() +
+            "\n" + getLink()
+            , cid, thread
+          )
+        } else sendNotificationToChannelPrice("Failed", cid, thread)
+      }
     }
     
   })
