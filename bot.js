@@ -789,6 +789,36 @@ const getSymPrice = async (symbol) => {
   return symPrice
 };
 
+const API_KEY = '7c863d8e-2668-489d-9d3b-531210cd2016';
+// CoinMarketCap API URL for Bitcoin (BTC
+const getCMCInfo = async (symbol) => {
+  const API_URL = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=1&convert=USD&symbol=${symbol}`;
+  try {
+    const response = await axios.get(API_URL, {
+      headers: {
+        'X-CMC_PRO_API_KEY': API_KEY,
+      },
+    });
+
+    const bitcoinData = response.data.data[0];
+    const { name, symbol, quote } = bitcoinData;
+    const { USD } = quote;
+
+    console.log(`Name: ${name}`);
+    console.log(`Symbol: ${symbol}`);
+    console.log(`Price (USD): ${USD.price}`);
+    console.log(`Market Cap (USD): ${USD.market_cap}`);
+    console.log(`24h Volume (USD): ${USD.volume_24h}`);
+    console.log(`Change (24h): ${USD.percent_change_24h}%`);
+
+    return bitcoinData
+
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
+
 
 const chooseDex = (cid, thread,tokenAddress, isPrice) => {
   let selectedChain
@@ -1152,20 +1182,7 @@ const getLPToken = async (cIndex, command) => {
   }
   return LP
 }
-/*
-bot.onText(/^\?/, async function(message, match) {
-  const thread = message.message_thread_id === undefined ? 0 : message.message_thread_id
-  const cid = message.chat.id.toString()
-  bot.deleteMessage(cid, message.message_id);
-  const symbol =  message.text.substring(1)
-  const symPrice = await getSymPrice(symbol)
-  sendNotificationToChannelPrice(
-    `*${symbol.toLocaleUpperCase()} Price:* $${symPrice}\n` +
-    getAdLink() +
-   "\n" + getLink()
-   , cid, thread)
-})
-*/
+
 
 bot.onText(/^\?{2}(.+)/, async function(message, match) { 
    
@@ -1225,10 +1242,27 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
         return
       } 
       // const symbol =  message.text.substring(2)
-      const symPrice = await getSymPrice(command)
+      const bitcoinData = await getCMCPrice(command)
+
+      const { name, symbol, quote } = bitcoinData;
+      const { USD } = quote;
+
+      console.log(`Name: ${name}`);
+      console.log(`Symbol: ${symbol}`);
+      console.log(`Price (USD): ${USD.price}`);
+      console.log(`Market Cap (USD): ${USD.market_cap}`);
+      console.log(`24h Volume (USD): ${USD.volume_24h}`);
+      console.log(`Change (24h): ${USD.percent_change_24h}%`);
+
       if(new BigNumber(symPrice).gt(0)){
         sendNotificationToChannelPrice(
-          `*${command.toLocaleUpperCase()} Price:* $${symPrice}\n` +
+          `*${name}* (${symbol})\n` +
+          `*Price*: $${USD.price} USD\n` +
+          `1hr Change: ${USD.percent_change_1h}\n` +
+          `24hr Change: ${USD.percent_change_24h}\n` +
+          `7d Change: ${USD.percent_change_7d}\n` +
+          `24hr Volume: $${USD.volume_24h}\n` +
+          `FD MC: $${USD.fully_diluted_market_cap}\n` +
           getAdLink() +
           "\n" + getLink()
           , cid, thread
