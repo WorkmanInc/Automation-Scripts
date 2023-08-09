@@ -8,6 +8,7 @@ const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
 const BigNumber = require('bignumber.js');
 const telegramBot = require('node-telegram-bot-api');
+const axios = require(`axios`);
 const {
   chain,
   exchange,
@@ -792,7 +793,8 @@ const getSymPrice = async (symbol) => {
 const API_KEY = '7c863d8e-2668-489d-9d3b-531210cd2016';
 // CoinMarketCap API URL for Bitcoin (BTC
 const getCMCInfo = async (symbol) => {
-  const API_URL = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=1&convert=USD&symbol=${symbol}`;
+  const BIGSYMBOL = symbol.toUpperCase()
+  const API_URL = `https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=${BIGSYMBOL}`;
   try {
     const response = await axios.get(API_URL, {
       headers: {
@@ -800,16 +802,8 @@ const getCMCInfo = async (symbol) => {
       },
     });
 
-    const bitcoinData = response.data.data[0];
-    const { name, symbol, quote } = bitcoinData;
-    const { USD } = quote;
-
-    console.log(`Name: ${name}`);
-    console.log(`Symbol: ${symbol}`);
-    console.log(`Price (USD): ${USD.price}`);
-    console.log(`Market Cap (USD): ${USD.market_cap}`);
-    console.log(`24h Volume (USD): ${USD.volume_24h}`);
-    console.log(`Change (24h): ${USD.percent_change_24h}%`);
+    const bitcoinDataRaw = response.data.data[BIGSYMBOL];
+    const bitcoinData = bitcoinDataRaw[0]
 
     return bitcoinData
 
@@ -1247,22 +1241,15 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
       const { name, symbol, quote } = bitcoinData;
       const { USD } = quote;
 
-      console.log(`Name: ${name}`);
-      console.log(`Symbol: ${symbol}`);
-      console.log(`Price (USD): ${USD.price}`);
-      console.log(`Market Cap (USD): ${USD.market_cap}`);
-      console.log(`24h Volume (USD): ${USD.volume_24h}`);
-      console.log(`Change (24h): ${USD.percent_change_24h}%`);
-
-      if(new BigNumber(symPrice).gt(0)){
+      if(new BigNumber(USD.price).gt(0)){
         sendNotificationToChannelPrice(
           `*${name}* (${symbol})\n` +
           `*Price*: $${USD.price} USD\n` +
-          `1hr Change: ${USD.percent_change_1h}\n` +
-          `24hr Change: ${USD.percent_change_24h}\n` +
-          `7d Change: ${USD.percent_change_7d}\n` +
-          `24hr Volume: $${USD.volume_24h}\n` +
-          `FD MC: $${USD.fully_diluted_market_cap}\n` +
+          `*1hr Change:* ${USD.percent_change_1h}\n` +
+          `*24hr Change:* ${USD.percent_change_24h}\n` +
+          `*7d Change:* ${USD.percent_change_7d}\n` +
+          `*24hr Volume:* $${USD.volume_24h}\n` +
+          `*FD MC:* $${USD.fully_diluted_market_cap}\n` +
           getAdLink() +
           "\n" + getLink()
           , cid, thread
@@ -1391,17 +1378,19 @@ const sym = (cicSpent, cIndex, channel) => {
 
 const startBurnBot = async () => {
   const signer = getSigner(2)
+  const deadW = "0x000000000000000000000000000000000000dEaD"
+  const marswap = "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6"
   
   let tokenContract = new Contract(
     "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
-    tokenabi,
+    lpabi,
     signer
   );
 // 0x4bE2b2C45b432BA362f198c08094017b61E3BDc6
   tokenContract.on("Transfer", async( from, to, amount, event) => {
     
-    if(to.toString() === "0x000000000000000000000000000000000000dEaD" || to.toString() === "0x0000000000000000000000000000000000000000" &&
-      from.toString() === "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6"
+    if(to.toString().toUpperCase() === deadW.toUpperCase() &&
+      from.toString().toUpperCase() === marswap.toUpperCase()
       ) {
     const cicPrice = await getSymPrice("ETH")
     const burned = new BigNumber(amount.toString()).shiftedBy(-18)
@@ -1411,7 +1400,8 @@ const startBurnBot = async () => {
     var message =
         `*${Burned}* SHIB Burned!!\n` +
         `*$${burnedDollars}* has been burned!!\n`
-        sendNotificationToChannel(message, cid, thread)
+    sendNotificationToChannel(message, cid, thread)
+    console.log("burned SHIB Happend")
     }
   });
 }
