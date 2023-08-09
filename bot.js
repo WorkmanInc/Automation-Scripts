@@ -1248,12 +1248,12 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
         if(new BigNumber(USD.price).gt(0)){
           sendNotificationToChannelPrice(
             `*${name}* (${symbol})\n` +
-            `*Price*: $${USD.price} USD\n` +
-            `*1hr Change:* ${USD.percent_change_1h}\n` +
-            `*24hr Change:* ${USD.percent_change_24h}\n` +
-            `*7d Change:* ${USD.percent_change_7d}\n` +
-            `*24hr Volume:* $${USD.volume_24h}\n` +
-            `*FD MC:* $${USD.fully_diluted_market_cap}\n` +
+            `*Price*: $${USD.price.toFixed(10)} USD\n` +
+            `*1hr Change:* ${USD.percent_change_1h.toFixed(2)}\n` +
+            `*24hr Change:* ${USD.percent_change_24h.toFixed(2)}\n` +
+            `*7d Change:* ${USD.percent_change_7d.toFixed(2)}\n` +
+            `*24hr Volume:* $${USD.volume_24h.toLocaleString('en-US', { style: 'currency', currenct: 'USD', maximumFractionDigits: 4})}\n` +
+            `*FD MC:* $${USD.fully_diluted_market_cap.toLocaleString('en-US', { style: 'currency', currenct: 'USD', maximumFractionDigits: 4})}\n` +
             getAdLink() +
             "\n" + getLink()
             , cid, thread
@@ -1263,8 +1263,6 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
     }
     
   })
-
-
 
   const getPrices = async(cid, thread, address, index, gotOne) =>{
     let cIndex 
