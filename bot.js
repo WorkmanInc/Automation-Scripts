@@ -1242,7 +1242,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
         return
       } 
       // const symbol =  message.text.substring(2)
-      const bitcoinData = await getCMCPrice(command)
+      const bitcoinData = await getCMCInfo(command)
 
       const { name, symbol, quote } = bitcoinData;
       const { USD } = quote;
