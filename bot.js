@@ -1241,7 +1241,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
       if(!sent){
         // const symbol =  message.text.substring(2)
         const bitcoinData = await getCMCInfo(command)
-
+        try {
         const { name, symbol, quote } = bitcoinData;
         const { USD } = quote;
 
@@ -1259,6 +1259,9 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             , cid, thread
           )
         } else sendNotificationToChannelPrice("Failed", cid, thread)
+        } catch {
+          sendNotificationToChannelPrice("Failed", cid, thread)
+        }
       }
     }
     
