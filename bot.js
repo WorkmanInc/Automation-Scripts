@@ -1252,8 +1252,8 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             `*1hr Change:* ${USD.percent_change_1h.toFixed(2)}\n` +
             `*24hr Change:* ${USD.percent_change_24h.toFixed(2)}\n` +
             `*7d Change:* ${USD.percent_change_7d.toFixed(2)}\n` +
-            `*24hr Volume:* $${USD.volume_24h.toLocaleString('en-US', { style: 'currency', currenct: 'USD', maximumFractionDigits: 4})}\n` +
-            `*FD MC:* $${USD.fully_diluted_market_cap.toLocaleString('en-US', { style: 'currency', currenct: 'USD', maximumFractionDigits: 4})}\n` +
+            `*24hr Volume:* $${USD.volume_24h.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4})}\n` +
+            `*FD MC:* $${USD.fully_diluted_market_cap.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4})}\n` +
             getAdLink() +
             "\n" + getLink()
             , cid, thread
