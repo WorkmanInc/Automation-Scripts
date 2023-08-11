@@ -1381,7 +1381,7 @@ const sym = (cicSpent, cIndex, channel) => {
   return dots
 }
 
-
+/*
 const startBurnBot = async () => {
   const signer = getSigner(2)
   const deadW = "0x000000000000000000000000000000000000dEaD"
@@ -1411,6 +1411,7 @@ const startBurnBot = async () => {
     }
   });
 }
+*/
 
 const startListener = async (index) => {
   const TConfig = configs[index]
@@ -1426,7 +1427,6 @@ const startListener = async (index) => {
   );
 
   lpcontract.on("Swap", async( sender, amount0In, amount1In, amount0Out, amount1Out, to, event) => {
-    
     let rawPrice
     try {
      const cicPrice = await getSymPrice(dex.CHAIN.NAME)
@@ -1445,7 +1445,7 @@ const startListener = async (index) => {
     const outAmount = baseIs0 ? amount1Out : amount0Out
 
     const {bought, FRTcValue} = await calculate(basePrice, inAmount, outAmount, index)
-    const spent = new BigNumber(inAmount.toString()).shiftedBy(-TConfig.BDECIMALS).multipliedBy(basePrice).toFixed(2)
+    const spent = new BigNumber(inAmount.toString()).shiftedBy(-TConfig.BDECIMALS).multipliedBy(basePrice).toFixed(4)
     const mc = await getMC(TConfig.TOKEN, FRTcValue, TConfig.EXCHANGE )
 
     sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, rawPrice, mc);
@@ -1535,7 +1535,7 @@ const init = async () => {
   for(let i=0; i<configs.length;i++){
     if(configs[i].CHANNEL.length >0) startListener(i)
   }
-  startBurnBot()
+  // startBurnBot()
 }
 
 
