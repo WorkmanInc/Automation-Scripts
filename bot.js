@@ -14,8 +14,10 @@ const sabi = require('./single.json')
 
 const Web3 = require("web3");
 
-
-
+const result = dotenv.config();
+if (result.error) {
+  // throw result.error;
+}
 
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
@@ -23,15 +25,13 @@ const GLOBALS = {
   howManyToCheck: 400,
   minTokenCount: 300000000000000000000000,
   // CIC CHAIN STUFF
-  PRIVATE_KEY: process.env.pkey,  // Wallet private key for sending the tokens.
+  PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.
   holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6",                 // token to get holder list from
   airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",                // token to be airdropped
   LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
   // LOGGER_RPC: "http://49.12.187.86:22000/",
   airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF",
 }
-
-console.log(PRIVATE_KEY)
 
 const poolsToCheck = [
   "0x048cb93e234a65C7da2da20550ef63Be63CDb6F0",
@@ -65,10 +65,7 @@ let airdropList = []
 let poolList = []
 let last
 
-const result = dotenv.config();
-if (result.error) {
-  // throw result.error;
-}
+
 
 const provider =  new JsonRpcProvider(GLOBALS.LOGGER_RPC)
 const bscProvider = new JsonRpcProvider(GLOBALS.LOGGER_RPC)
@@ -279,9 +276,8 @@ const sendTokens = async() => {
         totalSent = new BigNumber(totalSent.toString()).plus(airdropList[i][1])
       }
     }
-    console.log(totalSent)
 
-/*   
+  
     // for gas estimating
     const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
       console.log(err, "Failed to Estimate gas")
@@ -289,7 +285,8 @@ const sendTokens = async() => {
     })
     console.log("estimate:", estimation.toString())
     totalGas = totalGas.plus(new BigNumber(estimation.toString()))
-    
+
+    /*  
     // to Send out!
 
       const tx = await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
