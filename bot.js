@@ -21,17 +21,17 @@ if (result.error) {
 
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
+  airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",            
+  totalTokensToSend: 1000000000000000000000000,
+  holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6", 
+  minTokenCount: 300000000000000000000000,
   howManyToSendTo: 50,
   howManyToCheck: 400,
-  minTokenCount: 300000000000000000000000,
-  // CIC CHAIN STUFF
-  PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.
-  holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6",                 // token to get holder list from
-  airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",                // token to be airdropped
+  PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.  
   LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
-  // LOGGER_RPC: "http://49.12.187.86:22000/",
   airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF",
 }
+  
 
 const poolsToCheck = [
   "0x048cb93e234a65C7da2da20550ef63Be63CDb6F0",
@@ -238,6 +238,7 @@ const getEvents = async () => {
 const setAllowanceTo = "999999999999999999999999999999999999999999999999"
 
 const sendTokens = async() => {
+  const totalTokenCount= await getTotalTokenCount()
   /*
   const allow = await dropTokenContract.allowance(senderAddress, GLOBALS.airDropperAddress).catch((err) => {
     console.log(err, "failed to get allowance")
@@ -271,9 +272,11 @@ const sendTokens = async() => {
     for(let i=start; i<end; i++){
       if(new BigNumber(airdropList[i][1]).gte(GLOBALS.minTokenCount)){
         holdersToSendTo.push(airdropList[i][0])
-        amountsToSend.push(airdropList[i][1])
-        sentTo++
-        totalSent = new BigNumber(totalSent.toString()).plus(airdropList[i][1])
+        // calculate amount to send based on holdings of HOLDERTOKEN (MSWAP)
+        const newTokensToSend = (new BigNumber(GLOBALS.totalTokensToSend).multipliedBy(airdropList[i][1])).dividedBy(totalTokenCount)
+        amountsToSend.push(newTokensToSend.toFixed(0))
+        sentTo ++
+        totalSent = new BigNumber(totalSent).plus(newTokensToSend)
       }
     }
 
@@ -308,7 +311,7 @@ const sendTokens = async() => {
   saveLastSent()
   console.log("Sent To All Addresses:", sentTo.toString())
   console.log("gas used:", new BigNumber(totalGas.toString()).shiftedBy(-9).toFixed(5))
-  console.log("tokens sent:", new BigNumber(totalSent).shiftedBy(-18).toFixed(4))
+  console.log("tokens sent:", new BigNumber(totalSent).shiftedBy(-18).toFixed(20))
 }
 
 
@@ -386,10 +389,12 @@ const loadLast = async () => {
   
 };
 
-const getTotalToSend = async() => {
+const getTotalTokenCount = async() => {
   let total = new BigNumber(0)
   for(let i=0; i<airdropList.length; i++){
-    total = total.plus(new BigNumber(airdropList[i][1]))
+    if(new BigNumber(airdropList[i][1]).gte(GLOBALS.minTokenCount)){
+      total = total.plus(new BigNumber(airdropList[i][1]))
+    }
   }
   return total.toString()
 }
@@ -413,8 +418,6 @@ const init = async() => {
 
     if(!doesFullListExist()) await  getStakedInPoolList()
     else loadFullConfig()
-
-  console.log("total to send to:" ,airdropList.length ,"total tokens:", new BigNumber(await getTotalToSend()).shiftedBy(-18).toFixed(4))
 
   await loadLast()
   
