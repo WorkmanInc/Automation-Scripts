@@ -9,6 +9,8 @@ const BigNumber = require("bignumber.js");
 
 const abi = require("./token.json");
 const aabi = require("./airdropper.json");
+const pabi = require("./Dual.json")
+const sabi = require('./single.json')
 
 const Web3 = require("web3");
 
@@ -19,34 +21,37 @@ const Web3 = require("web3");
 const GLOBALS = {
   howManyToSendTo: 50,
   howManyToCheck: 400,
+  minTokenCount: 300000000000000000000000,
   // CIC CHAIN STUFF
-  PRIVATE_KEY: '1ff4a78ea7460e706cdff2389c24b76d9c66dffe4d6fc60375134ccc25981a68',  // Wallet private key for sending the tokens.
-  holderTokenAddress: "0x1bace27Eac668840c9B347990D971260CC221Af8",                 // token to get holder list from
+  PRIVATE_KEY: 'abc4a78ea7460e706cdff2389c24bf6d9c66dffe4d6fc60375134ccc25981abc',  // Wallet private key for sending the tokens.
+  holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6",                 // token to get holder list from
   airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",                // token to be airdropped
-  LOGGER_RPC: "https://xapi.cicscan.com",
-  LOGGER_RPC: "http://49.12.187.86:22000/",
+  LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
+  // LOGGER_RPC: "http://49.12.187.86:22000/",
   airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF",
-
-  // ENTERCOIN STUFF
-  // LOGGER_RPC: "https://tapi.entercoin.net",
-  // PRIVATE_KEY: 'af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8', // farm
-  // airDropperAddress: "0xb7E6C8EDBdbFACEAe1cC162bd92d595BB29ad90A",
-  // holderTokenAddress: "0x281291c6C9E0Cd3d1fdeA76070Cbd4C892087864",
-  // airdropTokenAddress: "0xe59dD025Ac02ba5Af07f91362024F7933FE14641",
-
-  // BSC
-  // PRIVATE_KEY: 'af5b1f35d2ff08ac13746155fc3401aba64d8456a62655fec3d5b8e23a53c6c8',  // farm
-  // airDropperAddress: "0x0e6130BD48fc621370A48c10A5a129c0680f1cF0",
- // LOGGER_RPC: "https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6",
 }
+
+const poolsToCheck = [
+  "0x048cb93e234a65C7da2da20550ef63Be63CDb6F0",
+  "0xA60b1f1b6E8e05b65647B6C3701B624093700B57",
+  "0xc88f23fABfD264AeE6DF7a98052fBea4E92b7419"
+]
 
 // add any other addresses that should be removed from the airdropping.
 const excludedList = [
-  "0xf7C562aE3063305fE40077ad78319ccDE4724582", // Owner / dev wallet
-  "0x1bace27Eac668840c9B347990D971260CC221Af8", // old token itself
-  "0x9725802F4Bc039267C15938fD6DfEF437B45A6aF", // LP TOKEN
+  "0x929c4F3F7528f64d1ab93554E2497503F233E2D8", // LPTOKEN
   "0x0000000000000000000000000000000000000000",
-  "0x000000000000000000000000000000000000dEaD"
+  "0x000000000000000000000000000000000000dEaD",
+  "0x048cb93e234a65C7da2da20550ef63Be63CDb6F0", // POOL
+  "0xA60b1f1b6E8e05b65647B6C3701B624093700B57", // POOL
+  "0xc88f23fABfD264AeE6DF7a98052fBea4E92b7419", // POOL
+  "0x71B5759d73262FBb223956913ecF4ecC51057641", // LOCKER
+  "0x6b75d8AF000000e20B7a7DDf000Ba900b4009A80", // MEV BOT
+  "0x4027240c1B3b7c39C37b9af6176928a0fD4d8773", // DEPLOYER
+  "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6", // token itself
+  "0x28C6c06298d514Db089934071355E5743bf21d60", // binance
+  "0x46340b20830761efd32832A74d7169B29FEB9758", // crypto.com
+
 ]
 
 const w = new Web3(GLOBALS.LOGGER_RPC);
@@ -55,6 +60,7 @@ const senderAddress = w.eth.accounts.privateKeyToAccount(
 ).address;
 
 let airdropList = []
+let poolList = []
 let last
 
 const result = dotenv.config();
@@ -93,7 +99,92 @@ let AirDropper = new Contract(
   bscsigner
 );
 
+const getStakedInPoolList = async () => {
+  for(let i=0; i<poolsToCheck.length; i++){
 
+    let PoolContract = new Contract(
+      poolsToCheck[i],
+      pabi,
+      watcher
+    ); 
+
+    let SingleContract = new Contract(
+      poolsToCheck[i],
+      sabi,
+      watcher
+    );
+
+    let eventFilter = PoolContract.filters.StakeStart()
+    let events = await PoolContract.queryFilter(eventFilter)
+    let stakedList = []
+    // extract users    
+    for(let i=0; i<events.length; i++){
+      let newStaker = true
+      staker = events[i].args.user.toString()
+
+      // check if new or not
+      for(let c=0; c<stakedList.length; c++){
+        if(staker === stakedList[c]) newStaker = false
+      }
+      // if new add to list
+      if(newStaker){
+        stakedList.push(staker)
+      }
+      
+    }
+   console.log("users staked:", stakedList.length)
+
+    for(let i=0; i<stakedList.length; i++) {
+      let totalAmount = new BigNumber(0);
+      // check how many stakes
+      const lengthRaw = await PoolContract.ledger_length(stakedList[i])
+      const length = new BigNumber(lengthRaw.toString()).toNumber()
+      // check  if ended and amounts per ledger
+      for(let a=0; a<length; a++) {
+        let ledger = []
+        try { 
+          ledger = await PoolContract.ledger(stakedList[i], a) 
+        } catch {
+          ledger = await SingleContract.ledger(stakedList[i], a)
+        }
+        if(!ledger.ended) {
+          totalAmount = new BigNumber(totalAmount).plus(ledger.amount.toString())
+        }
+      }
+      
+      // set StakerOnly List
+      let isNew1 = true
+      for(let b=0; b<poolList.length; b++){
+        if(poolList[b] == stakedList[i]) {
+          poolList[b][1] =  new BigNumber(poolList[b][1]).plus(totalAmount).toFixed(0)
+          isNew1 = false
+        } 
+      }
+      if(isNew1){
+        poolList.push([stakedList[i], totalAmount.toFixed(0)])
+      }
+
+      let isNew = true
+      // add to holders amount or add holder to list
+      for(let b=0; b<airdropList.length; b++){
+        // if in list add
+        if(stakedList[i] == airdropList[b][0]) {
+          airdropList[b][1] = new BigNumber(airdropList[b][1]).plus(totalAmount).toFixed(0)
+          isNew = false
+        } 
+      }
+        // add new holder to list
+      if(isNew){
+        airdropList.push([stakedList[i], totalAmount.toFixed(0)])
+      }
+    }
+  }
+
+  let path = `./slist.json`
+  fs.writeFileSync(path, JSON.stringify(poolList, null, 2))
+  console.log("users From Pools:", poolList.length)
+  saveNewFullConfig()
+}
 
 const getEvents = async () => {
   let holderList = []
@@ -116,13 +207,10 @@ const getEvents = async () => {
     }
   }
 
-  console.log(holderList.length)
-
   const runs2 = holderList.length / GLOBALS.howManyToCheck
   let start = 0
   let end = start + GLOBALS.howManyToCheck
   end = end > holderList.length ? holderList.length : end
-
   for(let m=0; m<runs2; m++ ){
     const checkList = []
     for(z=start; z<end; z++){
@@ -135,26 +223,23 @@ const getEvents = async () => {
           return t
       })
     )
-  
     for(let d=data1.length-1; d>=0;d--){
       if(new BigNumber(data1[d].toString()).gt(0)) {
-        airdropList.push([checkList[d], data1[d].toString()])
+        airdropList.push([checkList[d], new BigNumber(data1[d].toString()).toFixed(0)])
       }
     }
-
     start = start + GLOBALS.howManyToCheck
     end = end + GLOBALS.howManyToCheck
     end = end > holderList.length ? holderList.length : end
   }
-  
-
-  console.log(airdropList.length)
-  saveNewConfig()
+  console.log("Holders:", airdropList.length)
+  saveNewHConfig()
 }
 
 const setAllowanceTo = "999999999999999999999999999999999999999999999999"
 
 const sendTokens = async() => {
+  /*
   const allow = await dropTokenContract.allowance(senderAddress, GLOBALS.airDropperAddress).catch((err) => {
     console.log(err, "failed to get allowance")
     process.exit()
@@ -169,8 +254,12 @@ const sendTokens = async() => {
   } else {
     console.log("approval Good", allowed)
   }
-
+*/
   let totalGas = new BigNumber(0)
+
+  let sentTo = 0
+  let totalSent = new BigNumber(0)
+
   const final = airdropList.length
   const leftToSend = final - last
   let start = last
@@ -181,12 +270,16 @@ const sendTokens = async() => {
     let holdersToSendTo = []
     let amountsToSend = []
     for(let i=start; i<end; i++){
-      holdersToSendTo.push(airdropList[i][0])
-      // amountsToSend.push(airdropList[i][1])
-      amountsToSend.push(new BigNumber(airdropList[i][1]).dividedBy(100000).toFixed(0))
+      if(new BigNumber(airdropList[i][1]).gte(GLOBALS.minTokenCount)){
+        holdersToSendTo.push(airdropList[i][0])
+        amountsToSend.push(airdropList[i][1])
+        sentTo++
+        totalSent = new BigNumber(totalSent.toString()).plus(airdropList[i][1])
+      }
     }
+    console.log(totalSent)
 
-    
+/*   
     // for gas estimating
     const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
       console.log(err, "Failed to Estimate gas")
@@ -195,12 +288,6 @@ const sendTokens = async() => {
     console.log("estimate:", estimation.toString())
     totalGas = totalGas.plus(new BigNumber(estimation.toString()))
     
-    /*
-    const gas = await provider.getGasPrice()
-    const gasCost =new BigNumber(gas.toString()).multipliedBy(1.01).toFixed(0)
-    const limit = new BigNumber(estimation.toString()).multipliedBy(1.25).toFixed(0)
-    */
-
     // to Send out!
 
       const tx = await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
@@ -211,7 +298,7 @@ const sendTokens = async() => {
       if (receipt.status) {
         console.log('Transaction Success', receipt.status)
       }
-    
+*/    
      last = end
      saveLastSent()
      start = start + GLOBALS.howManyToSendTo
@@ -220,13 +307,17 @@ const sendTokens = async() => {
   }
   last = 0
   saveLastSent()
-  // fs.renameSync(`./list.json`, `./${GLOBALS.airdropTokenAddress}-Dropped.json`)
-  console.log("Sent To All Addresses")
-  console.log(new BigNumber(totalGas.toString()).shiftedBy(-9).toFixed(5))
+  console.log("Sent To All Addresses:", sentTo.toString())
+  console.log("gas used:", new BigNumber(totalGas.toString()).shiftedBy(-9).toFixed(5))
+  console.log("tokens sent:", new BigNumber(totalSent).shiftedBy(-18).toFixed(4))
 }
 
 
-const saveNewConfig = async () => {
+const saveNewHConfig = async () => {
+  let path = `./hlist.json`
+  fs.writeFileSync(path, JSON.stringify(airdropList, null, 2))
+};
+const saveNewFullConfig = async () => {
   let path = `./list.json`
   fs.writeFileSync(path, JSON.stringify(airdropList, null, 2))
 };
@@ -235,7 +326,26 @@ const saveLastSent = async () => {
   fs.writeFileSync(path, JSON.stringify(last, null, 2))
 };
 
-const loadConfig = async () => {
+const loadHConfig = async () => {
+  let path = `./hlist.json`
+  try {
+    if (fs.existsSync(path)) {
+      let history, historyParsed;
+      try {
+        history = fs.readFileSync(path);
+        historyParsed = JSON.parse(history);
+      } catch (e) {
+        console.log("Error reading history:", e);
+        return;
+      }
+      airdropList = historyParsed
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+const loadFullConfig = async () => {
   let path = `./list.json`
   try {
     if (fs.existsSync(path)) {
@@ -285,22 +395,33 @@ const getTotalToSend = async() => {
   return total.toString()
 }
 
-const doesFileExist = () => {
+const doesHolderListExist = () => {
+  let path = `./hlist.json`
+  if (fs.existsSync(path)) return true
+  return false
+}
+
+const doesFullListExist = () => {
   let path = `./list.json`
   if (fs.existsSync(path)) return true
   return false
 }
 
 const init = async() => {
-  if(!doesFileExist()) await  getEvents()
-  else await loadConfig()
+  
+    if(!doesHolderListExist()) await  getEvents()
+    else await loadHConfig()
 
-  console.log(new BigNumber(await getTotalToSend()).shiftedBy(-18).toFixed(4))
+    if(!doesFullListExist()) await  getStakedInPoolList()
+    else loadFullConfig()
+
+  console.log("total to send to:" ,airdropList.length ,"total tokens:", new BigNumber(await getTotalToSend()).shiftedBy(-18).toFixed(4))
 
   await loadLast()
   
   await sendTokens()
 
+  
   
 }
 
