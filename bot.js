@@ -24,7 +24,7 @@ const GLOBALS = {
   airdropTokenAddress: "0xf8289C4706fFfA3AC83480BE0fa55E20dE383150",            
   totalTokensToSend: 1000000000000000000000000,
   holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6", 
-  minTokenCount: 300000000000000000000000,
+  minTokenCount: 3000000000000000000000000,
   howManyToSendTo: 50,
   howManyToCheck: 400,
   PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.  
@@ -57,7 +57,7 @@ const excludedList = [
 
 ]
 
-const w = new Web3(GLOBALS.LOGGER_RPC);
+const w = new Web3(GLOBALS.LOGGER_RPC_OUTPUT);
 const senderAddress = w.eth.accounts.privateKeyToAccount(
   GLOBALS.PRIVATE_KEY
 ).address;
@@ -291,7 +291,7 @@ const sendTokens = async() => {
     console.log("estimate:", estimation.toString())
     totalGas = totalGas.plus(new BigNumber(estimation.toString()))
 
-    /*  
+     
     // to Send out!
 
       const tx = await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
@@ -302,7 +302,7 @@ const sendTokens = async() => {
       if (receipt.status) {
         console.log('Transaction Success', receipt.status)
       }
-*/    
+    
      last = end
      saveLastSent()
      start = start + GLOBALS.howManyToSendTo
@@ -414,7 +414,9 @@ const doesFullListExist = () => {
 }
 
 const init = async() => {
-  
+
+  const preBal =  await  w.eth.getBalance(senderAddress)
+  console.log(preBal)
     if(!doesHolderListExist()) await  getEvents()
     else await loadHConfig()
 
@@ -424,8 +426,9 @@ const init = async() => {
   await loadLast()
   
   await sendTokens()
+  const postBal = await w.eth.getBalance(senderAddress)
 
-  
+  console.log("Spent:", new BigNumber(preBal).minus(postBal).shiftedBy(-18).toFixed(8))
   
 }
 
