@@ -21,7 +21,7 @@ if (result.error) {
 
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",            
+  airdropTokenAddress: "0xf8289C4706fFfA3AC83480BE0fa55E20dE383150",            
   totalTokensToSend: 1000000000000000000000000,
   holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6", 
   minTokenCount: 300000000000000000000000,
@@ -29,7 +29,8 @@ const GLOBALS = {
   howManyToCheck: 400,
   PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.  
   LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
-  airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF",
+  LOGGER_RPC_OUTPUT: "https://rpc.ankr.com/bsc_testnet_chapel",         // bsc testnet
+  airDropperAddress: "0xA24Cb1E60a9b798889DFfE5d10FEb2c4Ba79CD1C",      // bsc testnet
 }
   
 
@@ -68,14 +69,14 @@ let last
 
 
 const provider =  new JsonRpcProvider(GLOBALS.LOGGER_RPC)
-const bscProvider = new JsonRpcProvider(GLOBALS.LOGGER_RPC)
+const bscProvider = new JsonRpcProvider(GLOBALS.LOGGER_RPC_OUTPUT)
 
 const watcher = new Wallet(
   GLOBALS.PRIVATE_KEY,
   provider
 );
 
-const bscsigner = new Wallet(
+const outputSigner = new Wallet(
   GLOBALS.PRIVATE_KEY,
   bscProvider
 );
@@ -89,13 +90,13 @@ let HolderContract = new Contract(
 let dropTokenContract = new Contract(
   GLOBALS.airdropTokenAddress,
   abi,
-  watcher
+  outputSigner
 );
 
 let AirDropper = new Contract(
   GLOBALS.airDropperAddress,
   aabi,
-  bscsigner
+  outputSigner
 );
 
 const getStakedInPoolList = async () => {
@@ -147,7 +148,8 @@ const getStakedInPoolList = async () => {
           ledger = await SingleContract.ledger(stakedList[i], a)
         }
         if(!ledger.ended) {
-          totalAmount = new BigNumber(totalAmount).plus(ledger.amount.toString())
+          const interest = await PoolContract.get_gains(stakedList[i], a)
+          totalAmount = new BigNumber(totalAmount).plus(ledger.amount.toString()).plus(interest.toString())
         }
       }
       
@@ -235,11 +237,11 @@ const getEvents = async () => {
   saveNewHConfig()
 }
 
-const setAllowanceTo = "999999999999999999999999999999999999999999999999"
+const setAllowanceTo = "999999999999999999999999999999999999999999999999999999999999"
 
 const sendTokens = async() => {
   const totalTokenCount= await getTotalTokenCount()
-  /*
+  
   const allow = await dropTokenContract.allowance(senderAddress, GLOBALS.airDropperAddress).catch((err) => {
     console.log(err, "failed to get allowance")
     process.exit()
@@ -254,7 +256,7 @@ const sendTokens = async() => {
   } else {
     console.log("approval Good", allowed)
   }
-*/
+
   let totalGas = new BigNumber(0)
 
   let sentTo = 0
