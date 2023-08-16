@@ -21,16 +21,16 @@ if (result.error) {
 
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  howManyToSendTo: 50,
+  howManyToSendTo: 100,
   howManyToCheck: 400,
   minTokenCount: 300000000000000000000000,
   // CIC CHAIN STUFF
   PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.
   holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6",                 // token to get holder list from
-  airdropTokenAddress: "0xe14c5cA49EC3F549eB8d82FaBDF415EBaBC8a9c8",                // token to be airdropped
-  LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
-  // LOGGER_RPC: "http://49.12.187.86:22000/",
-  airDropperAddress: "0x3194218f0de32DdC1EeBb4FC946105D6298737dF",
+  airdropTokenAddress: "0xa3Edf9D5C65b6a1A518d648269ffFd2305191b0B",                // token to be airdropped
+  LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",  // eth mainnet
+  LOGGER_RPC_OUTPUT: "https://rpc.ankr.com/bsc_testnet_chapel",         // bsc testnet
+  airDropperAddress: "0xA24Cb1E60a9b798889DFfE5d10FEb2c4Ba79CD1C",              // bsc testnet
 }
 
 const poolsToCheck = [
@@ -68,14 +68,14 @@ let last
 
 
 const provider =  new JsonRpcProvider(GLOBALS.LOGGER_RPC)
-const bscProvider = new JsonRpcProvider(GLOBALS.LOGGER_RPC)
+const bscProvider = new JsonRpcProvider(GLOBALS.LOGGER_RPC_OUTPUT)
 
 const watcher = new Wallet(
   GLOBALS.PRIVATE_KEY,
   provider
 );
 
-const bscsigner = new Wallet(
+const outputSigner = new Wallet(
   GLOBALS.PRIVATE_KEY,
   bscProvider
 );
@@ -89,13 +89,13 @@ let HolderContract = new Contract(
 let dropTokenContract = new Contract(
   GLOBALS.airdropTokenAddress,
   abi,
-  watcher
+  outputSigner
 );
 
 let AirDropper = new Contract(
   GLOBALS.airDropperAddress,
   aabi,
-  bscsigner
+  outputSigner
 );
 
 const getStakedInPoolList = async () => {
@@ -142,12 +142,13 @@ const getStakedInPoolList = async () => {
       for(let a=0; a<length; a++) {
         let ledger = []
         try { 
-          ledger = await PoolContract.ledger(stakedList[i], a) 
+          ledger = await PoolContract.ledger(stakedList[i], a)
         } catch {
           ledger = await SingleContract.ledger(stakedList[i], a)
         }
         if(!ledger.ended) {
-          totalAmount = new BigNumber(totalAmount).plus(ledger.amount.toString())
+          const interest = await PoolContract.get_gains(stakedList[i], a)
+          totalAmount = new BigNumber(totalAmount).plus(ledger.amount.toString()).plus(interest.toString())
         }
       }
       
@@ -235,10 +236,10 @@ const getEvents = async () => {
   saveNewHConfig()
 }
 
-const setAllowanceTo = "999999999999999999999999999999999999999999999999"
+const setAllowanceTo = "99999999999999999999999999999999999999999999999999999999999999999999999999"
 
 const sendTokens = async() => {
-  /*
+  
   const allow = await dropTokenContract.allowance(senderAddress, GLOBALS.airDropperAddress).catch((err) => {
     console.log(err, "failed to get allowance")
     process.exit()
@@ -253,7 +254,7 @@ const sendTokens = async() => {
   } else {
     console.log("approval Good", allowed)
   }
-*/
+
   let totalGas = new BigNumber(0)
 
   let sentTo = 0
@@ -277,7 +278,7 @@ const sendTokens = async() => {
       }
     }
 
-  
+    console.log(totalSent.toFixed(0))
     // for gas estimating
     const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
       console.log(err, "Failed to Estimate gas")
