@@ -21,17 +21,17 @@ if (result.error) {
 
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  airdropTokenAddress: "0xf8289C4706fFfA3AC83480BE0fa55E20dE383150",            
+  airdropTokenAddress: "0xBD1EfB3643C9F3c679eFf55eEa332ECd7427EF74",            
   totalTokensToSend: 20000000000000000000000000,
   holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6", 
-  minTokenCount: 3000000000000000000000000,
-  howManyToSendTo: 50,
+  minTokenCount: 2000000000000000000000000,
+  howManyToSendTo: 200,
   howManyToCheck: 400,
   PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.  
   LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
   LOGGER_RPC_OUTPUT: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
-  // LOGGER_RPC_OUTPUT: "https://www.shibrpc.com",         // bsc testnet
-  airDropperAddress: "0xBe0223f65813C7c82E195B48F8AAaAcb304FbAe7",      // bsc testnet
+  // LOGGER_RPC_OUTPUT: "https://www.shibrpc.com",         // shibarium mainnet
+  airDropperAddress: "0xBe0223f65813C7c82E195B48F8AAaAcb304FbAe7",      // ethereum dropper
 }
   
 
@@ -254,6 +254,7 @@ const sendTokens = async() => {
       process.exit()
     })
     console.log("approved")
+    
   } else {
     console.log("approval Good", allowed)
   }
@@ -269,9 +270,13 @@ const sendTokens = async() => {
   let end = last + GLOBALS.howManyToSendTo
   end = end > final ? final : end
   const runs = leftToSend / GLOBALS.howManyToSendTo
+
+  let finalList = []
+
   for(let a=0; a<runs; a++){
     let holdersToSendTo = []
     let amountsToSend = []
+
     for(let i=start; i<end; i++){
       if(new BigNumber(airdropList[i][1]).gte(GLOBALS.minTokenCount)){
         holdersToSendTo.push(airdropList[i][0])
@@ -280,10 +285,11 @@ const sendTokens = async() => {
         amountsToSend.push(newTokensToSend.toFixed(0))
         sentTo ++
         totalSent = new BigNumber(totalSent).plus(newTokensToSend)
+
+        finalList.push([airdropList[i][0], newTokensToSend.toFixed(0)])
       }
     }
 
-  
     // for gas estimating
     const estimation = await AirDropper.estimateGas.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
       console.log(err, "Failed to Estimate gas")
@@ -303,6 +309,7 @@ const sendTokens = async() => {
       if (receipt.status) {
         console.log('Transaction Success', receipt.status)
       }
+      
     
      last = end
      saveLastSent()
@@ -310,6 +317,10 @@ const sendTokens = async() => {
      end = end + GLOBALS.howManyToSendTo
      end = end > final ? final : end
   }
+
+  let path = `./finalList.json`
+  fs.writeFileSync(path, JSON.stringify(finalList, null, 2))
+
   last = 0
   saveLastSent()
   console.log("Sent To All Addresses:", sentTo.toString())
@@ -330,6 +341,7 @@ const saveLastSent = async () => {
   let path = `./last.json`
   fs.writeFileSync(path, JSON.stringify(last, null, 2))
 };
+
 
 const loadHConfig = async () => {
   let path = `./hlist.json`
@@ -418,6 +430,8 @@ const init = async() => {
 
   const preBal =  await  w.eth.getBalance(senderAddress)
   console.log(preBal)
+  const gasPriceWei = await w.eth.getGasPrice();
+    console.log('Gas Price in Wei:', gasPriceWei);
     if(!doesHolderListExist()) await  getEvents()
     else await loadHConfig()
 
@@ -426,7 +440,7 @@ const init = async() => {
 
    await loadLast()
   
-   // await sendTokens()
+   await sendTokens()
   const postBal = await w.eth.getBalance(senderAddress)
 
   console.log("Spent:", new BigNumber(preBal).minus(postBal).shiftedBy(-18).toFixed(8))
