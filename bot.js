@@ -22,15 +22,16 @@ if (result.error) {
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
   airdropTokenAddress: "0xf8289C4706fFfA3AC83480BE0fa55E20dE383150",            
-  totalTokensToSend: 1000000000000000000000000,
+  totalTokensToSend: 20000000000000000000000000,
   holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6", 
   minTokenCount: 3000000000000000000000000,
   howManyToSendTo: 50,
   howManyToCheck: 400,
   PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.  
   LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
-  LOGGER_RPC_OUTPUT: "https://rpc.ankr.com/bsc_testnet_chapel",         // bsc testnet
-  airDropperAddress: "0xA24Cb1E60a9b798889DFfE5d10FEb2c4Ba79CD1C",      // bsc testnet
+  LOGGER_RPC_OUTPUT: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
+  // LOGGER_RPC_OUTPUT: "https://www.shibrpc.com",         // bsc testnet
+  airDropperAddress: "0xBe0223f65813C7c82E195B48F8AAaAcb304FbAe7",      // bsc testnet
 }
   
 
@@ -148,8 +149,8 @@ const getStakedInPoolList = async () => {
           ledger = await SingleContract.ledger(stakedList[i], a)
         }
         if(!ledger.ended) {
-          const interest = await PoolContract.get_gains(stakedList[i], a)
-          totalAmount = new BigNumber(totalAmount).plus(ledger.amount.toString()).plus(interest.toString())
+          // const interest = await PoolContract.get_gains(stakedList[i], a)
+          totalAmount = new BigNumber(totalAmount).plus(ledger.amount.toString()) // .plus(interest.toString())
         }
       }
       
@@ -423,9 +424,9 @@ const init = async() => {
     if(!doesFullListExist()) await  getStakedInPoolList()
     else loadFullConfig()
 
-  await loadLast()
+   await loadLast()
   
-  await sendTokens()
+   // await sendTokens()
   const postBal = await w.eth.getBalance(senderAddress)
 
   console.log("Spent:", new BigNumber(preBal).minus(postBal).shiftedBy(-18).toFixed(8))
