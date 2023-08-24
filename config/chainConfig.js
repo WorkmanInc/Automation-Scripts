@@ -50,13 +50,13 @@ let chain = [
       ]
     },
     {
-      LONGNAME: "Puppy Net",
+      LONGNAME: "Shibarium",
       NAME: "BONE",
-      RPC: "https://puppynet.shibrpc.com",
-      EXP: "https://puppyscan.shib.io",
-      NATIVE: "0x888888888030F38cF1CdA6aD34cCCcB0f83Cd86a",
+      RPC: "https://www.shibrpc.com",
+      EXP: "https://shibariumscan.io",
+      NATIVE: "0x6c19A35875217b134e963ca9e61b005b855CAD21",
       BASES: [
-          "0x888888888030F38cF1CdA6aD34cCCcB0f83Cd86a" // WBONE
+          "0x6c19A35875217b134e963ca9e61b005b855CAD21" // WBONE
       ]
     },
     
@@ -146,7 +146,7 @@ let exchange = [
     {
       LONGNAME: "MarSwap",
       NAME: "MSWAP",
-      FACTORY: "0xab36952e4cbaF430A4BbaA85B92832BeF9125866",
+      FACTORY: "0xBe0223f65813C7c82E195B48F8AAaAcb304FbAe7",
       CHAIN: chain[4],
       DOTS: "💶"
     },
