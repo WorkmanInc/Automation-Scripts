@@ -12,7 +12,8 @@ const axios = require(`axios`);
 const {
   chain,
   exchange,
-  ads
+  ads,
+  baseCheckers
 } = require("./config/chainConfig");
 
 const result = dotenv.config();
@@ -1104,7 +1105,7 @@ const getPrice = async (lp, cIndex, cicPrice, gotOne, Index) => {
 
   const dec = new BigNumber(bDecimals - tDecimals)
   const baseIsNative = baseToken === exchange[cIndex].CHAIN.NATIVE
-  const basePrice = baseIsNative ? cicPrice : 1
+  const basePrice = baseIsNative ? cicPrice : isWETH(baseToken) ? await getSymPrice("ETH") : 1
 
   const tsRaw = await tContract.totalSupply()
   const bRaw = await tContract.balanceOf("0x000000000000000000000000000000000000dEaD")
@@ -1426,6 +1427,7 @@ const startListener = async (index) => {
     signer
   );
 
+
   lpcontract.on("Swap", async( sender, amount0In, amount1In, amount0Out, amount1Out, to, event) => {
     let rawPrice
     try {
@@ -1439,7 +1441,7 @@ const startListener = async (index) => {
     const receiver = to.toString()
     const buyer = sender.toString()
 
-    const basePrice = baseIsNative ? rawPrice : 1
+    const basePrice = baseIsNative ? rawPrice : isWETH(TConfig.BASETOKEN) ? await getSymPrice("ETH") : 1
 
     const inAmount = baseIs0 ? amount0In : amount1In
     const outAmount = baseIs0 ? amount1Out : amount0Out
@@ -1452,6 +1454,13 @@ const startListener = async (index) => {
   
   });
   console.log(`Loaded For ${TConfig.TOKEN} | In ${TConfig.CHANNEL.length} Channels`)
+}
+
+const isWETH = async(checkThis) => {
+  for(let i=0; i<baseCheckers.WETH.length; i++) {
+    if(checkThis = baseCheckers.WETH[i]) return true
+  }
+  return false
 }
 
 const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice, mc) => {

@@ -56,11 +56,31 @@ let chain = [
       EXP: "https://shibariumscan.io",
       NATIVE: "0x6c19A35875217b134e963ca9e61b005b855CAD21",
       BASES: [
-          "0x6c19A35875217b134e963ca9e61b005b855CAD21" // WBONE
+          "0x6c19A35875217b134e963ca9e61b005b855CAD21", // WBONE
+          "0x8ed7d143Ef452316Ab1123d28Ab302dC3b80d3ce", // WETH
       ]
     },
     
   ];
+
+const baseCheckers = {
+  WETH: [
+    "0x8ed7d143Ef452316Ab1123d28Ab302dC3b80d3ce",
+  ],
+  USD: [
+    "0xc21223249CA28397B4B6541dfFaEcC539BfF0c59",
+    "0x66e428c3f67a68878562e79A0234c1F83c208770",
+    "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "0x4Fabb145d64652a948d72533023f6E7A623C7C53",
+    "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+    "0x524bC91Dc82d6b90EF29F76A3ECAaBAffFD490Bc",
+    "0xB04906e95AB5D797aDA81508115611fee694c2b3",
+    "0xE68b79e51bf826534Ff37AA9CeE71a3842ee9c70",
+    "0xa058C1e4813cf433B0A0c7736f71bD7A73FFA513"
+  ]
+}
+
 
   
 let exchange = [
@@ -168,5 +188,6 @@ let exchange = [
   module.exports = {
     chain,
     exchange,
-    ads
+    ads,
+    baseCheckers
   }
