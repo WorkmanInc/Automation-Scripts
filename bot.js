@@ -1,6 +1,8 @@
 
 const dotenv = require("dotenv");
 const fs = require("fs");
+const csvParser = require('csv-parser');
+const path = require('path');
 // const sleep = require("util").promisify(setTimeout);
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { Wallet } = require("@ethersproject/wallet");
@@ -19,9 +21,25 @@ if (result.error) {
   // throw result.error;
 }
 
+const dataArray = [];
+
+const getCSV = () => {
+const csvFilePath = path.resolve(__dirname, 'ad.csv'); // Adjust the file name
+fs.createReadStream(csvFilePath)
+  .pipe(csvParser({ headers: false }))
+  .on('data', (row) => {
+    // Process each row and push it into the dataArray
+    dataArray.push(row);
+  })
+  .on('end', () => {
+    console.log('CSV file successfully processed.');
+    // console.log(dataArray); // The array containing parsed CSV data
+  });
+
+}
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  airdropTokenAddress: "0xBD1EfB3643C9F3c679eFf55eEa332ECd7427EF74",            
+  airdropTokenAddress: "0x9A221E39DD82Eb91c25800bB24d129aEdC76737D",            
   totalTokensToSend: 20000000000000000000000000,
   holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6", 
   minTokenCount: 2000000000000000000000000,
@@ -29,9 +47,10 @@ const GLOBALS = {
   howManyToCheck: 400,
   PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.  
   LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
-  LOGGER_RPC_OUTPUT: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
-  // LOGGER_RPC_OUTPUT: "https://www.shibrpc.com",         // shibarium mainnet
-  airDropperAddress: "0xBe0223f65813C7c82E195B48F8AAaAcb304FbAe7",      // ethereum dropper
+  // LOGGER_RPC_OUTPUT: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
+  LOGGER_RPC_OUTPUT: "https://www.shibrpc.com",         // shibarium mainnet
+  // airDropperAddress: "0xBe0223f65813C7c82E195B48F8AAaAcb304FbAe7",      // ethereum dropper
+  airDropperAddress: "0xDE501B2124Af0D4b82210592A2DeDcea248aEf43",
 }
   
 
@@ -65,7 +84,7 @@ const senderAddress = w.eth.accounts.privateKeyToAccount(
 
 let airdropList = []
 let poolList = []
-let last
+let last = 0
 
 
 
@@ -241,7 +260,7 @@ const getEvents = async () => {
 const setAllowanceTo = "999999999999999999999999999999999999999999999999999999999999"
 
 const sendTokens = async() => {
-  const totalTokenCount= await getTotalTokenCount()
+  // const totalTokenCount= await getTotalTokenCount()
   
   const allow = await dropTokenContract.allowance(senderAddress, GLOBALS.airDropperAddress).catch((err) => {
     console.log(err, "failed to get allowance")
@@ -264,7 +283,7 @@ const sendTokens = async() => {
   let sentTo = 0
   let totalSent = new BigNumber(0)
 
-  const final = airdropList.length
+  const final = dataArray.length
   const leftToSend = final - last
   let start = last
   let end = last + GLOBALS.howManyToSendTo
@@ -272,22 +291,21 @@ const sendTokens = async() => {
   const runs = leftToSend / GLOBALS.howManyToSendTo
 
   let finalList = []
-
   for(let a=0; a<runs; a++){
     let holdersToSendTo = []
     let amountsToSend = []
-
     for(let i=start; i<end; i++){
-      if(new BigNumber(airdropList[i][1]).gte(GLOBALS.minTokenCount)){
-        holdersToSendTo.push(airdropList[i][0])
+        holdersToSendTo.push(dataArray[i][0])
         // calculate amount to send based on holdings of HOLDERTOKEN (MSWAP)
-        const newTokensToSend = (new BigNumber(GLOBALS.totalTokensToSend).multipliedBy(airdropList[i][1])).dividedBy(totalTokenCount)
-        amountsToSend.push(newTokensToSend.toFixed(0))
+        // const newTokensToSend = (new BigNumber(GLOBALS.totalTokensToSend).multipliedBy(dataArray[i][1])).dividedBy(totalTokenCount)
+        const sendAmount = new BigNumber(dataArray[i][1].slice(0, -11)).shiftedBy(18).toFixed(0)
+        console.log(sendAmount)
+        amountsToSend.push(sendAmount)
         sentTo ++
-        totalSent = new BigNumber(totalSent).plus(newTokensToSend)
+        totalSent = new BigNumber(totalSent).plus(sendAmount)
 
-        finalList.push([airdropList[i][0], newTokensToSend.toFixed(0)])
-      }
+        finalList.push([dataArray[i][0], sendAmount])
+      
     }
 
     // for gas estimating
@@ -428,23 +446,25 @@ const doesFullListExist = () => {
 
 const init = async() => {
 
-  const preBal =  await  w.eth.getBalance(senderAddress)
-  console.log(preBal)
-  const gasPriceWei = await w.eth.getGasPrice();
-    console.log('Gas Price in Wei:', gasPriceWei);
-    if(!doesHolderListExist()) await  getEvents()
-    else await loadHConfig()
+ //  const preBal =  await  w.eth.getBalance(senderAddress)
+ // console.log(preBal)
+ // const gasPriceWei = await w.eth.getGasPrice();
+ //   console.log('Gas Price in Wei:', gasPriceWei);
+ //   if(!doesHolderListExist()) await  getEvents()
+ //   else await loadHConfig()
 
-    if(!doesFullListExist()) await  getStakedInPoolList()
-    else loadFullConfig()
+ //  if(!doesFullListExist()) await  getStakedInPoolList()
+ //   else loadFullConfig()
 
-   await loadLast()
+ //  await loadLast()
   
-   await sendTokens()
-  const postBal = await w.eth.getBalance(senderAddress)
+ //  await sendTokens()
+ // const postBal = await w.eth.getBalance(senderAddress)
 
-  console.log("Spent:", new BigNumber(preBal).minus(postBal).shiftedBy(-18).toFixed(8))
-  
+ // console.log("Spent:", new BigNumber(preBal).minus(postBal).shiftedBy(-18).toFixed(8))
+  await getCSV()
+  await sendTokens()
+
 }
 
 init()
