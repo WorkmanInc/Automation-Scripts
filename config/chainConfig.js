@@ -56,8 +56,9 @@ let chain = [
       EXP: "https://shibariumscan.io",
       NATIVE: "0x6c19A35875217b134e963ca9e61b005b855CAD21",
       BASES: [
-          "0x6c19A35875217b134e963ca9e61b005b855CAD21", // WBONE
+          "0x6c19A35875217b134e963ca9e61b005b855CAD21", // WBONE - MARS
           "0x8ed7d143Ef452316Ab1123d28Ab302dC3b80d3ce", // WETH
+          "0xC76F4c819D820369Fb2d7C1531aB3Bb18e6fE8d8", // WBONE - SHIB
       ]
     },
     
