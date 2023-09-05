@@ -274,9 +274,9 @@ bot.onText(/^\?help/, async function(message, match) {
        // "*/perdot* <tokenAddress > <amount>\n" + 
        // "Set $ Per Dot for Token\n" +
        // "\n" +
-       // "*/changedot* <emoji>\n" + 
-       // "Change the Emoji!\n" +
-       // "\n" + */
+       "*/changedot* <emoji>\n" + 
+       "Change the Emoji!\n" +
+       "\n" +
        "*??<symbol>* Checks price of Asset\n" +
        "\n" +
        "*??*<tokenAddress> <dex>\n" +
@@ -1469,6 +1469,10 @@ const isBONE = async(checkThis) => {
   return false
 }
 
+const getDexTools = (pairAddress) => {
+  
+}
+
 const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice, mc) => {
   const TConfig = configs[index]
   const c = TConfig.CHANNEL
@@ -1497,7 +1501,8 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         `[ TX  ](${dex.CHAIN.EXP}tx/${txhash})` +
         ` | ` + 
         `[ Buyer ](${dex.CHAIN.EXP}address/${buyer})` + ` | ` +
-        `[ Receiver ](${dex.CHAIN.EXP}address/${receiver})\n` +
+        `[ Receiver ](${dex.CHAIN.EXP}address/${receiver})` + `|` +
+        `[ DexTools ](https://www.dextools.io/app/en/ether/pair-explorer/${TConfig.LPAddress})\n`
          getAdLink() +
         `\n` +
         link
