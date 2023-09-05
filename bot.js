@@ -1297,6 +1297,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
               `*Price:* $${price}\n` +
               `*MCap:* $${new BigNumber(mc).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
               `*${exchange[cIndex].CHAIN.NAME} Price:* $${cicPrice}\n` +
+              `[ DexTools ](https://www.dextools.io/app/en/${dex.CHAIN.DEXTOOLS}/pair-explorer/${TConfig.LPAddress})\n` +
               getAdLink() + "\n" +
               link
               ,cid, thread);
@@ -1469,10 +1470,6 @@ const isBONE = async(checkThis) => {
   return false
 }
 
-const getDexTools = (pairAddress) => {
-  
-}
-
 const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, cicPrice, mc) => {
   const TConfig = configs[index]
   const c = TConfig.CHANNEL
@@ -1502,7 +1499,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         ` | ` + 
         `[ Buyer ](${dex.CHAIN.EXP}address/${buyer})` + ` | ` +
         `[ Receiver ](${dex.CHAIN.EXP}address/${receiver})` + `|` +
-        `[ DexTools ](https://www.dextools.io/app/en/${dex.CHAIN.DEXTOOLS}/pair-explorer/${TConfig.LPAddress})\n`
+        `[ DexTools ](https://www.dextools.io/app/en/${dex.CHAIN.DEXTOOLS}/pair-explorer/${TConfig.LPAddress})\n` +
          getAdLink() +
         `\n` +
         link
