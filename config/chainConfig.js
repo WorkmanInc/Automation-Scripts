@@ -1,6 +1,7 @@
 let chain = [
     {
       LONGNAME: "Crazy Internet Coin",
+      DEXTOOLS: "cic",
       NAME: "CIC",
       RPC: "https://xapi.cicscan.com/",
       EXP: "https://cicscan.com/",
@@ -12,6 +13,7 @@ let chain = [
     },
     {
       LONGNAME: "Binance",
+      DEXTOOLS: "bnb",
       NAME: "BNB",
       RPC: "https://rpc.ankr.com/bsc/709f04e966e51d80d11fa585174f074c86d07265220a1892ee0485defed74cf6/",
       EXP: "https://bscscan.com/",
@@ -26,6 +28,7 @@ let chain = [
     },
     {
       LONGNAME: "Ethereum",
+      DEXTOOLS: "ether",
       NAME: "ETH",
       RPC: "https://rpc.ankr.com/eth/a43f07a7be6cc42d81c31ccab2f9a43e71a3713d40c4809cc4a9886839d5cb76/",
       EXP: "https://etherscan.io/",
@@ -39,6 +42,7 @@ let chain = [
     },
     {
       LONGNAME: "Cronos",
+      DEXTOOLS: "cronos",
       NAME: "CRO",
       RPC: "https://evm.cronos.org/",
       EXP: "https://cronoscan.com/",
@@ -51,9 +55,10 @@ let chain = [
     },
     {
       LONGNAME: "Shibarium",
+      DEXTOOLS: "shibarium",
       NAME: "BONE",
       RPC: "https://www.shibrpc.com",
-      EXP: "https://shibariumscan.io/",
+      EXP: "https://shibariumscan.io",
       NATIVE: "0xC76F4c819D820369Fb2d7C1531aB3Bb18e6fE8d8",
       BASES: [
           "0x6c19A35875217b134e963ca9e61b005b855CAD21", // WBONE - MARS

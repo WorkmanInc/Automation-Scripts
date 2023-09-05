@@ -1502,7 +1502,7 @@ const sendBuyBotMessage = async (index, bought, FRTcValue, spent, txhash, receiv
         ` | ` + 
         `[ Buyer ](${dex.CHAIN.EXP}address/${buyer})` + ` | ` +
         `[ Receiver ](${dex.CHAIN.EXP}address/${receiver})` + `|` +
-        `[ DexTools ](https://www.dextools.io/app/en/ether/pair-explorer/${TConfig.LPAddress})\n`
+        `[ DexTools ](https://www.dextools.io/app/en/${dex.CHAIN.DEXTOOLS}/pair-explorer/${TConfig.LPAddress})\n`
          getAdLink() +
         `\n` +
         link
