@@ -1105,7 +1105,7 @@ const getPrice = async (lp, cIndex, cicPrice, gotOne, Index) => {
 
   const dec = new BigNumber(bDecimals - tDecimals)
   const baseIsNative = baseToken === exchange[cIndex].CHAIN.NATIVE
-  const basePrice = baseIsNative ? cicPrice : isWETH(baseToken) ? await getSymPrice("ETH") : 1
+  const basePrice = baseIsNative ? cicPrice : isWETH(baseToken) ? await getSymPrice("ETH") : isBONE(baseToken) ? await getSymPrice("BONE") : 1
 
   const tsRaw = await tContract.totalSupply()
   const bRaw = await tContract.balanceOf("0x000000000000000000000000000000000000dEaD")
@@ -1441,7 +1441,7 @@ const startListener = async (index) => {
     const receiver = to.toString()
     const buyer = sender.toString()
 
-    const basePrice = baseIsNative ? rawPrice : isWETH(TConfig.BASETOKEN) ? await getSymPrice("ETH") : 1
+    const basePrice = baseIsNative ? rawPrice : isWETH(TConfig.BASETOKEN) ? await getSymPrice("ETH") : isBONE(baseToken) ? await getSymPrice("BONE") : 1
 
     const inAmount = baseIs0 ? amount0In : amount1In
     const outAmount = baseIs0 ? amount1Out : amount0Out
@@ -1459,6 +1459,12 @@ const startListener = async (index) => {
 const isWETH = async(checkThis) => {
   for(let i=0; i<baseCheckers.WETH.length; i++) {
     if(checkThis = baseCheckers.WETH[i]) return true
+  }
+  return false
+}
+const isBONE = async(checkThis) => {
+  for(let i=0; i<baseCheckers.WBONE.length; i++) {
+    if(checkThis = baseCheckers.WBONE[i]) return true
   }
   return false
 }
