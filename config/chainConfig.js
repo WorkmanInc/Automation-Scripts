@@ -58,7 +58,7 @@ let chain = [
       DEXTOOLS: "shibarium",
       NAME: "BONE",
       RPC: "https://www.shibrpc.com",
-      EXP: "https://shibariumscan.io",
+      EXP: "https://shibariumscan.io/",
       NATIVE: "0xC76F4c819D820369Fb2d7C1531aB3Bb18e6fE8d8",
       BASES: [
           "0x6c19A35875217b134e963ca9e61b005b855CAD21", // WBONE - MARS
