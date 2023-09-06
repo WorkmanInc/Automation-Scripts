@@ -39,14 +39,15 @@ fs.createReadStream(csvFilePath)
 }
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  airdropTokenAddress: "0x9A221E39DD82Eb91c25800bB24d129aEdC76737D",            
+  airdropTokenAddress: "",            
   totalTokensToSend: 20000000000000000000000000,
-  holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6", 
+  holderTokenAddress: "0x9A221E39DD82Eb91c25800bB24d129aEdC76737D", 
   minTokenCount: 2000000000000000000000000,
   howManyToSendTo: 200,
   howManyToCheck: 400,
   PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.  
-  LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
+  LOGGER_RPC: "https://www.shibrpc.com",         // shibarium mainnet
+  // LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
   // LOGGER_RPC_OUTPUT: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
   LOGGER_RPC_OUTPUT: "https://www.shibrpc.com",         // shibarium mainnet
   // airDropperAddress: "0xBe0223f65813C7c82E195B48F8AAaAcb304FbAe7",      // ethereum dropper
@@ -61,11 +62,13 @@ const poolsToCheck = [
 ]
 
 // add any other addresses that should be removed from the airdropping.
+// mswap exlcusion
+/*
 const excludedList = [
   "0x929c4F3F7528f64d1ab93554E2497503F233E2D8", // LPTOKEN
   "0x0000000000000000000000000000000000000000",
   "0x000000000000000000000000000000000000dEaD",
-  "0x048cb93e234a65C7da2da20550ef63Be63CDb6F0", // POOL
+  "0xeaA637D32815b98453c9c9D20d1e2Ec0b5C28334", // POOL
   "0xA60b1f1b6E8e05b65647B6C3701B624093700B57", // POOL
   "0xc88f23fABfD264AeE6DF7a98052fBea4E92b7419", // POOL
   "0x71B5759d73262FBb223956913ecF4ecC51057641", // LOCKER
@@ -75,6 +78,11 @@ const excludedList = [
   "0x28C6c06298d514Db089934071355E5743bf21d60", // binance
   "0x46340b20830761efd32832A74d7169B29FEB9758", // crypto.com
 
+]
+*/
+const excludedList = [
+  "0xeaA637D32815b98453c9c9D20d1e2Ec0b5C28334", 
+  "0xB3170D501C68f584d3b0E286e17C817233b5a090", // LPTOKEN
 ]
 
 const w = new Web3(GLOBALS.LOGGER_RPC_OUTPUT);
@@ -298,7 +306,7 @@ const sendTokens = async() => {
         holdersToSendTo.push(dataArray[i][0])
         // calculate amount to send based on holdings of HOLDERTOKEN (MSWAP)
         // const newTokensToSend = (new BigNumber(GLOBALS.totalTokensToSend).multipliedBy(dataArray[i][1])).dividedBy(totalTokenCount)
-        const sendAmount = new BigNumber(dataArray[i][1].slice(0, -11)).shiftedBy(18).toFixed(0)
+        const sendAmount = new BigNumber(dataArray[i][1])
         console.log(sendAmount)
         amountsToSend.push(sendAmount)
         sentTo ++
@@ -446,24 +454,24 @@ const doesFullListExist = () => {
 
 const init = async() => {
 
- //  const preBal =  await  w.eth.getBalance(senderAddress)
- // console.log(preBal)
- // const gasPriceWei = await w.eth.getGasPrice();
- //   console.log('Gas Price in Wei:', gasPriceWei);
- //   if(!doesHolderListExist()) await  getEvents()
- //   else await loadHConfig()
+ const preBal =  await  w.eth.getBalance(senderAddress)
+ console.log(preBal)
+ const gasPriceWei = await w.eth.getGasPrice();
 
- //  if(!doesFullListExist()) await  getStakedInPoolList()
- //   else loadFullConfig()
+    console.log('Gas Price in Wei:', gasPriceWei);
+    if(!doesHolderListExist()) await  getEvents()
+    else await loadHConfig()
 
- //  await loadLast()
+   // if(!doesFullListExist()) await  getStakedInPoolList()
+   // else loadFullConfig()
+
+   await loadLast()
   
  //  await sendTokens()
- // const postBal = await w.eth.getBalance(senderAddress)
+  const postBal = await w.eth.getBalance(senderAddress)
 
- // console.log("Spent:", new BigNumber(preBal).minus(postBal).shiftedBy(-18).toFixed(8))
-  await getCSV()
-  await sendTokens()
+  console.log("Spent:", new BigNumber(preBal).minus(postBal).shiftedBy(-18).toFixed(8))
+ //  await getCSV()
 
 }
 
