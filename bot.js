@@ -9,10 +9,10 @@ const { Wallet } = require("@ethersproject/wallet");
 const { Contract } = require("ethers");
 const BigNumber = require("bignumber.js");
 
-const abi = require("./token.json");
-const aabi = require("./airdropper.json");
-const pabi = require("./Dual.json")
-const sabi = require('./single.json')
+const abi = require("./abi/token.json");
+const aabi = require("./abi/airdropper.json");
+const pabi = require("./abi/Dual.json")
+const sabi = require('./abi/single.json')
 
 const Web3 = require("web3");
 
@@ -39,10 +39,10 @@ fs.createReadStream(csvFilePath)
 }
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  airdropTokenAddress: "",            
-  totalTokensToSend: 20000000000000000000000000,
+  airdropTokenAddress: "0x0Ed356Bae3718Bb6A4F4106603Ab07964f4130F6",            
+  // totalTokensToSend: 20000000000000000000000000,
   holderTokenAddress: "0x9A221E39DD82Eb91c25800bB24d129aEdC76737D", 
-  minTokenCount: 2000000000000000000000000,
+  // minTokenCount: 2000000000000000000000000,
   howManyToSendTo: 200,
   howManyToCheck: 400,
   PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.  
@@ -268,8 +268,9 @@ const getEvents = async () => {
 const setAllowanceTo = "999999999999999999999999999999999999999999999999999999999999"
 
 const sendTokens = async() => {
-  // const totalTokenCount= await getTotalTokenCount()
-  
+  const totalTokenCount= await getTotalTokenCount()
+  console.log(totalTokenCount.toString())
+    
   const allow = await dropTokenContract.allowance(senderAddress, GLOBALS.airDropperAddress).catch((err) => {
     console.log(err, "failed to get allowance")
     process.exit()
@@ -291,7 +292,7 @@ const sendTokens = async() => {
   let sentTo = 0
   let totalSent = new BigNumber(0)
 
-  const final = dataArray.length
+  const final = airdropList.length
   const leftToSend = final - last
   let start = last
   let end = last + GLOBALS.howManyToSendTo
@@ -303,16 +304,15 @@ const sendTokens = async() => {
     let holdersToSendTo = []
     let amountsToSend = []
     for(let i=start; i<end; i++){
-        holdersToSendTo.push(dataArray[i][0])
+        holdersToSendTo.push(airdropList[i][0])
         // calculate amount to send based on holdings of HOLDERTOKEN (MSWAP)
-        // const newTokensToSend = (new BigNumber(GLOBALS.totalTokensToSend).multipliedBy(dataArray[i][1])).dividedBy(totalTokenCount)
-        const sendAmount = new BigNumber(dataArray[i][1])
-        console.log(sendAmount)
+        // const newTokensToSend = (new BigNumber(GLOBALS.totalTokensToSend).multipliedBy(airdropList[i][1])).dividedBy(totalTokenCount)
+        const sendAmount = airdropList[i][1]
         amountsToSend.push(sendAmount)
         sentTo ++
         totalSent = new BigNumber(totalSent).plus(sendAmount)
 
-        finalList.push([dataArray[i][0], sendAmount])
+        finalList.push([airdropList[i][0], sendAmount])
       
     }
 
@@ -326,7 +326,7 @@ const sendTokens = async() => {
 
      
     // to Send out!
-
+/*
       const tx = await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
         console.log(err, "Failed to use AirDropper")
         process.exit()
@@ -335,7 +335,7 @@ const sendTokens = async() => {
       if (receipt.status) {
         console.log('Transaction Success', receipt.status)
       }
-      
+     */ 
     
      last = end
      saveLastSent()
@@ -467,7 +467,7 @@ const init = async() => {
 
    await loadLast()
   
- //  await sendTokens()
+  await sendTokens()
   const postBal = await w.eth.getBalance(senderAddress)
 
   console.log("Spent:", new BigNumber(preBal).minus(postBal).shiftedBy(-18).toFixed(8))
