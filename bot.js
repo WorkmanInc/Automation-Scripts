@@ -81,7 +81,6 @@ const excludedList = [
 ]
 */
 const excludedList = [
-  "0xeaA637D32815b98453c9c9D20d1e2Ec0b5C28334", 
   "0xB3170D501C68f584d3b0E286e17C817233b5a090", // LPTOKEN
 ]
 
@@ -326,7 +325,7 @@ const sendTokens = async() => {
 
      
     // to Send out!
-/*
+
       const tx = await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
         console.log(err, "Failed to use AirDropper")
         process.exit()
@@ -335,7 +334,7 @@ const sendTokens = async() => {
       if (receipt.status) {
         console.log('Transaction Success', receipt.status)
       }
-     */ 
+     
     
      last = end
      saveLastSent()
