@@ -1434,9 +1434,7 @@ const startListener = async (index) => {
     try {
      const cicPrice = await getSymPrice(dex.CHAIN.NAME)
      rawPrice = cicPrice
-    } catch{
-      return console.log("failed to get price")
-    }
+    
 
     const txhash = event.transactionHash.toString()
     const receiver = to.toString()
@@ -1452,7 +1450,9 @@ const startListener = async (index) => {
     const mc = await getMC(TConfig.TOKEN, FRTcValue, TConfig.EXCHANGE )
 
     sendBuyBotMessage(index, bought, FRTcValue, spent, txhash, receiver, buyer, inAmount, rawPrice, mc);
-  
+  } catch{
+    return console.log("failed During buy effect.")
+  }
   });
   console.log(`Loaded For ${TConfig.TOKEN} | In ${TConfig.CHANNEL.length} Channels`)
 }
