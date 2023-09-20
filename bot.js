@@ -23,35 +23,25 @@ if (result.error) {
 
 const dataArray = [];
 
-const getCSV = () => {
-const csvFilePath = path.resolve(__dirname, 'ad.csv'); // Adjust the file name
-fs.createReadStream(csvFilePath)
-  .pipe(csvParser({ headers: false }))
-  .on('data', (row) => {
-    // Process each row and push it into the dataArray
-    dataArray.push(row);
-  })
-  .on('end', () => {
-    console.log('CSV file successfully processed.');
-    // console.log(dataArray); // The array containing parsed CSV data
-  });
+BigNumber.prototype.floor = function () {
+  return this.integerValue(BigNumber.ROUND_FLOOR);
+};
 
-}
 // CHANGE THESE TOP 3 THINGS TO MATCH YOUR NEEDS
 const GLOBALS = {
-  airdropTokenAddress: "0x0Ed356Bae3718Bb6A4F4106603Ab07964f4130F6",            
-  // totalTokensToSend: 20000000000000000000000000,
-  holderTokenAddress: "0x9A221E39DD82Eb91c25800bB24d129aEdC76737D", 
-  // minTokenCount: 2000000000000000000000000,
-  howManyToSendTo: 200,
+  airdropTokenAddress: "0x83b060b67a44c566b7d4e355678c17546dd5b61b",            
+  totalTokensToSend: 20000000000000000000000000,
+  holderTokenAddress: "0x4bE2b2C45b432BA362f198c08094017b61E3BDc6", 
+  minTokenCount: 6800000000000000000000000,
+  howManyToSendTo: 10,
   howManyToCheck: 400,
   PRIVATE_KEY: process.env.PKEY,  // Wallet private key for sending the tokens.  
-  LOGGER_RPC: "https://www.shibrpc.com",         // shibarium mainnet
-  // LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
-  // LOGGER_RPC_OUTPUT: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
-  LOGGER_RPC_OUTPUT: "https://www.shibrpc.com",         // shibarium mainnet
-  // airDropperAddress: "0xBe0223f65813C7c82E195B48F8AAaAcb304FbAe7",      // ethereum dropper
-  airDropperAddress: "0xDE501B2124Af0D4b82210592A2DeDcea248aEf43",
+  // LOGGER_RPC: "https://www.shibrpc.com",         // shibarium mainnet
+  LOGGER_RPC: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
+  LOGGER_RPC_OUTPUT: "https://mainnet.infura.io/v3/2228785afa0541e6b5995abaaa99afe7",
+  // LOGGER_RPC_OUTPUT: "https://www.shibrpc.com",         // shibarium mainnet
+  airDropperAddress: "0xBe0223f65813C7c82E195B48F8AAaAcb304FbAe7",      // ethereum dropper
+  // airDropperAddress: "0xDE501B2124Af0D4b82210592A2DeDcea248aEf43",
 }
   
 
@@ -63,7 +53,7 @@ const poolsToCheck = [
 
 // add any other addresses that should be removed from the airdropping.
 // mswap exlcusion
-/*
+
 const excludedList = [
   "0x929c4F3F7528f64d1ab93554E2497503F233E2D8", // LPTOKEN
   "0x0000000000000000000000000000000000000000",
@@ -79,10 +69,7 @@ const excludedList = [
   "0x46340b20830761efd32832A74d7169B29FEB9758", // crypto.com
 
 ]
-*/
-const excludedList = [
-  "0xB3170D501C68f584d3b0E286e17C817233b5a090", // LPTOKEN
-]
+
 
 const w = new Web3(GLOBALS.LOGGER_RPC_OUTPUT);
 const senderAddress = w.eth.accounts.privateKeyToAccount(
@@ -303,16 +290,17 @@ const sendTokens = async() => {
     let holdersToSendTo = []
     let amountsToSend = []
     for(let i=start; i<end; i++){
+      if(new BigNumber(airdropList[i][1]).gte(GLOBALS.minTokenCount)){
         holdersToSendTo.push(airdropList[i][0])
         // calculate amount to send based on holdings of HOLDERTOKEN (MSWAP)
-        // const newTokensToSend = (new BigNumber(GLOBALS.totalTokensToSend).multipliedBy(airdropList[i][1])).dividedBy(totalTokenCount)
-        const sendAmount = airdropList[i][1]
+        const newTokensToSend = (new BigNumber(GLOBALS.totalTokensToSend).multipliedBy(airdropList[i][1])).dividedBy(totalTokenCount).floor()
+        const sendAmount = (newTokensToSend.floor()).toFixed(0)
         amountsToSend.push(sendAmount)
         sentTo ++
         totalSent = new BigNumber(totalSent).plus(sendAmount)
 
         finalList.push([airdropList[i][0], sendAmount])
-      
+      }
     }
 
     // for gas estimating
@@ -325,7 +313,7 @@ const sendTokens = async() => {
 
      
     // to Send out!
-
+    
       const tx = await AirDropper.sendAirdrop(GLOBALS.airdropTokenAddress, holdersToSendTo, amountsToSend).catch((err) => {
         console.log(err, "Failed to use AirDropper")
         process.exit()
@@ -348,8 +336,9 @@ const sendTokens = async() => {
 
   last = 0
   saveLastSent()
+  const gasPriceWei = await w.eth.getGasPrice();
   console.log("Sent To All Addresses:", sentTo.toString())
-  console.log("gas used:", new BigNumber(totalGas.toString()).shiftedBy(-9).toFixed(5))
+  console.log("gas used:", new BigNumber(totalGas.toString()).multipliedBy(gasPriceWei).shiftedBy(-9).toFixed(5))
   console.log("tokens sent:", new BigNumber(totalSent).shiftedBy(-18).toFixed(20))
 }
 
@@ -461,8 +450,8 @@ const init = async() => {
     if(!doesHolderListExist()) await  getEvents()
     else await loadHConfig()
 
-   // if(!doesFullListExist()) await  getStakedInPoolList()
-   // else loadFullConfig()
+   if(!doesFullListExist()) await  getStakedInPoolList()
+   else loadFullConfig()
 
    await loadLast()
   
@@ -470,7 +459,6 @@ const init = async() => {
   const postBal = await w.eth.getBalance(senderAddress)
 
   console.log("Spent:", new BigNumber(preBal).minus(postBal).shiftedBy(-18).toFixed(8))
- //  await getCSV()
 
 }
 
