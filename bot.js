@@ -1286,6 +1286,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
               }
             }
             const coinSym = exchange[cIndex].CHAIN.NAME
+            const dextools = exchange[cIndex].CHAIN.DEXTOOLS
             const  cicPrice  = await getSymPrice(coinSym)
             const {sym, price, mc, bsym, name } = await getPrice(LP,cIndex, cicPrice, gotOne, index)
             const link = getLink()
@@ -1297,7 +1298,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
               `*Price:* $${price}\n` +
               `*MCap:* $${new BigNumber(mc).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
               `*${exchange[cIndex].CHAIN.NAME} Price:* $${cicPrice}\n` +
-              `[ DexTools ](https://www.dextools.io/app/en/${dex.CHAIN.DEXTOOLS}/pair-explorer/${TConfig.LPAddress})\n` +
+              `[ DexTools ](https://www.dextools.io/app/en/${dextools}/pair-explorer/${TConfig.LPAddress})\n` +
               getAdLink() + "\n" +
               link
               ,cid, thread);
