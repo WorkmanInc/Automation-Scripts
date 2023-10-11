@@ -762,9 +762,9 @@ const sendNotificationToChannel = async (message, cid, thread) => {
   });
 }
 
-const sendNotificationToChannelPrice = async (message, cid, thread) => {
+const sendNotificationToChannelPrice = async (message, cid, thread, opts = {}) => {
   if(checkIfAllowed(cid, thread)) {
-    bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread}).catch(() => {
+    bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread, opts}).catch(() => {
       console.log(`Error Sending Price to Channel ${cid}, ${thread}`)
     });
   }  
@@ -1244,6 +1244,18 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
       if(!sent){
         // const symbol =  message.text.substring(2)
         const bitcoinData = await getCMCInfo(command)
+
+        const itemlist = []
+        if (bitcoinData.length > 1 ){
+          for(let i=0; i<bitcoinData.length; i++){
+            itemlist.push(bitcoinData[i].name)
+          }
+          let reply_markup = {"inline_keyboard": itemlist}
+          opts = {
+            reply_markup: reply_markup
+          }
+        }
+
         try {
         const { name, symbol, quote } = bitcoinData;
         const { USD } = quote;
@@ -1259,7 +1271,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             `*FD MC:* ${USD.fully_diluted_market_cap.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4})}\n` +
             getAdLink() +
             "\n" + getLink()
-            , cid, thread
+            , cid, thread, opts
           )
         } else sendNotificationToChannelPrice("Failed", cid, thread)
         } catch {
