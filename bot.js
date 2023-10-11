@@ -803,11 +803,12 @@ const getCMCInfo = async (symbol) => {
       },
     });
 
+   
     const bitcoinDataRaw = response.data.data[BIGSYMBOL];
-    console.log(bitcoinDataRaw)
-    const bitcoinData = bitcoinDataRaw[0]
+    if(BIGSYMBOL === MSWAP) return bitcoinDataRaw[1]
+    return bitcoinDataRaw[0]
 
-    return bitcoinData
+    
 
   } catch (error) {
     console.error('Error fetching data:', error);
