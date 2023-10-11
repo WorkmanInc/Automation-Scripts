@@ -1326,13 +1326,11 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           
         if(isEdit){
           const test = await bot.editMessageText(message, opts)
-          console.log(test)
         } else { 
           const test = await bot.sendMessage(cid, message, opts).catch(() => {
             console.log(`Error Sending Price to Channel ${cid}, ${thread}`)})
-            console.log(test)
         }
-
+          console.log(test.message_id)
           return test.message_id
 
       } else sendNotificationToChannelPrice("No Price", cid, thread)
