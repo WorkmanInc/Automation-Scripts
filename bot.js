@@ -99,9 +99,14 @@ let fCID
 bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) { 
   const action = callbackQuery.data; 
   const msg = callbackQuery.message;
+  console.log("here")
 if(msg.chat.id == cid){
 
   console.log(action, msg)
+
+  if(action === "OTHERTOKEN") {
+    console.log("testworking")
+  }
 
   if(action === "CANCEL") {
     bot.deleteMessage(cid, msg.message_id);
@@ -1247,7 +1252,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
 
         const itemlist = []
         if (bitcoinData.length > 1 ){
-            itemlist.push([{"text": `Other Tokens`, "callback_data": 99}])
+            itemlist.push([{"text": `Other Tokens`, "callback_data": "OTHERTOKENS"}])
         }
           const opts = {"inline_keyboard": itemlist}
          
