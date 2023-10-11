@@ -762,9 +762,9 @@ const sendNotificationToChannel = async (message, cid, thread) => {
   });
 }
 
-const sendNotificationToChannelPrice = async (message, cid, thread, opts = {}) => {
+const sendNotificationToChannelPrice = async (message, cid, thread) => {
   if(checkIfAllowed(cid, thread)) {
-    bot.sendMessage(cid, message, opts, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread }).catch(() => {
+    bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread }).catch(() => {
       console.log(`Error Sending Price to Channel ${cid}, ${thread}`)
     });
   }  
@@ -1248,9 +1248,12 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             itemlist.push([{"text": `Other Tokens`, "callback_data": "OTHERTOKENS"}])
         }
           const reply = {"inline_keyboard": itemlist}
-          const opts = {
-            reply_markup: reply 
-          };
+          opts = {
+            message_thread_id: thread,
+            disable_web_page_preview: true,
+            parse_mode: 'Markdown',
+            reply_markup: reply
+          }
          
         const tokenData = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0]  
         setAndDeliverPrice(cid, thread, opts, tokenData)
@@ -1287,7 +1290,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
       const { USD } = quote;
 
       if(new BigNumber(USD.price).gt(0)){
-        sendNotificationToChannelPrice(
+        const message = 
           `*${name}* (${symbol})\n` +
           `*Price*: $${USD.price.toFixed(10)} USD\n` +
           `*1hr Change:* ${USD.percent_change_1h.toFixed(2)}%\n` +
@@ -1297,8 +1300,9 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           `*FD MC:* ${USD.fully_diluted_market_cap.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4})}\n` +
           getAdLink() +
           "\n" + getLink()
-          , cid, thread, opts
-        )
+          
+        bot.sendMessage(cid, message, opts).catch(() => {
+          console.log(`Error Sending Price to Channel ${cid}, ${thread}`)})
 
       } else sendNotificationToChannelPrice("No Price", cid, thread)
       } catch {
