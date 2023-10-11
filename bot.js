@@ -1263,8 +1263,9 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) { 
             const action = callbackQuery.data; 
             const msg = callbackQuery.message;
+            
             console.log(callbackQuery)
-            if(msg.chat.id == cid){
+            if(msg.chat.id === cid && msg.message_id === mID ){
 
               if(action === "OTHERTOKENS") {
                 const itemlist2 = []
@@ -1324,7 +1325,8 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           "\n" + getLink()
           
         if(isEdit){
-          bot.editMessageText(message, opts)
+          const test = bot.editMessageText(message, opts)
+          console.log(test)
         } else { 
           bot.sendMessage(cid, message, opts).catch(() => {
             console.log(`Error Sending Price to Channel ${cid}, ${thread}`)})
