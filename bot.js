@@ -804,6 +804,7 @@ const getCMCInfo = async (symbol) => {
     });
 
     const bitcoinDataRaw = response.data.data[BIGSYMBOL];
+    console.log(bitcoinDataRaw)
     const bitcoinData = bitcoinDataRaw[0]
 
     return bitcoinData
@@ -1307,7 +1308,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
 
 
 const getLink = () => {
-  return  `[Marswap](https://marswap.exchange/) | [Telegram](https://t.me/MSWAP_LAUNCHPAD)`
+  return  `[Marswap](https://dex.marswap.exchange/) | [Telegram](https://t.me/MSWAP_LAUNCHPAD)`
 }
 
 const saveNewConfig = async () => {
