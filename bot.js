@@ -1255,8 +1255,9 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             reply_markup: reply
           }
          
+        
         const tokenData = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0]  
-        setAndDeliverPrice(cid, thread, opts, tokenData, false)
+        const mID = setAndDeliverPrice(cid, thread, opts, tokenData, false)
         
 
           let fCID
@@ -1331,6 +1332,8 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             console.log(`Error Sending Price to Channel ${cid}, ${thread}`)})
             console.log(test)
         }
+
+          return test.message_id
 
       } else sendNotificationToChannelPrice("No Price", cid, thread)
       } catch {
