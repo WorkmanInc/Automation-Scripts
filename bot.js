@@ -1245,7 +1245,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
 
         const itemlist = []
         if (bitcoinData.length > 1 ){
-            itemlist.push([{"text": `Other Tokens`, "callback_data": 'CHECK'}])
+            itemlist.push([{"text": `Other Tokens`, "callback_data": 99}])
         }
           const reply_markup = {"inline_keyboard": itemlist}
           const opts = {
