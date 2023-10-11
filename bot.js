@@ -1256,7 +1256,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           }
          
         const tokenData = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0]  
-        setAndDeliverPrice(cid, thread, opts, tokenData)
+        setAndDeliverPrice(cid, thread, opts, tokenData, false)
         
 
           let fCID
@@ -1283,8 +1283,16 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
 
               if(msg.text === "Choose Other:"){
                 tokenIndex = parseInt(action)
-                const tokenData2 = bitcoinData[tokenIndex]  
-                setAndDeliverPrice(cid, thread, opts, tokenData2)
+                const tokenData2 = bitcoinData[tokenIndex]
+                const opts3 = {
+                  chat_id: msg.chat.id, 
+                  message_id: msg.message_id,
+                  message_thread_id: thread,
+                  disable_web_page_preview: true,
+                  parse_mode: 'Markdown',
+                  reply_markup: reply
+                }
+                setAndDeliverPrice(cid, thread, opts3, tokenData2, true)
               }
               
             }
@@ -1296,7 +1304,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
     
   })
 
-  const setAndDeliverPrice = async(cid, thread, opts, bitcoinData) => {
+  const setAndDeliverPrice = async(cid, thread, opts, bitcoinData, isEdit) => {
     try {
 
       const { name, symbol, quote } = bitcoinData
@@ -1314,8 +1322,12 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           getAdLink() +
           "\n" + getLink()
           
-        bot.sendMessage(cid, message, opts).catch(() => {
-          console.log(`Error Sending Price to Channel ${cid}, ${thread}`)})
+        if(isEdit){
+          bot.editMessageText(message, opts)
+        } else { 
+          bot.sendMessage(cid, message, opts).catch(() => {
+            console.log(`Error Sending Price to Channel ${cid}, ${thread}`)})
+        }
 
       } else sendNotificationToChannelPrice("No Price", cid, thread)
       } catch {
