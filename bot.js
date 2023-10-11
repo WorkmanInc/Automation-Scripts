@@ -1298,7 +1298,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
               `*Price:* $${price}\n` +
               `*MCap:* $${new BigNumber(mc).toNumber().toLocaleString("en-US", {maximumFractionDigits: 14})}\n` +
               `*${exchange[cIndex].CHAIN.NAME} Price:* $${cicPrice}\n` +
-              `[ DexTools ](https://www.dextools.io/app/en/${dextools}/pair-explorer/${TConfig.LPAddress})\n` +
+              `[ DexTools ](https://www.dextools.io/app/en/${dextools}/pair-explorer/${LP})\n` +
               getAdLink() + "\n" +
               link
               ,cid, thread);
