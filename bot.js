@@ -99,14 +99,7 @@ let fCID
 bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) { 
   const action = callbackQuery.data; 
   const msg = callbackQuery.message;
-  console.log("here")
 if(msg.chat.id == cid){
-
-  console.log(action, msg)
-
-  if(action === "OTHERTOKEN") {
-    console.log("testworking")
-  }
 
   if(action === "CANCEL") {
     bot.deleteMessage(cid, msg.message_id);
@@ -1274,6 +1267,22 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             "\n" + getLink()
             , cid, thread, opts
           )
+
+          let fCID
+          bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) { 
+            const action = callbackQuery.data; 
+            const msg = callbackQuery.message;
+            console.log("here")
+            if(msg.chat.id == cid){
+
+              console.log(action, msg)
+
+              if(action === "OTHERTOKEN") {
+                console.log("testworking")
+              }
+            }
+          })
+
         } else sendNotificationToChannelPrice("Failed", cid, thread)
         } catch {
           sendNotificationToChannelPrice("Failed", cid, thread)
