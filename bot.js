@@ -1327,8 +1327,9 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           const test = bot.editMessageText(message, opts)
           console.log(test)
         } else { 
-          bot.sendMessage(cid, message, opts).catch(() => {
+          const test = bot.sendMessage(cid, message, opts).catch(() => {
             console.log(`Error Sending Price to Channel ${cid}, ${thread}`)})
+            console.log(test)
         }
 
       } else sendNotificationToChannelPrice("No Price", cid, thread)
