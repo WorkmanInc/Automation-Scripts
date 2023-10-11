@@ -805,7 +805,7 @@ const getCMCInfo = async (symbol) => {
 
    
     const bitcoinDataRaw = response.data.data[BIGSYMBOL];
-    if(BIGSYMBOL === MSWAP) return bitcoinDataRaw[1]
+    if(BIGSYMBOL === "MSWAP") return bitcoinDataRaw[1]
     return bitcoinDataRaw[0]
 
     
