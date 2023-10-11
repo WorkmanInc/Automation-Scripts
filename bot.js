@@ -1275,7 +1275,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             console.log(action)
             if(msg.chat.id == cid){
 
-              if(action === "OTHERTOKEN") {
+              if(action === "OTHERTOKENS") {
                 console.log("testworking")
               }
             }
