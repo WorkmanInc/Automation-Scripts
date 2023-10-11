@@ -1259,12 +1259,10 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
         const tokenData = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0]  
         const mID = await setAndDeliverPrice(cid, thread, opts, tokenData, false)
         
-          console.log(mID)
           let fCID
           bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) { 
             const action = callbackQuery.data; 
             const msg = callbackQuery.message;
-            console.log(msg.message_id)
             if(msg.chat.id == cid && msg.message_id == mID ){
 
               if(action === "OTHERTOKENS") {
