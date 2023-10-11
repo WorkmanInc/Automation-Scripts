@@ -1336,7 +1336,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
       }
     } catch (error) {
       sendNotificationToChannelPrice("Failed", cid, thread);
-      throw error; // Re-throw the error to indicate failure
+      
     }
   }
 
