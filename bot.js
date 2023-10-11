@@ -101,6 +101,8 @@ bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) {
   const msg = callbackQuery.message;
 if(msg.chat.id == cid){
 
+  console.log(action, msg)
+
   if(action === "CANCEL") {
     bot.deleteMessage(cid, msg.message_id);
     bot.off('callback_query', fCID)
