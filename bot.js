@@ -1254,6 +1254,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             reply_markup: reply_markup
           }
         
+          console.log(itemlist, opts)
 
         try {
         const { name, symbol, quote } = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0];
