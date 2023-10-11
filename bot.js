@@ -764,7 +764,7 @@ const sendNotificationToChannel = async (message, cid, thread) => {
 
 const sendNotificationToChannelPrice = async (message, cid, thread, opts = {}) => {
   if(checkIfAllowed(cid, thread)) {
-    bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread, reply_markup: opts}).catch(() => {
+    bot.sendMessage(cid, message, opts, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread }).catch(() => {
       console.log(`Error Sending Price to Channel ${cid}, ${thread}`)
     });
   }  
@@ -1247,48 +1247,64 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
         if (bitcoinData.length > 1 ){
             itemlist.push([{"text": `Other Tokens`, "callback_data": "OTHERTOKENS"}])
         }
-          const opts = {"inline_keyboard": itemlist}
+          const reply = {"inline_keyboard": itemlist}
+          const opts1 = {
+            reply_markup: reply 
+          };
          
+        const tokenData = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0]  
+        setAndDeliverPrice(cid, thread, opts, tokenData)
         
-        try {
-        const { name, symbol, quote } = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0];
-        const { USD } = quote;
-
-        if(new BigNumber(USD.price).gt(0)){
-          sendNotificationToChannelPrice(
-            `*${name}* (${symbol})\n` +
-            `*Price*: $${USD.price.toFixed(10)} USD\n` +
-            `*1hr Change:* ${USD.percent_change_1h.toFixed(2)}%\n` +
-            `*24hr Change:* ${USD.percent_change_24h.toFixed(2)}%\n` +
-            `*7d Change:* ${USD.percent_change_7d.toFixed(2)}%\n` +
-            `*24hr Volume:* ${USD.volume_24h.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4})}\n` +
-            `*FD MC:* ${USD.fully_diluted_market_cap.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4})}\n` +
-            getAdLink() +
-            "\n" + getLink()
-            , cid, thread, opts
-          )
 
           let fCID
           bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) { 
             const action = callbackQuery.data; 
             const msg = callbackQuery.message;
-            console.log(action)
             if(msg.chat.id == cid){
 
               if(action === "OTHERTOKENS") {
-                console.log("testworking")
+                itemlist2= []
+                for(let i=0; i<bitcoinData.length; i++) {
+                  itemlist2.push([{"text": `${bitcoinData[i].name}`, "callback_data": i}])
+                }
+                const opts2 = {"inline_keyboard": itemlist}
+
               }
+              
             }
           })
 
-        } else sendNotificationToChannelPrice("Failed", cid, thread)
-        } catch {
-          sendNotificationToChannelPrice("Failed", cid, thread)
-        }
+     
       }
     }
     
   })
+
+  const setAndDeliverPrice = async(cid, thread, opts, bitcoinData) => {
+    try {
+
+      const { name, symbol, quote } = bitcoinData
+      const { USD } = quote;
+
+      if(new BigNumber(USD.price).gt(0)){
+        sendNotificationToChannelPrice(
+          `*${name}* (${symbol})\n` +
+          `*Price*: $${USD.price.toFixed(10)} USD\n` +
+          `*1hr Change:* ${USD.percent_change_1h.toFixed(2)}%\n` +
+          `*24hr Change:* ${USD.percent_change_24h.toFixed(2)}%\n` +
+          `*7d Change:* ${USD.percent_change_7d.toFixed(2)}%\n` +
+          `*24hr Volume:* ${USD.volume_24h.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4})}\n` +
+          `*FD MC:* ${USD.fully_diluted_market_cap.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4})}\n` +
+          getAdLink() +
+          "\n" + getLink()
+          , cid, thread, opts
+        )
+
+      } else sendNotificationToChannelPrice("No Price", cid, thread)
+      } catch {
+        sendNotificationToChannelPrice("Failed", cid, thread)
+      }
+  }
 
   const getPrices = async(cid, thread, address, index, gotOne) =>{
     let cIndex 
