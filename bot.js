@@ -1257,7 +1257,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
          
         
         const tokenData = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0]  
-        const mID = setAndDeliverPrice(cid, thread, opts, tokenData, false)
+        const mID = await setAndDeliverPrice(cid, thread, opts, tokenData, false)
         
 
           let fCID
