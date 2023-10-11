@@ -765,7 +765,7 @@ const sendNotificationToChannel = async (message, cid, thread) => {
 const sendNotificationToChannelPrice = async (message, cid, thread, opts = {}) => {
   if(checkIfAllowed(cid, thread)) {
     console.log(opts)
-    bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread, opts}).catch(() => {
+    bot.sendMessage(cid, message, {parse_mode: 'Markdown', disable_web_page_preview: true, message_thread_id: thread, reply_markup: opts}).catch(() => {
       console.log(`Error Sending Price to Channel ${cid}, ${thread}`)
     });
   }  
@@ -1248,10 +1248,8 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
         if (bitcoinData.length > 1 ){
             itemlist.push([{"text": `Other Tokens`, "callback_data": 99}])
         }
-          const reply_markup = {"inline_keyboard": itemlist}
-          const opts = {
-            reply_markup: reply_markup
-          }
+          const opts = {"inline_keyboard": itemlist}
+         
         
         try {
         const { name, symbol, quote } = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0];
