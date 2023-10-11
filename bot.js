@@ -1308,7 +1308,6 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
 
   const setAndDeliverPrice = async(cid, thread, opts, bitcoinData, isEdit) => {
     try {
-      console.log("sending")
       const { name, symbol, quote } = bitcoinData
       const { USD } = quote;
 
@@ -1326,17 +1325,21 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           
         if(isEdit){
           const test = await bot.editMessageText(message, opts)
+          return test.message_id
         } else { 
           const test = await bot.sendMessage(cid, message, opts).catch(() => {
             console.log(`Error Sending Price to Channel ${cid}, ${thread}`)})
-        }
-          console.log(test.message_id)
           return test.message_id
+        }
 
-      } else sendNotificationToChannelPrice("No Price", cid, thread)
-      } catch {
-        sendNotificationToChannelPrice("Failed", cid, thread)
+      } else {
+        sendNotificationToChannelPrice("No Price", cid, thread);
+        return "No Price"; // Return a string indicating no price
       }
+    } catch (error) {
+      sendNotificationToChannelPrice("Failed", cid, thread);
+      throw error; // Re-throw the error to indicate failure
+    }
   }
 
   const getPrices = async(cid, thread, address, index, gotOne) =>{
