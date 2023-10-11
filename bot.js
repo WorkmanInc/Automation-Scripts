@@ -1272,10 +1272,8 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) { 
             const action = callbackQuery.data; 
             const msg = callbackQuery.message;
-            console.log("here")
+            console.log(action)
             if(msg.chat.id == cid){
-
-              console.log(action, msg)
 
               if(action === "OTHERTOKEN") {
                 console.log("testworking")
