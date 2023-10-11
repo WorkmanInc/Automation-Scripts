@@ -805,10 +805,8 @@ const getCMCInfo = async (symbol) => {
 
    
     const bitcoinDataRaw = response.data.data[BIGSYMBOL];
-    if(BIGSYMBOL === "MSWAP") return bitcoinDataRaw[1]
-    return bitcoinDataRaw[0]
 
-    
+    return bitcoinDataRaw
 
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -1257,7 +1255,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
         }
 
         try {
-        const { name, symbol, quote } = bitcoinData;
+        const { name, symbol, quote } = command.toUpperCase() === "MSWAP" ? bitcoinData[1] : bitcoinData[0];
         const { USD } = quote;
 
         if(new BigNumber(USD.price).gt(0)){
