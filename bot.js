@@ -1308,7 +1308,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
 
   const setAndDeliverPrice = async(cid, thread, opts, bitcoinData, isEdit) => {
     try {
-
+      console.log("sending")
       const { name, symbol, quote } = bitcoinData
       const { USD } = quote;
 
