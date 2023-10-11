@@ -1263,6 +1263,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           bot.on('callback_query', fCID = function onCallbackQuery(callbackQuery) { 
             const action = callbackQuery.data; 
             const msg = callbackQuery.message;
+            console.log(callbackQuery)
             if(msg.chat.id == cid){
 
               if(action === "OTHERTOKENS") {
