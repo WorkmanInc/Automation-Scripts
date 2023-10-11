@@ -1324,10 +1324,10 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
           "\n" + getLink()
           
         if(isEdit){
-          const test = bot.editMessageText(message, opts)
+          const test = await bot.editMessageText(message, opts)
           console.log(test)
         } else { 
-          const test = bot.sendMessage(cid, message, opts).catch(() => {
+          const test = await bot.sendMessage(cid, message, opts).catch(() => {
             console.log(`Error Sending Price to Channel ${cid}, ${thread}`)})
             console.log(test)
         }
