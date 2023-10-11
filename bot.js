@@ -1266,12 +1266,25 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
             if(msg.chat.id == cid){
 
               if(action === "OTHERTOKENS") {
-                itemlist2= []
+                const itemlist2 = []
                 for(let i=0; i<bitcoinData.length; i++) {
                   itemlist2.push([{"text": `${bitcoinData[i].name}`, "callback_data": i}])
                 }
-                const opts2 = {"inline_keyboard": itemlist}
+                const reply2 = {"inline_keyboard": itemlist}
+                const opts2 = { 
+                  chat_id: msg.chat.id, 
+                  message_id: msg.message_id,
+                  reply_markup: reply2 
+                }; 
+           
+                bot.editMessageText('Choose Other:', opts2); 
 
+              }
+
+              if(msg.text === "Choose Other:"){
+                tokenIndex = parseInt(action)
+                const tokenData2 = bitcoinData[tokenIndex]  
+                setAndDeliverPrice(cid, thread, opts, tokenData2)
               }
               
             }
