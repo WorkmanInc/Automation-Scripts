@@ -1270,7 +1270,7 @@ bot.onText(/^\?{2}(.+)/, async function(message, match) {
                 for(let i=0; i<bitcoinData.length; i++) {
                   itemlist2.push([{"text": `${bitcoinData[i].name}`, "callback_data": i}])
                 }
-                const reply2 = {"inline_keyboard": itemlist}
+                const reply2 = {"inline_keyboard": itemlist2}
                 const opts2 = { 
                   chat_id: msg.chat.id, 
                   message_id: msg.message_id,
